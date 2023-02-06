@@ -1,1 +1,1 @@
-# paper_2023_ci_for_ge
+# Confidence Intervals for the Generalization Error
