@@ -6,7 +6,7 @@
 \description{
 Creates a task generator for the Chen model.
 
-TODO: Add formula
+TODO: Add reference when it is available in the overleaf.
 }
 \section{Super class}{
 \code{\link[mlr3:TaskGenerator]{mlr3::TaskGenerator}} -> \code{TaskGeneratorChen}
@@ -31,7 +31,7 @@ TODO: Add formula
 \if{html}{\out{<a id="method-TaskGeneratorChen-new"></a>}}
 \if{latex}{\out{\hypertarget{method-TaskGeneratorChen-new}{}}}
 \subsection{Method \code{new()}}{
-creates a new instance of this \link[r6:r6class]{r6} class.
+creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{TaskGeneratorChen$new()}\if{html}{\out{</div>}}
 }

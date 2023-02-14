@@ -19,8 +19,9 @@ Imports:
     R6, 
     data.table
 Collate: 
-    'ResamplingNestedCV.R'
     'zzz.R'
+    'ResamplingBootstrapCCV.R'
+    'ResamplingNestedCV.R'
     'TaskGeneratorBates.R'
     'TaskGeneratorChen.R'
     'bibentries.R'

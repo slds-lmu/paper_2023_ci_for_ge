@@ -1,6 +1,31 @@
+#' @title Nested Cross-Validation
+#'
+#' @name mlr_resamplings_nested_cv
+#'
+#' @description
+#' Nested cross-validation which allows for valid inference of the generalization error at considerably higher
+#' computational cost.
+#'
+#' @section Parameters:
+#' * `folds` :: (`integer(1)`)\cr`
+#'   The number of folds.
+#'
+#' @templateVar id nested_cv
+#' @template resampling
+#'
+#' @references
+#' `r format_bib("bates2021")`
+#' @export
+#' @examples
+#' res = rsmp("nested_cv", folds = 2)
+#' task = tsk("penguins")
+#' res$instantiate(task)
+#' res
 ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
   inherit = mlr3::Resampling,
   public = list(
+    #' @description
+    #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       param_set = ps(
         folds = p_int(lower = 1L, tags = "required")
@@ -13,7 +38,7 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
     #' In case the iteration belongs to the outer loop, the value `inner` is set to `NA`.
     #' @param iter (`integer(1)`)\cr
     #'   The iteration.
-    iter_to_outer_inner = function(iter) {
+    unflatten = function(iter) {
       assert_int(iter, lower = 1L, upper = self$iters)
       folds = self$param_set$get_values()$folds
       if (iter <= folds) {
@@ -30,7 +55,11 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
     },
     #' @description Obtain the iteration for the specified `(outer, inner)` tuple.
     #' If `inner` is missing, the outer iteration is returned.
-    outer_inner_to_iter = function(outer, inner = NULL) {
+    #' @param outer (`integer(1)`)\cr
+    #'   The index of the outer iteration.
+    #' @param inner (`integer(1)`)\cr
+    #'   The index of the inner iteration.
+    flatten = function(outer, inner = NULL) {
       folds = self$param_set$get_values()$folds
       assert_int(outer, lower = 1L, upper = folds)
       assert_int(inner, lower = 1L, upper = folds - 1, null.ok = TRUE)
@@ -43,6 +72,8 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
     }
   ),
   active = list(
+    #' @field iters (`integer(1)`)\cr
+    #'   The number of iterations.
     iters = function(rhs) {
       assert_ro_binding(rhs)
       self$param_set$values$folds^2
@@ -63,7 +94,7 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
         # This is an outer fold
         self$instance[!list(i), "row_id", on = "fold"][[1L]]
       } else {
-        info = self$iter_to_outer_inner(i)
+        info = self$unflatten(i)
         folds_inner = seq_len(folds)[-info$outer]
 
         self$instance[get("fold") %nin% c(info$outer, folds_inner[info$inner]), "row_id"][[1L]]
@@ -75,7 +106,7 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
         # This is an outer fold
         self$instance[list(i), "row_id", on = "fold"][[1L]]
       } else {
-        info = self$iter_to_outer_inner(i)
+        info = self$unflatten(i)
         folds_inner = seq_len(folds)[-info$outer]
         self$instance[list(folds_inner[info$inner]), "row_id", on = "fold"][[1L]]
       }
@@ -87,3 +118,5 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
 )
 
 
+#' @include zzz.R
+mlr_resamplings$add("nested_cv", function() ResamplingNestedCV$new())

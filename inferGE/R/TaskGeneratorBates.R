@@ -10,7 +10,7 @@ TaskGeneratorBatesClassif = R6::R6Class("TaskGeneratorBatesClassif",
   inherit = mlr3::TaskGenerator,
   public = list(
     #' @description
-    #' creates a new instance of this [r6][r6::r6class] class.
+    #' creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       param_set = ps(
         ones = p_int(lower = 1, tags = "required"),

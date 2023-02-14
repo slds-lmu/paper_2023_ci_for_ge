@@ -3,14 +3,14 @@
 #' @description
 #' Creates a task generator for the Chen model.
 #'
-#' TODO: Add formula
+#' TODO: Add reference when it is available in the overleaf.
 #'
 #' @export
 TaskGeneratorChen = R6Class("TaskGeneratorChen",
   inherit = TaskGenerator,
   public = list(
     #' @description
-    #' creates a new instance of this [r6][r6::r6class] class.
+    #' creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       param_set = ps(
         M = p_int(lower = 1L, tags = "required")

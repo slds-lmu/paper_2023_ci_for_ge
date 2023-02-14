@@ -30,7 +30,7 @@ A \link[mlr3:TaskGenerator]{mlr3::TaskGenerator} for the bates task.
 \if{html}{\out{<a id="method-TaskGeneratorBatesClassif-new"></a>}}
 \if{latex}{\out{\hypertarget{method-TaskGeneratorBatesClassif-new}{}}}
 \subsection{Method \code{new()}}{
-creates a new instance of this \link[r6:r6class]{r6} class.
+creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{TaskGeneratorBatesClassif$new()}\if{html}{\out{</div>}}
 }
