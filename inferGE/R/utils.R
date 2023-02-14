@@ -1,0 +1,53 @@
+ensure_within = function(x, lower, upper) {
+  if (x < lower) {
+    return(lower)
+  } else if (x > upper) {
+    return(upper)
+  } else {
+    return(x)
+  }
+}
+
+infer_method_bmr = function(x, alpha, loss, method) {
+  resample_results = x$resample_results$resample_result
+
+  info = data.table(
+    resample_result = resample_results,
+    learner_id = map(resample_results, function(rr) rr$learner$id),
+    resampling_id = map(resample_results, function(rr) rr$resampling$id),
+    task_id = map(resample_results, function(rr) rr$task$id)
+  )
+
+  tbl = rbindlist(lapply(resample_results, method, loss = loss, alpha = alpha))
+
+  cbind(info, tbl)
+}
+
+#' @param x [mlr3::ResampleResult]\cr
+#'   The resample result
+#' @param loss (`character(1)`)\cr 
+#'   A string indicating the loss function
+get_loss_table = function(x, loss_fn) {
+  preds = x$predictions()
+  tbl = data.table(
+    iter = unlist(map(seq_len(x$iters), function(i) rep(i, times = NROW(preds[[i]]$row_ids)))),
+    # TODO: Not sure whether we need the row id
+    row_id = unlist(map(seq_len(x$iters), function(i) preds[[i]]$row_ids)),
+    loss = unlist(map(seq_len(x$iters), function(i) loss_fn(truth = preds[[i]]$truth, response = preds[[i]]$response)))
+  )
+}
+
+
+get_loss_fn = function(loss, rr) {
+  assert_string(loss)
+  loss_info = get(loss, mlr3measures::measures, inherits = FALSE)
+  # FIXME: This is currently not really transparent in mlr3
+  assert_false(loss_info$aggregated,
+    .var.name = "The measure must allow to calculate unaggregated observation-wise losses.")
+
+  assert_true(loss_info$type == rr$task_type)
+
+  loss_fn = getFromNamespace(loss, ns = "mlr3measures")
+
+  return(loss_fn)
+}
