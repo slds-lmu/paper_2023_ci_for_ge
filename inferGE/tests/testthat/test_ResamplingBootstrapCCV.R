@@ -2,8 +2,9 @@ test_that("ResamplingBootstrapCCV works", {
   res = rsmp("bootstrap_ccv", ratio = 1, repeats = 2)
   task = tsk("iris")
   task$row_roles$use = c(1:5, 51:55, 101:105)
-  res$instantiate(task)
   res #check that printer works (because iters are NA)
+  expect_true(is.na(res$iters))
+  res$instantiate(task)
   inst = res$instance
 
   expect_list(inst)
@@ -62,18 +63,23 @@ test_that("Works with stratification", {
   expect_class(rr, "ResampleResult")
 })
 
-test_that("Degenerate case throws correct warning", {
-
+test_that("Resampling iterations with either no train or no test observations are removed", {
   task = tsk("iris")
   task$row_roles$use = 1
-
-  res = rsmp("bootstrap_ccv", ratio = 1, repeats = 2, retries = 1)
-
-  expect_warning(res$instantiate(task), "Still got 2 out of 2 degenerate")
+  res = rsmp("bootstrap_ccv", ratio = 1, repeats = 2)
+  res$instantiate(task)
   expect_true(res$iters == 0)
-  expect_true(res$instance$row_ids == 1)
-  expect_equal(dim(res$instance$M), c(1, 0))
-  expect_true(is.null(res$instance$holdout))
-  expect_true(is.null(res$instance$bootstrap_repeat))
+})
 
+test_that("Degenerate samples can be combined to proper samples", {
+  task = tsk("penguins")
+  task$row_roles$use = 1:3
+  task$col_roles$stratum = "sex"
+
+  # In an earlier implementation this would have caused a warning because in one of the strata 
+  # we either have no train or test oberervation.
+
+  res = rsmp("bootstrap_ccv", ratio = 1, repeats = 100)
+  res$instantiate(task)
+  expect_true(res$iters > 0)
 })

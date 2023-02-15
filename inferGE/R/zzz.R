@@ -7,3 +7,13 @@
 NULL
 
 mlr_task_generators = mlr3::mlr_task_generators
+
+lg = mlr3::mlr_reflections$loggers[["mlr3"]]
+
+
+.onLoad = function(libname, pkgname) {
+  # nocov start
+  backports::import(pkgname)
+} # nocov end
+
+leanify_package()
