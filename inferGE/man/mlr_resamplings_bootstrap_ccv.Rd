@@ -16,9 +16,6 @@ This implies that the training sizes in the LOCO differ.
 Number of repetitions.
 \item \code{ratio} :: (\code{numeric(1)})\cr
 Ratio of observations to put into the training set.
-\item \code{retries} :: (\code{integer(1)})\cr
-The parameter controls the number of sampling retries until an instance is sampled that has no degenerate case.
-The default is 10. All degenerate bootstrap repetitions are dropped, but a warning is given.
 }
 }
 
@@ -32,7 +29,7 @@ rsmp("bootstrap_ccv")
 }
 
 \examples{
-res = rsmp("bootstrap_ccv", ratio = 0.5, repeats = 2, retries = 2)
+res = rsmp("bootstrap_ccv", ratio = 0.5, repeats = 2)
 task = tsk("penguins")
 res$instantiate(task)
 res

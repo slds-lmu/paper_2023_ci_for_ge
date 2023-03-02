@@ -1,9 +1,10 @@
 #' @title Inference Method for Nested Cross-Validation
 #'
 #' @description
-#' For
-#' @param x (`ResampleResult`)\cr
-#'   The resample result using a `ResamplingNestedCV`.
+#' Inference method for Nested Cross-Validation.
+#'
+#' @param x ([`ResampleResult`] or  [``])\cr
+#'   The resample result or benchmark result using a [`ResamplingNestedCV`] as the resampling technique.
 #' @param alpha (`numeric(1)`)\cr
 #'   The alpha level for the confidence interval.
 #' @param loss (`character(1)`)\cr
@@ -19,12 +20,12 @@ infer_bates = function(x, alpha, loss) {
 }
 
 #' @export
-infer_bates.BenchmarkResult = function(x, alpha = 0.05, loss) {
+infer_bates.BenchmarkResult = function(x, alpha = 0.05, loss) { #nolint
   infer_method_bmr(x, alpha, loss, infer_bates)
 }
 
 #' @export
-infer_bates.ResampleResult = function(x, alpha = 0.05, loss) {
+infer_bates.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
   loss_fn = get_loss_fn(loss, x)
 
   res = x$resampling

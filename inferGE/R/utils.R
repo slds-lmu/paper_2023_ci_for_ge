@@ -29,7 +29,7 @@ infer_method_bmr = function(x, alpha, loss, method) {
 #'   A string indicating the loss function
 get_loss_table = function(x, loss_fn) {
   preds = x$predictions()
-  tbl = data.table(
+  data.table(
     iter = unlist(map(seq_len(x$iters), function(i) rep(i, times = NROW(preds[[i]]$row_ids)))),
     # TODO: Not sure whether we need the row id
     row_id = unlist(map(seq_len(x$iters), function(i) preds[[i]]$row_ids)),

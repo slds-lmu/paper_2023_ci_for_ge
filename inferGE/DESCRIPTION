@@ -18,17 +18,25 @@ Depends:
 Imports: 
     R6, 
     data.table
+Suggest: 
+    torch, 
+    tabnet
 Collate: 
+    'LearnerClassifTabNet.R'
+    'LearnerRegrTabNet.R'
     'zzz.R'
     'ResamplingBootstrapCCV.R'
     'ResamplingNestedCV.R'
     'TaskGeneratorBates.R'
     'TaskGeneratorChen.R'
     'bibentries.R'
+    'infer_52cv.R'
     'infer_bates.R'
     'infer_bayle.R'
     'infer_jiang.R'
     'infer_nadeau.R'
+    'infer_naive_cv.R'
     'inference.R'
+    'params_tabnet.R'
     'plot_inference.R'
     'utils.R'

@@ -12,6 +12,9 @@ lg = mlr3::mlr_reflections$loggers[["mlr3"]]
 
 
 .onLoad = function(libname, pkgname) {
+  mlr_learners = mlr3::mlr_learners
+  mlr_learners$add("regr.tabnet", LearnerRegrTabNet)
+  mlr_learners$add("classif.tabnet", LearnerClassifTabNet)
   # nocov start
   backports::import(pkgname)
 } # nocov end
