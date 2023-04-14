@@ -25,8 +25,8 @@ infer_method_bmr = function(x, alpha, loss, method) {
 
 #' @param x [mlr3::ResampleResult]\cr
 #'   The resample result
-#' @param loss (`character(1)`)\cr 
-#'   A string indicating the loss function
+#' @param loss (`function()`)\cr 
+#'   The loss function.
 get_loss_table = function(x, loss_fn) {
   preds = x$predictions()
   data.table(

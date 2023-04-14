@@ -40,6 +40,8 @@ The dimension of the study are:
       Super ICU Learner Algorithm (SICULA): a population-based study) which are more precise than standard CIs
 * Average width / distribution of widths
 * Computational Efficiency
+* When looking at the over- and undercoverage we can also identify whether the problem is the bias or the width. 
+If there is only bias, at least the under OR overcoverage should be lesss than alpha / 2. If this is not the case then the width is off!
 
 ### Learner
 
@@ -66,6 +68,11 @@ The dimension of the study are:
 * We need to determine how we make use of the 
 * Größe der Datensätze ? (Sollte zu klein sein, dass man nicht einfach holdout verwenden kann)
 * In the Bayle paper there is information on how to sample from the datasets.
+* The size of the dataset is also relevant with respect to the following two points: 
+
+    * With growing size of the dataset, the bias becomes less relevant. 
+    * with growing dataset size, holdout becomes better
+
 
 TODO: Add table from overleaf
 
@@ -78,6 +85,11 @@ TODO: Add table from overleaf
 * Bootstrap
 * Subsampling (wie oft
 * Holdout (which split? 70-30, 90-10 ?)
+
+
+Note: 
+* From Bates: "the number of folds has little impact"
+  They also use 10x CV. But I guess this also depends on the dataset size? (different bias)
 
 
 ### Inference Methods

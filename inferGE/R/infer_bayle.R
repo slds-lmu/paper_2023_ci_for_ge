@@ -28,7 +28,6 @@ infer_bayle.ResampleResult = function(x, alpha = 0.05, loss, variance = "all-pai
     assert_true(inherits(x$resampling, "ResamplingCV") || inherits(x$resampling, "ResamplingLOO"))
   }
   loss_fn = get_loss_fn(loss, x)
-
   loss_table = get_loss_table(x, loss_fn)
 
   estimate = mean(loss_table$loss)

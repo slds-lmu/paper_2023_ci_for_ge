@@ -5,8 +5,7 @@
 #'
 #' @param x ([`ResampleResult`] or  [`BenchmarkResult`])\cr
 #'   The resample result or benchmark result using a [`ResamplingNestedCV`] as the resampling technique.
-#' @param alpha (`numeric(1)`)\cr
-#'   The alpha level for the confidence interval.
+#' @template param_alpha
 #' @param loss (`character(1)`)\cr
 #'   The observation loss. One of `mlr3measures::measures` that calculates oberservation-wise losses in an unaggergated
 #'   manner. E.g. `"se"` for the squared error or `"zero_one"` for the 0-1 loss.

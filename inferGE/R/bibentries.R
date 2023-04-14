@@ -28,7 +28,12 @@ bibentries = c(
     pages = "1895--1923",
     year = "1998",
     publisher = "MIT Press One Rogers Street, Cambridge, MA 02142-1209, USA journals-info~…"
+  ),
+  nadeau1999inference = bibentry("article",
+    title = "Inference for the generalization error",
+    author = "Nadeau, Claude and Bengio, Yoshua",
+    journal = "Advances in neural information processing systems",
+    volume = "12",
+    year = "1999"
   )
 )
-
-
