@@ -22,6 +22,6 @@ infer_conservative_z.ResampleResult = function(x, alpha = 0.05) {
   res = x$resampling
   assert_r6(res, "ResamplingSubsampling")
   assert_numeric(alpha, lower = 0, upper = 1)
-_
+}
 
 

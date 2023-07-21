@@ -1,0 +1,9 @@
+* diamonds: n = 53940
+* physiochemical_protein: n = 45730
+* vide_transcoding: n = 68784
+* sgemm_gpu_kernel_performance: n = 241600,
+* adult: n = 48842
+* bank_marketing: n = 45211
+* electricity: n = 45312
+* covertype: n = 566602
+* higgs: n = 11000000
