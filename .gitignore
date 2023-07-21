@@ -39,5 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # The data folder
-^data/*
+data/*
 
+datamodels/evaluation/
+datamodels/models/
