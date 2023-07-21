@@ -43,3 +43,6 @@ data/*
 
 datamodels/evaluation/
 datamodels/models/
+
+tmp.R
+tmp.py
