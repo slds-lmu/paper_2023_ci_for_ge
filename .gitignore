@@ -38,10 +38,11 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# The data folder
-data/*
-
 datamodels/evaluation/
 datamodels/models/
+
+data/original
+data/simulated
+data/artificial
 
 *.pyc
