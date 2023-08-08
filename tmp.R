@@ -1,12 +1,20 @@
-library(here)
-source(here("datamodels/evaluation/evaluate.R"))
+import pandas as pd
 
-simulated_names = list.files(here("data", "simulated"), pattern = ".*\\.pq")
+original = pd.read_csv('data/original/adult.csv')
+simulated = pd.read_parquet('data/simulated/adult_50000_42.pq')
 
-simulated_names = gsub(simulated_names, pattern = ".pq", replacement = "", fixed = TRUE)
+choices = original['native-country'].unique()
+values = simulated['native-country'].unique()
 
-for (name in simulated_names) {
-  if (!file.exists(here("datamodels", "evaluation", "results", name, "result.rds"))) {
-    main(name, 42)
-  }
-}
+
+def replace_value(val, choices):
+    """Replace a value based on 'starts with' condition."""
+    matches = [choice for choice in choices if choice.startswith(val)]
+    
+    # Return the matching value if only one match is found, otherwise None
+    return matches[0] if len(matches) == 1 else None
+
+
+for val in values: s
+
+replace_values(values, choices)

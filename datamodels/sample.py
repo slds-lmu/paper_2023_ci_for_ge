@@ -60,6 +60,9 @@ def sample(name, n, seed, k, max_length):
         cnt += n_samples
         
     df = pd.concat(all_samples, axis = 0)
+
+    name = str(here('data/simulated')) + '/' + name + '_' + str(n) + '_' + str(seed) + '.pq'
+    df.to_parquet(name, index = False)
     
     return df
 
@@ -74,8 +77,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     samples = sample(args.model, args.n, args.seed, args.k, args.max_length)
-
-    name = str(here('data/simulated')) + '/' + args.model + '_' + str(args.n) + '_' + str(args.seed) + '.pq'
-    samples.to_parquet(name, index = False)
+    
+    None
     
     
