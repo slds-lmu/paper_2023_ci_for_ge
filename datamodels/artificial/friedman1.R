@@ -1,0 +1,23 @@
+library(here)
+library(arrow)
+library(data.table)
+library(checkmate)
+library(mlr3misc)
+library(mlr3)
+
+
+if (FALSE) {
+  {
+  set.seed(42)
+  gen = tgen("friedman1")
+
+  n = 5100000
+
+  task = gen$generate(n = n)
+  data = task$data()
+
+  name = paste("friedman1")
+  path = here::here("data", "artificial", paste0(name, ".csv"))
+  arrow::write_parquet(data, path)
+  }
+}
