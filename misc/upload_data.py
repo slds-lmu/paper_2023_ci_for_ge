@@ -13,7 +13,7 @@ desc = "See [https://github.com/slds-lmu/paper_2023_ci_for_ge](https://github.co
 # First the artificial ones
 
 datasets = {
-    #"bates_classif_100" : {"target" : "y"},
+    "bates_classif_100" : {"target" : "y"},
     #"bates_classif_20" : {"target" : "y"},
     #"bates_regr_100" : {"target" : "y"},
     #"bates_regr_20" : {"target" : "y"},
@@ -27,6 +27,9 @@ datasets = {
 
 for name, info in datasets.items():
     df = pd.read_parquet(str(here(f"data/artificial/{name}.pq")))
+
+    object_cols = df.select_dtypes(include=['object']).columns
+    df[object_cols] = df[object_cols].astype('category')
 
     print('uploading: ' + name)
     new_dataset = create_dataset(

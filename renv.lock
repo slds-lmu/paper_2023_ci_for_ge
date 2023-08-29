@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.0.3",
+    "Version": "4.2.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -9,6 +9,14 @@
     ]
   },
   "Packages": {
+    "DBI": {
+      "Package": "DBI",
+      "Version": "1.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b2866e62bab9378c3cc9476a1954226b",
+      "Requirements": []
+    },
     "DEoptimR": {
       "Package": "DEoptimR",
       "Version": "1.0-12",
@@ -128,6 +136,14 @@
       "Hash": "470851b6d5d0ac559e9d01bb352b4021",
       "Requirements": []
     },
+    "RApiSerialize": {
+      "Package": "RApiSerialize",
+      "Version": "0.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d8a79c95f553670ceffbd190815bbfce",
+      "Requirements": []
+    },
     "RColorBrewer": {
       "Package": "RColorBrewer",
       "Version": "1.1-3",
@@ -149,17 +165,19 @@
       "Version": "0.3.3.9.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "RemoteType": "standard",
-      "RemotePkgRef": "RcppEigen",
-      "RemoteRef": "RcppEigen",
-      "RemoteRepos": "https://ftp.fau.de/cran",
-      "RemotePkgPlatform": "source",
-      "RemoteSha": "0.3.3.9.3",
       "Hash": "1e035db628cefb315c571202d70202fe",
       "Requirements": [
         "Matrix",
         "Rcpp"
       ]
+    },
+    "RcppParallel": {
+      "Package": "RcppParallel",
+      "Version": "5.1.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a45594a00f5dbb073d5ec9f48592a08a",
+      "Requirements": []
     },
     "argparser": {
       "Package": "argparser",
@@ -548,6 +566,16 @@
         "tibble",
         "tidyselect",
         "vctrs"
+      ]
+    },
+    "duckdb": {
+      "Package": "duckdb",
+      "Version": "0.8.1-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9caa6129beb3fdc8e0374a87c3c85de1",
+      "Requirements": [
+        "DBI"
       ]
     },
     "ellipsis": {
@@ -1113,7 +1141,7 @@
       "RemoteRef": "main",
       "RemoteSha": "d50c4bc45f2b33f1e594b611048f008bcd0508e4",
       "Remotes": "alan-turing-institute/distr6, binderh/CoxBoost, mlr-org/mlr3proba,\n    RaphaelS1/survivalmodels, xoopR/param6, xoopR/set6",
-      "Hash": "9bc0d509207ec242a642de05d40f1f01",
+      "Hash": "705852b917ca86e448bb58258da1f973",
       "Requirements": [
         "R6",
         "checkmate",
@@ -1544,6 +1572,18 @@
         "vctrs"
       ]
     },
+    "qs": {
+      "Package": "qs",
+      "Version": "0.25.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f40adbb81e0f84f4292c1a1a3e9dfaa5",
+      "Requirements": [
+        "RApiSerialize",
+        "Rcpp",
+        "stringfish"
+      ]
+    },
     "randomForestSRC": {
       "Package": "randomForestSRC",
       "Version": "3.2.2",
@@ -1752,6 +1792,17 @@
       "Repository": "CRAN",
       "Hash": "58a02ce0150652b96c044bc67a0df2e5",
       "Requirements": []
+    },
+    "stringfish": {
+      "Package": "stringfish",
+      "Version": "0.15.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2e67a1c9e054896ea7528535c1baf9b7",
+      "Requirements": [
+        "Rcpp",
+        "RcppParallel"
+      ]
     },
     "stringi": {
       "Package": "stringi",
