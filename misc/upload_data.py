@@ -10,6 +10,8 @@ from openml.datasets.functions import create_dataset
 
 desc = "See [https://github.com/slds-lmu/paper_2023_ci_for_ge](https://github.com/slds-lmu/paper_2023_ci_for_ge) for a description."
 
+id_dict = dict()
+
 # First the artificial ones
 
 datasets = {
@@ -51,7 +53,7 @@ for name, info in datasets.items():
         row_id_attribute=None,
         # Attribute or list of attributes that should be excluded in modelling, such as
         # identifiers and indexes. E.g. "feat1" or ["feat1","feat2"]
-        ignore_attribute=None,
+        ignore_attribute=None
         data=df,
         attributes="auto",
         collection_date='8/8/2023',
@@ -59,19 +61,22 @@ for name, info in datasets.items():
         citation = "See https://github.com/slds-lmu/paper_2023_ci_for_ge"
     )
 
-    new_dataset.publish()
+    identifier = new_dataset.publish()
+    id_dict[name] = identifier
+
     print('done')
 
 
 
 simulated_datasets = [
-    #"adult",
-    #"bank_marketing",
-    #"covertype",
-    #"diamonds",
-    #"electricity",
-    #"physiochemical_protein",
-    #"sgemm_gpu_kernel_performance",
+    "adult",
+    "bank_marketing",
+    "covertype",
+    "diamonds",
+    "electricity",
+    "physiochemical_protein",
+    "sgemm_gpu_kernel_performance",
+    "video_transcoding",
 ]
 
 for name in simulated_datasets:
@@ -81,6 +86,9 @@ for name in simulated_datasets:
 
     simulated_name = 'simulated_' + name
     df = pd.read_parquet(str(here(f"data/simulated/{simulated_name}.pq")))
+
+    object_cols = df.select_dtypes(include=['object']).columns
+    df[object_cols] = df[object_cols].astype('category')
 
     print('uploading: ' + name)
     new_dataset = create_dataset(
@@ -111,7 +119,9 @@ for name in simulated_datasets:
         citation = "See https://github.com/slds-lmu/paper_2023_ci_for_ge"
     )
 
-    new_dataset.publish()
+    identifier = new_dataset.publish()
+    id_dict[name] = identifier
+
     print('done')
 
 
@@ -121,6 +131,9 @@ for name in simulated_datasets:
 if True: 
     print("uploading higgs:")
     df = pd.read_parquet(str(here(f"data/subset/subset_higgs.pq")))
+    object_cols = df.select_dtypes(include=['object']).columns
+    df[object_cols] = df[object_cols].astype('category')
+
     higgs_dataset = create_dataset(
         # The name of the dataset (needs to be unique).
         # Must not be longer than 128 characters and only contain
@@ -148,47 +161,12 @@ if True:
         citation = "Whiteson,Daniel. (2014). HIGGS. UCI Machine Learning Repository. https://doi.org/10.24432/C5V312."
     )
 
-    higgs_dataset.publish()
+    identifier = higgs_dataset.publish()
+    id_dict[name] = identifier
     print("done")
 
 
 
-# create tasks
+id_df = pd.DataFrame(list(id_dict.items()), columns=['key', 'value'])
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-ids = [
-[45628], #"bates_classif_100" : {"target" : "y"},
-[45629], #"bates_classif_20" : {"target" : "y"},
-[45630], #"bates_regr_100" : {"target" : "y"},
-[45631], #"bates_regr_20" : {"target" : "y"},
-[45632], #"breast" : {"target" : "y"},
-[45633], #"chen_10_null" : {"target" : "y"},
-[45634], #"chen_10" : {"target" : "y"},
-[45635], #"colon" : {"target" : "y"},
-[45636], #"friedman1" : {"target" : "y"},
-[45637], #"prostate" : {"target" : "y"},
-    
-    
-    
-    
-    
-    
-    
-[45638, "classif"],#"adult",
-[45639], "classif", #"bank_marketing",
-[45640, "classif"], #"covertype",
-[45641, "regr"], #"diamonds",
-[45642, "classif"], #"electricity",
-[45643, "regr"], #"physiochemical_protein",
-[45644, "regr"], #"sgemm_gpu_kernel_performance",
-[45645, "classif"] # higgs
-]
+id_df.to_csv(here("experiments/dataset_ids.csv"), index=False)
