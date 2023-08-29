@@ -50,8 +50,10 @@ resampling_ids = list(both = list(
   repeated_cv_10_10 = list(id = "repeated_cv", params = list()),
   nested_cv         = list(id = "nested_cv", params = list("TODO")),
   nadeau            = list("TODO"), # They use subsampling I believe
+  # TODO: Nadeau has t2o tests
   diettrich         = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
-  # gives the true prediction error
+  # gives the true prediction ERROR
+  # (use all train for test, only predict on holdout)
   prediction_error  = list(id = "holdout", params = list(ratio = 1))
   ), small = list(
   loo               = list(id = "loo", params = list()),
@@ -91,9 +93,11 @@ make_learner = function(x, name, task) {
     learner$predict_type = "prob"
   }
 
+
   graph = ppl("robustify", learner = learner)
 
   learner = as_learner(graph)
+  learner$predict_sets = c("test", "holdout")
   learner$id = name
 
   return(learner)
@@ -106,38 +110,38 @@ task_ids = list(
   # -----------
 
   # simulated with LLM
-  adult = 45638,
-  electricity = 45642,
-  bank_marketing = 45639,
-  covertype = 45640,
+  adult = ,
+  electricity = ,
+  bank_marketing = ,
+  covertype = ,
 
   # simplisically simulated
-  bates_classif_100 = 45628,
-  bates_classif_20 = 45629,
+  bates_classif_100 = ,
+  bates_classif_20 = ,
 
   # "real" (simulated with physical simulator)
-  higgs = 45645,
+  higgs = ,
 
   # simulated with covariance matrix
-  prostate = 45637,
-  colon = 45635,
-  breast = 45632,
+  prostate = ,
+  colon = ,
+  breast = ,
 
   # -----------
   # regression:
   # -----------
 
   # simulated with LLM
-  diamonds = 45641,
-  sgemm_gpu_kernel_performance = 45644,
-  physiochemical_protein = 45643,
+  diamonds = ,
+  sgemm_gpu_kernel_performance = ,
+  physiochemical_protein = ,
   # FIXME
   # video_transcoding = "TODO",
 
   # simplistically simulated
-  bates_regr_100 = 45630,
-  bates_regr_20 = 45631,
-  chen_10 = 45634
+  bates_regr_100 = ,
+  bates_regr_20 = ,
+  chen_10 = 
 )
 
 dataset_sizes = list(
