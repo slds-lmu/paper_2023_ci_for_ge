@@ -28,7 +28,7 @@ simulate_bates = function(n, p, task_type) {
   return(dt)
 }
 
-if (FALSE) {
+if (TRUE) {
   {
   set.seed(42)
   ns = 5100000

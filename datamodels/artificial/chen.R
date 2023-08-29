@@ -36,7 +36,7 @@ simulate_chen = function(n, M, null = FALSE) {
   dt = cbind(data.table(y = y), xs)
 }
 
-if (FALSE) {
+if (TRUE) {
   {
   set.seed(42)
   ns = 5100000

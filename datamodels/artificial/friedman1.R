@@ -6,7 +6,7 @@ library(mlr3misc)
 library(mlr3)
 
 
-if (FALSE) {
+if (TRUE) {
   {
   set.seed(42)
   gen = tgen("friedman1")
@@ -17,7 +17,7 @@ if (FALSE) {
   data = task$data()
 
   name = paste("friedman1")
-  path = here::here("data", "artificial", paste0(name, ".csv"))
+  path = here::here("data", "artificial", paste0(name, ".pq"))
   arrow::write_parquet(data, path)
   }
 }

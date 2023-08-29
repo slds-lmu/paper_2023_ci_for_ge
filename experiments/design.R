@@ -5,108 +5,16 @@ library(mlr3batchmark)
 library(batchtools)
 
 
-# This is where all the datasets lie
+# This is where all the datasets lay
 DATA_PATH = "TODO"
-
-# the ids here are generic, i.e. they will be translated to clasisf and regr accordingly
-learner_ids = list(
-  "ranger_10",
-  "ranger_100",
-  "linear",
-  "linear_penalized"
-)
 
 # we always apply all learners
 
-task_ids = list(classif = list(
-  # simulated with LLM
-  "adult",
-  "electricity",
-  "bank_marketing",
-
-  # simplisically simulated
-  "bates_classif_100",
-  "bates_classif_20",
-
-  # "real" (simulated with physical simulator)
-  "higgs",
-
-  # simulated with covariance matrix
-  "prostate",
-  "colon",
-  "breast",
-  ), regr = list(
-  # simulated with LLM
-  "diamonds",
-  "sgemm_gpu_kernel_performance",
-  "physiochemical_protein",
-  "covertype",
-
-  # simplistically simulated
-  "bates_regr_100",
-  "bates_regr_20",
-  "chen_10",
-  )
-)
-
-# here we have two sublists:
-# * both: resamplings are applies to both the small and large setting
-# * small: resamplings that are only applied to the small dataset sizes
-#
-# TODO: We need to check that all methods are covered by that:
-# There are more methods than entries here (multiple methods for CV e.g.)
-resampling_ids = list(both = list(
-  holdout           = list(id = "holdout", pars = list()),
-  subsampling_10    = list(id = "subsampling", pars = list(repeats = 10)),
-  subsampling_30    = list(id = "subsampling", pars = list(repeats = 30)),
-  cv_10             = list(id = "cv", pars = list()),
-  repeated_cv_10_10 = list(id = "repeated_cv", pars = list()),
-  nested_cv         = list(id = "nested_cv", pars = list("TODO")),
-  nadeau            = list("TODO"), # They use subsampling I believe
-  diettrich         = list(id = "repeated_cv", pars = list(repeats = 5, folds = 2))
-  )
-
-
-  "nested_cv", # 10 x 10
-  "loo", # only for small datasets
-  "boostrap", # do we even want this?
-  "jiang", # only for very small datasets (also does loo)
-)
 
 
 
 
-make_learner = function(id, task_type) {
-  if (task_type == "regr") {
-    learner = switch(id,
-      linear =
 
-      stop("Unknown learner id")
-    )
-  } else if (task_type == "classif") {
-    learner = switch(id,
-      linear = lrn("")
-      stop("Unknown learner id")
-    )
-
-    if ("prob" %in% learner$predict_types) {
-      learner$predict_type = "prob"
-    }
-  } else {
-    stop("Unsupported task type")
-  }
-
-  graph = po("")
-
-
-}
-
-# takes in a resampling id and creates the resamplin
-make_resampling = function(id) {
-  switch(id,
-    stop("Unknown resampling.s")
-  )
-}
 
 make_tasks = function(task_id, target, features, dataset_size) {
   backend = as_duckdb_backend(file.path(path, paste0(task_id, ".pq")))

@@ -34,7 +34,7 @@ simulate_janitza = function(n, C) {
   return(dt)
 }
 
-if (FALSE) {
+if (TRUE) {
   {
   set.seed(42)
   n = 5100000
@@ -50,7 +50,7 @@ if (FALSE) {
   breast2 = breast2[, -1]
   cov_breast = cov(breast2)
   breast = simulate_janitza(n, cov_breast)
-  write_parquet(breast, here("data", "simulated", "breast.pq"))
+  write_parquet(breast, here("data", "artificial", "breast.pq"))
   rm(breast)
 
   set.seed(44)
