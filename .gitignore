@@ -44,6 +44,6 @@ datamodels/models/
 data/original
 data/simulated
 data/artificial
-data/subset
+data/subset_final
 
 *.pyc
