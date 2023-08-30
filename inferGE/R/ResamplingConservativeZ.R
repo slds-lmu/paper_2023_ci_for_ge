@@ -1,42 +1,129 @@
-#' @title Resampling for Conservative Z Test
-#' @description
-#' The conservative z-test requires a certain resampling.
-#'
-#'
-#' @section Parameters:
-#' * `repeats` (`integer(1)`)\cr
-#'   Number of repetitions.
-#'   Is initialized to 30.
-#' * `ratio` :: (`integer(1)`)\cr
-#'   Ratio of observations to put into the training set.
-#'   Is intialized to 2/3.
-#' * `M` :: (`integer(1)`)\cr
-#'   The number of repetitions to estimate the variance.
-#'
-#' @references
-#' `r format_bib("nadeau1999inference")`
-#'
 #' @export
 ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
-  inherit = Resampling,
+  inherit = mlr3::Resampling,
   public = list(
     initialize = function() {
       param_set = ps(
-        ratio = p_dbl(0, 1, tags = "required"),
-        repeats = p_int(1, tags = "required"),
-        M = p_int(tags = "required")
+        J = p_int(lower = 1L, tags = "required"),
+        M = p_int(lower = 1L, tags = "required"),
+        ratio   = p_dbl(0, 1, tags = "required")
       )
-      super$initialize()
-      self$param_set$values = list()
-    }
-  ), 
-  active = list(
-    iters = function(rhs) {
-      assert_ro_binding(rhs)
-      self$param_set$values$repeats * self$param_set$values$M
+      super$initialize(
+        id = "conservative_z",
+        param_set = param_set,
+        label = "Conservative Z",
+        man = "mlr3::mlr_resamplings_conservative_z"
+      )
     }
   ),
   private = list(
+    .total_iters = NULL,
+    .sample = function(ids, ...) {
+      dots = list(...)
+      task = dots$task
+      J = self$param_set$values$J
+      M = self$param_set$values$M
+      ratio = self$param_set$values$ratio
 
+      assert_true(ratio >= 2 / 3)
+      # otherwise not enough data to estimate the variance with the same n2
+
+      instance = list(
+        subsampling = rsmp("subsampling", repeats = J, ratio = ratio)$instantiate(task)
+      )
+
+      n_task = task$nrow
+
+      n1 = round(n_task * ratio)
+      n2 = n_task - n1
+
+      if (n1 %% 2 == 0L) {
+        n_sub = n1 / 2
+      } else {
+        n_sub = (n1 - 1) / 2
+      }
+
+      task1 = task$clone()
+      task2 = task$clone()
+
+      subsamplings_variance = list()
+
+      # we want the same n2 for the subsets, just the new n1' is smaller than the n1 above
+      # n1' = round(n_sub * new_ratio)
+      # n2 + n1' = n_sub
+      # n2 = n_sub - round(n_sub * new_ratio)
+      # n_sub - n_2 = round(n_sub * new_ratio)
+      # new_ratio = (n_sub - n_2 ) / n_sub
+
+      new_ratio = (n_sub - n2) / n_sub
+
+      for (m in seq_len(M)) {
+        ids = sample(task$row_roles$use, n_sub * 2)
+        ids1 = ids[seq(1, n_sub)]
+        ids2 = ids[seq(n_sub + 1, 2 * n_sub)]
+
+        task1$row_roles$use = ids1
+        task2$row_roles$use = ids2
+
+        # we have to fix the ration
+
+        subsamplings_variance[[length(subsamplings_variance) + 1L]] = list(
+          rsmp("subsampling", repeats = J, ratio = new_ratio)$instantiate(task1),
+          rsmp("subsampling", repeats = J, ratio = new_ratio)$instantiate(task2)
+        )
+      }
+
+      private$.total_iters = J + 2 * M * J
+
+      instance$subsamplings_variance = subsamplings_variance
+
+      return(instance)
+    },
+    .get_info = function(i) {
+      if (i <= self$param_set$values$J) {
+        info = list(
+          resampling = self$instance$subsampling,
+          i = i
+        )
+      } else {
+        M = self$param_set$values$M
+        J = self$param_set$values$J
+        total = self$iters - J
+
+        pair_idx = (i - J - 1) %/% (2 * J) + 1
+
+        reminder = i - J - (pair_idx - 1) * 2 * J
+        if (reminder <= J) {
+          i = reminder
+          j = 1
+        } else {
+          i = reminder - J
+          j = 2
+        }
+
+        info = list(
+          resampling = self$instance$subsamplings_variance[[pair_idx]][[j]],
+          i = i
+        )
+      }
+
+      return(info)
+    },
+    .get_train = function(i) {
+      info = private$.get_info(i)
+      get_private(info$resampling)$.get_train(info$i)
+    },
+
+    .get_test = function(i) {
+      info = private$.get_info(i)
+      get_private(info$resampling)$.get_test(info$i)
+    }
+  ),
+  active = list(
+    iters = function(rhs) {
+      private$.total_iters
+    }
   )
 )
+
+mlr3::mlr_resamplings$add("conservative_z", ResamplingConservativeZ)

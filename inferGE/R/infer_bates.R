@@ -65,7 +65,7 @@ infer_bates.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
 
   se_cv = sd(unlist(es_out)) / sqrt(folds)
   # We do the max(mse, 0) because the mse estimate can sometimes be negative.
-  # The ensure_within ensures that it is within the range of assumig that all the estimates from the outer folds 
+  # The ensure_within ensures that it is within the range of assumig that all the estimates from the outer folds
   # are 100% dependent vs. assuming that they are 100% independent
   se = ensure_within(sqrt(max(mse, 0)), se_cv, se_cv * sqrt(folds))
   halfwidth = abs(qnorm(alpha / 2)) * (folds - 1) / folds * se
@@ -80,9 +80,11 @@ infer_bates.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
     estimate = corrected_ncv,
     lower = lower,
     upper = upper,
-    bias = bias,
-    mse = mse, 
-    err_ncv = err_ncv,
-    err_cv = err_cv
+    info = list(list(
+      bias = bias,
+      mse = mse,
+      err_ncv = err_ncv,
+      err_cv = err_cv
+    ))
   )
 }

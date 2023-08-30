@@ -1,10 +1,10 @@
 test_that("infer_conservative_z works", {
-  resampling = rsmp("subsampling")
-  learner = lrn("regr.rpart")
-  task = tsk("mtcars")
+  resampling = rsmp("conservative_z", ratio = 0.8, J = 10, M = 3)
+  learner = lrn("classif.rpart")
+  task = tsk("iris")
 
   rr = resample(task, learner, resampling)
 
-  result = infer_corrected_t(rr, loss = "mse")
-  
+  res = infer_conservative_z(rr, loss = "zero_one")
+  expect_data_table(res)
 })

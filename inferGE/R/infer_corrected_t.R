@@ -62,8 +62,8 @@ infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
     estimate = estimate,
     lower = lower,
     upper = upper,
-    variance = sd_corrected^2,
-    method = "corrected_t"
+    info = list(list(
+      variance = sd_corrected^2
+    ))
   )
-
 }

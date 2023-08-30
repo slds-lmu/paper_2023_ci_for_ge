@@ -8,7 +8,7 @@ Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -24,6 +24,7 @@ Suggest:
 Collate: 
     'LearnerClassifTabNet.R'
     'LearnerRegrTabNet.R'
+    'ResamplingAusternZhou.R'
     'zzz.R'
     'ResamplingBootstrapCCV.R'
     'ResamplingConservativeZ.R'
@@ -36,8 +37,10 @@ Collate:
     'infer_bayle.R'
     'infer_conservative_z.R'
     'infer_corrected_t.R'
+    'infer_holdout.R'
     'infer_jiang.R'
     'infer_naive_cv.R'
+    'infer_subsampling.R'
     'inference.R'
     'params_tabnet.R'
     'plot_inference.R'

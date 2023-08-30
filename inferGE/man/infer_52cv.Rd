@@ -4,7 +4,7 @@
 \alias{infer_52cv}
 \title{Paired T-Test with 5x2 Cross-Validation}
 \usage{
-infer_52cv(x, alpha = 0.05)
+infer_52cv(x, alpha = 0.05, loss)
 }
 \arguments{
 \item{x}{(\code{\link{ResampleResult}} or  \code{\link{BenchmarkResult}})\cr

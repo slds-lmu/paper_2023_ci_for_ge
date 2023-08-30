@@ -37,7 +37,7 @@ infer_bayle.ResampleResult = function(x, alpha = 0.05, loss, variance = "all-pai
     tmp = loss_table[, j = list(loss = .N / (.N - 1) * (get("loss") - mean(get("loss")))^2), by = "iter"]
     1 / (n * k) * sum(tmp$loss)
   } else {
-    mean((loss_tabl$loss - estimate)^2)
+    mean((loss_table$loss - estimate)^2)
   }
 
   se = sqrt(var_est / n)
@@ -48,10 +48,12 @@ infer_bayle.ResampleResult = function(x, alpha = 0.05, loss, variance = "all-pai
   upper = estimate + halfwidth
 
   data.table(
-    estimate = estimate, 
-    lower = lower, 
-    upper = upper, 
-    variance = var_est, 
-    method = variance
+    estimate = estimate,
+    lower = lower,
+    upper = upper,
+    info = list(list(
+      variance = var_est,
+      method = variance
+    ))
   )
 }
