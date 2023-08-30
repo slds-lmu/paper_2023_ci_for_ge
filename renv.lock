@@ -241,10 +241,10 @@
     },
     "batchtools": {
       "Package": "batchtools",
-      "Version": "0.9.16",
+      "Version": "0.9.17",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "600b6e43b22f8ff7c7d0bb5878ebb65a",
+      "Hash": "c21ca34590a8dd80fccec5bf1b2d26d7",
       "Requirements": [
         "R6",
         "backports",
@@ -651,6 +651,17 @@
         "rlang"
       ]
     },
+    "foreach": {
+      "Package": "foreach",
+      "Version": "1.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "618609b42c9406731ead03adf5379850",
+      "Requirements": [
+        "codetools",
+        "iterators"
+      ]
+    },
     "foreign": {
       "Package": "foreign",
       "Version": "0.8-80",
@@ -736,6 +747,21 @@
         "tibble",
         "vctrs",
         "withr"
+      ]
+    },
+    "glmnet": {
+      "Package": "glmnet",
+      "Version": "4.1-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "eb6fc70e561aae41d5911a6726188f71",
+      "Requirements": [
+        "Matrix",
+        "Rcpp",
+        "RcppEigen",
+        "foreach",
+        "shape",
+        "survival"
       ]
     },
     "globals": {
@@ -861,6 +887,14 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "0080607b4a1a7b28979aecef976d8bc2",
+      "Requirements": []
+    },
+    "iterators": {
+      "Package": "iterators",
+      "Version": "1.0.14",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8954069286b4b2b0d023d1b288dce978",
       "Requirements": []
     },
     "jquerylib": {
@@ -1071,6 +1105,22 @@
         "palmerpenguins",
         "paradox",
         "parallelly",
+        "uuid"
+      ]
+    },
+    "mlr3batchmark": {
+      "Package": "mlr3batchmark",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ab5b7746e6da7730f9b0ab6f833d62cd",
+      "Requirements": [
+        "batchtools",
+        "checkmate",
+        "data.table",
+        "lgr",
+        "mlr3",
+        "mlr3misc",
         "uuid"
       ]
     },
@@ -1774,6 +1824,14 @@
         "rlang",
         "viridisLite"
       ]
+    },
+    "shape": {
+      "Package": "shape",
+      "Version": "1.4.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9067f962730f58b14d8ae54ca885509f",
+      "Requirements": []
     },
     "spacefillr": {
       "Package": "spacefillr",
