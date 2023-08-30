@@ -50,14 +50,15 @@ resampling_ids = list(both = list(
   repeated_cv_10_10 = list(id = "repeated_cv", params = list()),
   nested_cv         = list(id = "nested_cv", params = list("TODO")),
   nadeau            = list("TODO"), # They use subsampling I believe
-  # TODO: Nadeau has t2o tests
+  # TODO: Nadeau has two tests
   diettrich         = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
   # gives the true prediction ERROR
   # (use all train for test, only predict on holdout)
   prediction_error  = list(id = "holdout", params = list(ratio = 1))
   ), small = list(
   loo               = list(id = "loo", params = list()),
-  jiang             = list(id = "bootstrap_ccv")
+  jiang             = list(id = "bootstrap_ccv"),
+  austern_zhou      = list(id = "austern_zhou")
   )
 )
 
