@@ -25,7 +25,7 @@ infer_method_bmr = function(x, alpha, loss, method) {
 
 #' @param x [mlr3::ResampleResult]\cr
 #'   The resample result
-#' @param loss (`function()`)\cr 
+#' @param loss (`function()`)\cr
 #'   The loss function.
 get_loss_table = function(x, loss_fn) {
   preds = x$predictions()
@@ -38,7 +38,8 @@ get_loss_table = function(x, loss_fn) {
 }
 
 
-get_loss_fn = function(loss, rr) {
+get_loss_fn = function(loss = NULL, rr) {
+  loss = loss %??% switch(rr$task$task_type, classif = "zero_one", regr = "se", stop())
   assert_string(loss)
   loss_info = get(loss, mlr3measures::measures, inherits = FALSE)
   # FIXME: This is currently not really transparent in mlr3

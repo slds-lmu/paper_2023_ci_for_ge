@@ -9,7 +9,7 @@ test_that("infer_bayle works", {
 
   expect_data_table(tbl, nrow = 1, ncol = 5)
   expect_set_equal(
-    colnames(tbl), 
+    colnames(tbl),
     c("estimate", "lower", "upper", "variance", "method")
   )
 })
