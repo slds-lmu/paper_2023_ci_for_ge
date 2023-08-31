@@ -53,7 +53,7 @@ if (TRUE) {
 
     name = paste("chen", M, sep = "_")
     if (null) name = paste0(name, "_null")
-    path = here::here("data", "artificial", paste0(name, ".pq"))
+    path = here::here("data", "artificial", paste0(name, ".parquet"))
 
     write_parquet(data, path)
   }

@@ -42,7 +42,7 @@ if (TRUE) {
   colon = colon[, -1]
   cov_colon = cov(colon)
   colon = simulate_janitza(n, cov_colon)
-  write_parquet(colon, here("data", "simulated", "colon.pq"))
+  write_parquet(colon, here("data", "simulated", "colon.parquet"))
   rm(colon)
 
   set.seed(43)
@@ -50,7 +50,7 @@ if (TRUE) {
   breast2 = breast2[, -1]
   cov_breast = cov(breast2)
   breast = simulate_janitza(n, cov_breast)
-  write_parquet(breast, here("data", "artificial", "breast.pq"))
+  write_parquet(breast, here("data", "artificial", "breast.parquet"))
   rm(breast)
 
   set.seed(44)
@@ -58,7 +58,7 @@ if (TRUE) {
   prostate = prostate[, -1]
   cov_prostate = cov(prostate)
   prostate = simulate_janitza(n, cov_prostate)
-  write_parquet(prostate, here("data", "simulated", "prostate.pq"))
+  write_parquet(prostate, here("data", "simulated", "prostate.parquet"))
   rm(prostate)
   }
 }

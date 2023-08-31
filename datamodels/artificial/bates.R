@@ -44,7 +44,7 @@ if (TRUE) {
 
     data = do.call(simulate_bates, args = list(p = p, n = n, task_type = task_type))
     name = paste("bates", task_type, p, sep = "_")
-    pth = here::here("data", "artificial", paste0(name, ".pq"))
+    pth = here::here("data", "artificial", paste0(name, ".parquet"))
     arrow::write_parquet(data, pth)
   }
   }
