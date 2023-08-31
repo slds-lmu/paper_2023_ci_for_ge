@@ -7,6 +7,7 @@ library(mlr3oml)
 library(mlr3misc)
 library(mlr3batchmark)
 library(batchtools)
+library(inferGE)
 
 TEST = TRUE
 
@@ -15,7 +16,7 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
 }
 
 if (TEST) {
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/test3"
+  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/test4"
 } else {
   REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -164,9 +165,6 @@ dataset_sizes = list(
   other = c(500, 1000, 2000, 5000)
 )
 
-make_task = function(x) {
-}
-
 make_tasks = function(x, sizes, n_replications) {
   path = file.path("/gscratch", "sfische6", "ci_for_ge_data", paste0(x$name, ".parquet"))
 
@@ -191,7 +189,7 @@ make_tasks = function(x, sizes, n_replications) {
   holdout_ids = 5000001:5100000
 
   make_use = function(size, replication) {
-    seq(1, size) + size * (rep - 1)
+    seq(1, size) + size * (replication - 1)
   }
   
   connector = make_connector(path)
@@ -204,29 +202,24 @@ make_tasks = function(x, sizes, n_replications) {
     backend = as_duckdb_backend(path)
     backend$connector = connector
 
-
+    DataBackendCached$new(
+      backend,
+      all_rows
+    )
   }
-
-  backend = as_duckdb_backend(path)
-  backend$connector = make_connector(path)
-
-  column_info = mlr3:::col_info(backend)
-
 
   # all datasets contain only feature and target so we don't have to set the features
 
-  converter = if (x$task_type == "regr") as_task_regr else as_task_classif
-  ids = 
-
-  # Here we cou
-  task$row_roles$holdout = 5000001:5100000
+  task_converter = if (x$task_type == "regr") as_task_regr else as_task_classif
 
   tasks = map(sizes, function(size) {
-    map(seq_len(n_replications), function(rep) {
-      backend = make_backend
-      task_copy$row_roles$use = seq(1, size) + size * (rep - 1)
-      task_copy$id = paste(x$name, "size", rep, sep = "_")
-      task_copy
+    map(seq_len(n_replications), function(replication) {
+      backend = make_backend(size, replication)
+      task_current = task_converter(backend, target = x$target)
+      task_current$row_roles$use = make_use(size, replication)
+      task_current$row_roles$holdout = holdout_ids
+
+      task_current
     })
   })
 }

@@ -12,6 +12,8 @@ test_that("DataBackendCached works", {
   task$row_roles$use = 1:140
   task_cached = as_task_regr(backend_cached, target = "y")
 
+  expect_true(is.null(mlr3misc::get_private(task_cached)$.cache))
+
   expect_equal(task$row_ids, task_cached$row_ids)
   expect_equal(task$data(), task_cached$data())
   expect_equal(task$missings(), task_cached$missings())

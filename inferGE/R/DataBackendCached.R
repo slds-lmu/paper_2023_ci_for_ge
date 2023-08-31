@@ -9,6 +9,7 @@ DataBackendCached = R6Class("DataBackendCached",
   public = list(
     initialize = function(backend, ids) {
       private$.ids = ids
+      private$.colnames = backend$colnames
       super$initialize(
         backend,
         backend$primary_key,
@@ -31,16 +32,16 @@ DataBackendCached = R6Class("DataBackendCached",
   ),
   active = list(
     rownames = function() {
-      self$cached_backend$rownames
+      private$.ids
     },
     colnames = function() {
-      self$cached_backend$colnames
+      private$.colnames
     }, 
     nrow = function() {
-      self$cached_backend$nrow
+      length(private$.ids)
     },
     ncol = function() {
-      self$cached_backend$ncol
+      length(private$.colnames)
     },
     cached_backend = function() {
       if (is.null(private$.cache)) {
@@ -60,8 +61,9 @@ DataBackendCached = R6Class("DataBackendCached",
   private = list(
     .cache = NULL,
     .ids = NULL,
+    .colnames = NULL,
     .calculate_hash = function() {
-      self$cached_backend$hash
+      mlr3misc::calculate_hash(self$backend$hash, private$.ids)
     }
   )
 )
