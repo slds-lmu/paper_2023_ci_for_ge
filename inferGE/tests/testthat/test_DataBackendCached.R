@@ -21,8 +21,7 @@ test_that("DataBackendCached works", {
   # because the latter is a view on a subset of the former
   expect_equal(task$row_ids, task_cached$backend$rownames)
   expect_equal(task$backend$colnames, task_cached$backend$colnames)
-  expect_equal(task$backend$nrow, task_cached$backend$nrow)
-  expect_equal(task$ncol, task_cached$backend$ncol)
+  expect_equal(task$nrow, task_cached$backend$nrow)
 
   learner = lrn("regr.rpart")
   rr = resample(

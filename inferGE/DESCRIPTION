@@ -17,10 +17,7 @@ Depends:
     mlr3
 Imports: 
     R6, 
-    data.table
-Suggest: 
-    torch, 
-    tabnet
+    data.table,
 Collate: 
     'DataBackendCached.R'
     'ResamplingAusternZhou.R'
