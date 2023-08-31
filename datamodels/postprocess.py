@@ -79,26 +79,28 @@ def main(simulated_name):
 if __name__ == "__main__":
 
     dataset_names = [
-        #"adult_6000000_42",
-        #"bank_marketing_6000000_42",
-        #"covertype_6000000_42",
-        #"diamonds_6000000_42",
-        #"electricity_6000000_42",
-        #"physiochemical_protein_6000000_42",
-        #"sgemm_gpu_kernel_performance_6000000_42",
+        "adult_6000000_42",
+        "bank_marketing_6000000_42",
+        "covertype_6000000_42",
+        "diamonds_6000000_42",
+        "electricity_6000000_42",
+        "physiochemical_protein_6000000_42",
+        "sgemm_gpu_kernel_performance_6000000_42",
+        "video_transcoding_6000000_42"
     ]
 
     for dataset_name in dataset_names: 
         main(dataset_name)
 
     # higgs
-    np.random.seed(42)
-    higgs_data = pd.read_csv(str(here('data/original/higgs.csv')))
-    # sample 5100000 rows randomly without replacement
-    
-    # because we always use the last 100 000 as holdout we need to ensure
-    # that the data is not sorted -> permute and subset here
-    higgs_subset = higgs_data.sample(n=5100000, replace=False)
+    if False:
+        np.random.seed(42)
+        higgs_data = pd.read_csv(str(here('data/original/higgs.csv')))
+        # sample 5100000 rows randomly without replacement
+        
+        # because we always use the last 100 000 as holdout we need to ensure
+        # that the data is not sorted -> permute and subset here
+        higgs_subset = higgs_data.sample(n=5100000, replace=False)
 
     higgs_subset.to_parquet(str(here('data/subset/subset_higgs.parquet')), index=False)
 

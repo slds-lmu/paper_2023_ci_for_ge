@@ -15,15 +15,16 @@ id_dict = dict()
 # First the artificial ones
 
 datasets = {
-    "bates_classif_100" : {"target" : "y"},
     #"bates_classif_20" : {"target" : "y"},
-    #"bates_regr_100" : {"target" : "y"},
-    #"bates_regr_20" : {"target" : "y"},
+    #"bates_regr_20" : {"target" : "y"}, Done
+    #"colon" : {"target" : "y"},
+    #"friedman1" : {"target" : "y"},
+    # TODO
+    "bates_regr_100" : {"target" : "y"},
+    #"bates_classif_100" : {"target" : "y"},
     #"breast" : {"target" : "y"},
     #"chen_10_null" : {"target" : "y"},
     #"chen_10" : {"target" : "y"},
-    #"colon" : {"target" : "y"},
-    #"friedman1" : {"target" : "y"},
     #"prostate" : {"target" : "y"},
 }
 
@@ -53,7 +54,7 @@ for name, info in datasets.items():
         row_id_attribute=None,
         # Attribute or list of attributes that should be excluded in modelling, such as
         # identifiers and indexes. E.g. "feat1" or ["feat1","feat2"]
-        ignore_attribute=None
+        ignore_attribute=None,
         data=df,
         attributes="auto",
         collection_date='8/8/2023',
@@ -61,22 +62,21 @@ for name, info in datasets.items():
         citation = "See https://github.com/slds-lmu/paper_2023_ci_for_ge"
     )
 
-    identifier = new_dataset.publish()
-    id_dict[name] = identifier
+    new_dataset.publish()
 
     print('done')
 
 
 
 simulated_datasets = [
-    "adult",
-    "bank_marketing",
-    "covertype",
-    "diamonds",
-    "electricity",
-    "physiochemical_protein",
-    "sgemm_gpu_kernel_performance",
-    "video_transcoding",
+    #"adult",
+    #"bank_marketing",
+    #"covertype",
+    #"diamonds",
+    #"electricity",
+    #"physiochemical_protein",
+    #"sgemm_gpu_kernel_performance",
+    #"video_transcoding",
 ]
 
 for name in simulated_datasets:
@@ -128,7 +128,7 @@ for name in simulated_datasets:
 
 # now higgs
 
-if True: 
+if False: 
     print("uploading higgs:")
     df = pd.read_parquet(str(here(f"data/subset/subset_higgs.parquet")))
     object_cols = df.select_dtypes(include=['object']).columns
@@ -167,6 +167,6 @@ if True:
 
 
 
-id_df = pd.DataFrame(list(id_dict.items()), columns=['key', 'value'])
+id_df = pd.DataFrame(list(id_dict.items()), columns=['dataset', 'id'])
 
-id_df.to_csv(here("experiments/dataset_ids.csv"), index=False)
+id_df.to_csv(here("data/uploaded_ids.csv"), index=False)
