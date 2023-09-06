@@ -3,13 +3,20 @@
 #' This backend wraps another backend -- usually an out of memory backend -- and when first accessing
 #' the data field, it creates a [`mlr3::DataBackendDataTable`] for the IDs provided
 #' during construction.
+#' @param backend The data backend whose `$data()` we want to cache upon first access.
+#' @param ids The cached backend represens only a row-wise subset of the wrapped backend specified
+#'   by this parameter.a
+#' @param do_caching (logical) whether to cache. 
+#' 
 #' @export
 DataBackendCached = R6Class("DataBackendCached",
   inherit = mlr3::DataBackend,
   public = list(
-    initialize = function(backend, ids) {
+    do_caching = NULL,
+    initialize = function(backend, ids, do_caching = FALSE) {
       private$.ids = ids
       private$.colnames = backend$colnames
+      self$do_caching = do_caching
       super$initialize(
         backend,
         backend$primary_key,
@@ -27,6 +34,7 @@ DataBackendCached = R6Class("DataBackendCached",
       self$cached_backend$distinct(rows, cols, na_rm)
     },
     head = function(n = 6L) {
+      # During task construction head() is called, we want to avoid loading the cache there
       self$cached_backend$head(n)
     }
   ),
@@ -44,6 +52,9 @@ DataBackendCached = R6Class("DataBackendCached",
       length(private$.colnames)
     },
     cached_backend = function() {
+      if (!self$do_caching) {
+        return(private$.data)
+      } 
       if (is.null(private$.cache)) {
         data = private$.data$data(
           private$.ids,private$.data$colnames,

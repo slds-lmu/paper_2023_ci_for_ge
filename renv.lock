@@ -1060,9 +1060,9 @@
       "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteUsername": "slds-lmu",
       "RemoteRef": "HEAD",
-      "RemoteSha": "4f4d7746aa6e270569afad8afb67ee58f4084da7",
+      "RemoteSha": "9b00fd3d11d5355ba4bd10c4d16262fc8ad509e9",
       "RemoteSubdir": "inferGE",
-      "Hash": "89bbbbd291aa65a014292902a98ce1cc",
+      "Hash": "5c24e727eee45c341978c66c40d32a29",
       "Requirements": [
         "R6",
         "data.table",
@@ -1392,8 +1392,8 @@
       "RemoteUsername": "mlr-org",
       "RemoteRepo": "mlr3db",
       "RemoteRef": "fix/duckdb-missings",
-      "RemoteSha": "9a8558e7ac002535672d2dafe758738535dc2fb4",
-      "Hash": "74fb32150f48a7b805326a0991caf9fb",
+      "RemoteSha": "5d27b0da377b13f586f45fe66f2969858104f0c8",
+      "Hash": "7f4b0333ec9a6b1937690d9d3cba145f",
       "Requirements": [
         "R6",
         "backports",

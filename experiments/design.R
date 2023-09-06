@@ -7,7 +7,10 @@ library(mlr3oml)
 library(mlr3misc)
 library(mlr3batchmark)
 library(batchtools)
-library(inferGE)
+library(duckdb)
+library(DBI)
+
+devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
 TEST = TRUE
 
@@ -16,7 +19,7 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
 }
 
 if (TEST) {
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/test4"
+  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/test16"
 } else {
   REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -44,7 +47,15 @@ if (!file.exists(REGISTRY_PATH)) {
 # For every resampling we do not only make predictions on the test set, bu also on the holdout set
 if (TEST) {
   resampling_ids = list(other = list(
-    holdout           = list(id = "holdout", params = list())
+    holdout           = list(id = "holdout", params = list(ratio = 2/3)),
+    nested_cv         = list(id = "nested_cv", params = list(folds = 10)),
+    subsampling_10    = list(id = "subsampling", params = list(repeats = 10)),
+    subsampling_100   = list(id = "subsampling", params = list(repeats = 100)),
+    cv_10             = list(id = "cv", params = list(folds = 10)),
+    repeated_cv_10_10 = list(id = "repeated_cv", params = list(folds = 10, repeats = 10)),
+    conservative_z    = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
+    diettrich         = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
+    prediction_error  = list(id = "holdout", params = list(ratio = 1))
   ), small = list(
     loo               = list(id = "loo", params = list())
   ))
@@ -62,7 +73,6 @@ if (TEST) {
   #  conervative_z     = list(id = "conservative_z", params = list("TODO"))
   #  diettrich         = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
   #  # gives the true prediction error
-  #  prediction_error  = list(id = "holdout", params = list(ratio = 1))
   #  ), small = list(
   #  loo               = list(id = "loo", params = list())
   #  )
@@ -102,6 +112,7 @@ make_learner = function(x) {
   }
   graph = ppl("robustify", learner = learner) %>>% learner
   learner = as_learner(graph)
+  learner$predict_sets = c("test", "holdout")
   learner$id = x$id
   return(learner)
 }
@@ -112,20 +123,18 @@ learners = map(learner_ids, function(xs) {
   })
 })
 
-if (TEST) {
-  task_ids = list(classif = list(
-    list(name = "bates_classif_20", id = NA, target = "y", task_type = "classif")),
+task_ids = if (TEST) {
+  list(classif = list(
+    list(name = "simulated_electricity", id = NA, target = "class", task_type = "classif")),
     regr = list(
-    list(name = "bates_regr_20", id = 45655, target = "y", task_type = "regr"))
+    list(name = "simulated_physiochemical_protein", id = NA, target = "RMSD", task_type = "regr"))
   )
 } else {
-  # TODO: Update IDs
-  # Parquet files are currently broken on OpenML
-  task_ids = list(classif = list(
-    list(name = "adult", id = NA, target = "class", task_type = "classif"),
-    list(name = "electricity", id = NA, target = "class", task_type = "classif"),
-    list(name = "bank_marketing", id = NA, target = "Class", task_type = "classif"),
-    list(name = "covertype", id = NA, target = "Y", task_type = "classif"),
+  list(classif = list(
+    list(name = "simulated_adult", id = NA, target = "class", task_type = "classif"),
+    list(name = "simulated_electricity", id = NA, target = "class", task_type = "classif"),
+    list(name = "simulated_bank_marketing", id = NA, target = "Class", task_type = "classif"),
+    list(name = "simulated_covertype", id = NA, target = "Y", task_type = "classif"),
 
     # simplisically simulated
     list(name = "bates_classif_100", id = NA, target = "y", task_type = "classif"),
@@ -145,25 +154,30 @@ if (TEST) {
 
     # simulated with LLM
     regr = list(
-    list(name = "diamonds", id = NA, target = "price", task_type = "regr"),
-    list(name = "sgemm_gpu_kernel_performance", id = NA, target = "Run1", task_type = "regr"),
-    list(name = "physiochemical_protein", id = NA, target = "RMSD", task_type = "regr"),
-    list(name = "video_transcoding", id = NA, target = "utime", task_type = "regr"),
+    list(name = "simulated_diamonds", id = NA, target = "price", task_type = "regr"),
+    list(name = "simulated_sgemm_gpu_kernel_performance", id = NA, target = "Run1", task_type = "regr"),
+    list(name = "simulated_physiochemical_protein", id = NA, target = "RMSD", task_type = "regr"),
+    list(name = "simulated_video_transcoding", id = NA, target = "utime", task_type = "regr"),
     # FIXME
     # video_transcoding = "TODO",
 
     # simplistically simulated
     list(name = "bates_regr_100", id = NA, target = "y", task_type = "regr"),
     list(name = "bates_regr_20", id = NA, target = "y", task_type = "regr"),
-    list(name = "chen_10", id = NA, target = "y", task_type = "regr"))
-  )
+    list(name = "chen_10", id = NA, target = "y", task_type = "regr")))
 }
 
-
-dataset_sizes = list(
-  small = c(50, 100, 200),
-  other = c(500, 1000, 2000, 5000)
-)
+dataset_sizes = if (TEST) {
+  list(
+    small = c(50, 200),
+    other = c(500, 1000)
+  )
+} else {
+  list(
+    small = c(50, 100, 200),
+    other = c(500, 1000, 2000, 5000)
+  )
+}
 
 make_tasks = function(x, sizes, n_replications) {
   path = file.path("/gscratch", "sfische6", "ci_for_ge_data", paste0(x$name, ".parquet"))
@@ -194,17 +208,18 @@ make_tasks = function(x, sizes, n_replications) {
   
   connector = make_connector(path)
 
-  make_backend = function(size, replication) {
+  make_backend = function(size, replication, backend) {
     use_rows = make_use(size, replication)
 
     all_rows = c(use_rows, holdout_ids)
 
-    backend = as_duckdb_backend(path)
-    backend$connector = connector
+    #backend = as_duckdb_backend(path)
+    #backend$connector = connector
 
     DataBackendCached$new(
       backend,
-      all_rows
+      all_rows,
+      do_caching = FALSE # only enable after task is created to avoid eagerly creating cache
     )
   }
 
@@ -212,12 +227,21 @@ make_tasks = function(x, sizes, n_replications) {
 
   task_converter = if (x$task_type == "regr") as_task_regr else as_task_classif
 
+  backend1 = as_duckdb_backend(path)
+  backend1$connector = connector
+
   tasks = map(sizes, function(size) {
     map(seq_len(n_replications), function(replication) {
-      backend = make_backend(size, replication)
+      #backend = make_backend(size, replication)
+      backend = make_backend(size, replication, backend1)
       task_current = task_converter(backend, target = x$target)
+      backend$do_caching = TRUE
       task_current$row_roles$use = make_use(size, replication)
       task_current$row_roles$holdout = holdout_ids
+
+#'   We disable caching until the task is created in order to avoid communicating this data via batchtools.
+#'   After the task is created we set do_caching to TRUE.
+      #task_current$backend$do_caching = FALSE
 
       task_current
     })
@@ -241,7 +265,7 @@ resamplings = map(c("small", "other"), function(category) {
 names(resamplings) = c("small", "other")
 
 if (TEST) {
-  n_replications = 2
+  n_replications = 200
 } else {
   n_replications = 1000
 }
@@ -258,39 +282,45 @@ tasks = map(task_ids, function(xs) {
   task_list
 })
 
-design_small_regr = benchmark_grid(
-  tasks = tasks$regr$small,
-  learners = learners$regr,
-  resamplings = resamplings$small
-)
-batchmark(design_small_regr)
-
-
-#design_other_regr = benchmark_grid(
-#  tasks = tasks$regr$other,
+#design_small_regr = benchmark_grid(
+#  tasks = tasks$regr$small,
 #  learners = learners$regr,
-#  resamplings = resamplings$other
+#  resamplings = resamplings$small
 #)
-#
+
+design_both_regr = benchmark_grid(
+  tasks = c(tasks$regr$other, tasks$regr$small),
+  learners = learners$regr,
+  resamplings = resamplings$other
+)
+
 #design_small_classif = benchmark_grid(
 #  tasks = tasks$classif$small,
 #  learners = learners$classif,
 #  resamplings = resamplings$small
 #)
-#
-#design_other_classif = benchmark_grid(
-#  tasks = tasks$classif$other,
-#  learners = learners$classif,
-#  resamplings = resamplings$other
-#)
-#
-#design = rbindlist(list(
-#  design_other_regr,
-#  design_small_regr,
-#  design_other_classif,
-#  design_small_classif
-#))
-#
-#
-#batchmark(design)
-#
+
+design_both_classif = benchmark_grid(
+  tasks = c(tasks$classif$other, tasks$classif$small),
+  learners = learners$classif,
+  resamplings = resamplings$other
+)
+
+design = rbindlist(list(
+  design_both_regr,
+  #design_small_regr,
+  design_both_classif
+  #design_small_classif
+))
+
+batchmark(design)
+
+
+job_table = getJobTable(findNotDone())
+
+ids = job_table$job.id
+chunks = data.table(
+  job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 50, shuffle = FALSE)
+)
+
+submitJobs(chunks)
