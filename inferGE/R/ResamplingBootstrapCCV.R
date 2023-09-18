@@ -120,4 +120,4 @@ ResamplingBootstrapCVV = R6Class("ResamplingBootstrapCVV",
 )
 
 #' @include zzz.R
-mlr_resamplings$add("bootstrap_ccv", function() ResamplingBootstrapCVV$new())
+custom_resamplings[["bootstrap_ccv"]] = function() ResamplingBootstrapCVV$new()

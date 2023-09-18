@@ -5,6 +5,6 @@ test_that("infer_conservative_z works", {
 
   rr = resample(task, learner, resampling)
 
-  res = infer_conservative_z(rr, loss = "zero_one")
+  res = infer_conservative_z(rr)
   expect_data_table(res)
 })

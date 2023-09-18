@@ -6,13 +6,11 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
 }
 
-reg = makeExperimentRegistry(NA, seed = 1L, packages = c("mlr3verse", "mlr3db"))
-
 SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  NA_character_
+  "/gscratch/sfische6/benchmarks/ci_for_ge/newtest2"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -21,7 +19,7 @@ if (!file.exists(REGISTRY_PATH)) {
   makeExperimentRegistry(
     file.dir = REGISTRY_PATH,
     seed = SEED,
-    packages = c("mlr3", "mlr3learners", "mlr3pipelines"),
+    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE"),
     work.dir = here::here("experiments")
   )
 } else {
@@ -29,11 +27,11 @@ if (!file.exists(REGISTRY_PATH)) {
 }
 
 N_REP = if (TEST) { # nolint
-  100L
+  1000L
 } else {
   1000L
 }
-
+# FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
     holdout           = list(id = "holdout", params = list(ratio = 2 / 3)),
@@ -160,8 +158,8 @@ make_learner = function(learner_id, learner_params) {
     args = c(list(.key = learner_id), learner_params)
   )
   if (startsWith(learner_id, "classif")) {
-    learner$predict_type = "prob"
     fallback = lrn("classif.featureless")
+    fallback$predict_type = learner$predict_type = "prob"
   } else {
     fallback = lrn("regr.featureless")
   }
@@ -178,8 +176,8 @@ make_task = function(task_id, target, size, repl) {
   # FIXME: replace this with OpenML once the parquet files are available
   path = file.path("/gscratch", "sfische6", "ci_for_ge_data", paste0(task_id, ".parquet"))
 
-  ids_use = c(seq(1, size) + size * (repl - 1))
-  ids_holdout = c(seq(1, size) + size * (repl - 1))
+  ids_use = seq(1, size) + size * (repl - 1)
+  ids_holdout = 5000001:5100000
   ids = c(ids_use, ids_holdout)
 
   backend = as_duckdb_backend(path)
@@ -188,7 +186,15 @@ make_task = function(task_id, target, size, repl) {
 
   in_memory_backend = as_data_backend(data, primary_key = backend$primary_key)
 
-  task = as_task(in_memory_backend, target = target)
+  is_classif = is.factor(in_memory_backend$head(1)[[target]])
+
+  task = if (is_classif) {
+    as_task_classif(in_memory_backend, target = target)
+  } else {
+    as_task_regr(in_memory_backend, target = target)
+  }
+
+  task$id = task_id
 
   task$row_roles$use = ids_use
   task$row_roles$holdout = ids_holdout
@@ -204,17 +210,35 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   learner = make_learner(instance$learner_id, instance$learner_params)
   task = make_task(task_id = instance$task_id, target = instance$target, size = instance$size, repl = job$repl)
   resampling = make_resampling(resampling_id, resampling_params)
+  #return(list(
+  #  learner = learner,
+  #  task = task,
+  #  resampling = resampling
+  #))
 
-  rr = resample(instance$task, learner, instance$resampling, store_models = FALSE)
+  # FIXME: Maybe we want better seeding here  so that the resampling splits are the same across
+  # different learners on the same task. but probably not that important
+  rr = resample(task, learner, resampling, store_models = FALSE)
+
+  if (task$task_type == "regr") {
+    measures = msrs(paste0("regr.", c("rmse", "mae")))
+  } else if (task$task_type == "classif") {
+    measures = msrs(paste0("classif.", c("acc", "bacc", "precision", "recall", "sensity", "specificity")))
+  }
+
+  predictions = rr$predictions("")
 
   list(
-    states = lapply(rr$learners, "state"),
-    predictions = list(
-      test = rr$predictions("test"),
-      holdout = rr$predictions("holdout")
-    )
+    test_predictions = rr$predictions("test"),
+    holdout_scores = rr$score(measures, predict_sets = "holdout")
   )
 }
+
+batchExport(list(
+  make_task = make_task,
+  make_learner = make_learner,
+  make_resampling = make_resampling
+))
 
 addAlgorithm(
   "run_resampling",
@@ -229,6 +253,7 @@ addProblem(
       learner_id = learner_id,
       learner_params = learner_params,
       task_id = task_id,
+      target = target,
       size = size
     )
   },
@@ -257,12 +282,12 @@ prob_designs_other = map(c("regr", "classif"), function(task_type) {
 }) |> rbindlist()
 
 
-algo_designs = data.table(
+algo_designs_other = data.table(
   resampling_id = map_chr(RESAMPLINGS$other, "id"),
-  resampling_params = map(RESAMPLINGS$other, "params")
+  resampling_params = map(RESAMPLINGS$other, "params"),
+  # The resampling name is just so we can easier identify the resamplings later
+  resampling_name = names(RESAMPLINGS$other)
 )
-
-algo_designs
 
 addExperiments(
   prob.designs = list(ci_estimation = prob_designs_other),
@@ -270,17 +295,11 @@ addExperiments(
   repls = N_REP
 )
 
-submitJobs(1)
-getErrorMessages(1)
-clearRegistry()
+job_table = getJobTable(findExpired())
 
-prob_designs_other
-
-
-# Add experiments for "small" resamplings
-algo_designs_small = data.table(
-  resampling_id = map_chr(RESAMPLINGS$small, "id"),
-  resampling_params = map(RESAMPLINGS$small, "params")
+ids = job_table$job.id
+chunks = data.table(
+  job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 100, shuffle = FALSE)
 )
-prob_designs_small =
 
+submitJobs(chunks)

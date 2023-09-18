@@ -5,7 +5,7 @@ test_that("infer_bayle works", {
 
   rr = resample(task, learner, resampling)
 
-  tbl = infer_bayle(rr, loss = "zero_one", variance = "within-fold")
+  tbl = infer_bayle(rr)
 
   expect_data_table(tbl, nrow = 1, ncol = 5)
   expect_set_equal(

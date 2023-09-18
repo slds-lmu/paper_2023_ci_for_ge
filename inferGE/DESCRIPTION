@@ -19,8 +19,8 @@ Imports:
     R6, 
     data.table,
 Collate: 
+    'BenchmarkLoss.R'
     'DataBackendCached.R'
-    'ResamplingAusternZhou.R'
     'zzz.R'
     'ResamplingBootstrapCCV.R'
     'ResamplingConservativeZ.R'
@@ -34,5 +34,6 @@ Collate:
     'infer_holdout.R'
     'infer_jiang.R'
     'infer_naive_cv.R'
+    'infer_simple.R'
     'infer_subsampling.R'
     'utils.R'

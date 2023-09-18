@@ -1,0 +1,25 @@
+---
+title: Description
+---
+
+Was gemacht wurde + Erklearung der Spalten von `result.rds`
+
+1. Fuer eine Groesse `size`, teile einen Datensatz (`task_id`; jeder Datensatz hat 5 100 000 Beboachtungen) in 1000 disjunkte Teilmengen der groesse `size`. Fuer `size = 500` ist das 1:500, 501:1000, ....
+Fuer einen gegebene `size` ist dieses Splitting immer gleich.
+2. Auf jedem dieser Datensaetze wird ein Resampling Verfahren (`resampling_name` -- ist der identifier fuer eine `resampling_id` + `resampling_params` um z.b. zwischen CVs mit unterschiedlichen folds zu unterscheiden. Wenn die `resampling_params` einen Wert nicht enhalten wird der default genommen, siehe z.b. `mlr3::rsmp("cv")$param_set$values`) fuer einen Learner (`learner_id`) angewandt und Prediktionen auf den Test Sets werden gespeichert. Das wird immer auf allen 1000 Subsets (`replication`) wiederholt.
+3. Fuer alle resampling verfahren kann ein oder mehrere Inferenz Methoden (`inference_name`) fuer alle 1000 replikationen angewandt werden. Man bekommt dann fuer jede replikation ein `lower`, `upper` und `estimate`.
+4. Fuer jede Kombination aus `task_id`, `size` und `replication` (also ob 1:500, 501:1000 als subset verwendet wird). Wird fuer jeden learner das Modell auf den ganzen Daten gefittet und der PE auf den letzten 5 100 000 Beobachtungen ausgewertet. Der EPE ist das Mittel ueber alle 1000 Replikationen.
+5. Berechne `contains_(e)pe`, ne nachdem ob `lower <= (e)pe <= upper`
+6. Manche Inferenz Methoden  geben Zusatz info neben lower, upper und estimate zurueck, das ist in der `info` Spalte
+7. Als alpha level habe ich `10%` genommen (damit wir niedrigere Varianz haben).
+8. Als Loss Funktion wurde mse fuer regression und der classification error fuer Klassifikation genommen
+
+
+Der Datensatz `aggregated.rds`:
+
+1. Hire wird ueber jedes experiment ueber alle 1000 Replikationen aggregiert und zusaetzlich der SE berechnet.
+
+Resampling Methoden:
+
+* `task_id` - Welcher Datensatz verwendet wurde
+* `size` - Die groesse 

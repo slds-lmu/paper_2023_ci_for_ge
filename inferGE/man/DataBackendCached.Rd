@@ -35,9 +35,21 @@ during construction.
 \if{latex}{\out{\hypertarget{method-DataBackendCached-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DataBackendCached$new(backend, ids)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DataBackendCached$new(backend, ids, do_caching = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{backend}}{The data backend whose \verb{$data()} we want to cache upon first access.}
+
+\item{\code{ids}}{The cached backend represens only a row-wise subset of the wrapped backend specified
+by this parameter.a}
+
+\item{\code{do_caching}}{(logical) whether to cache.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DataBackendCached-data"></a>}}

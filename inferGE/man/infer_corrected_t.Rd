@@ -4,7 +4,7 @@
 \alias{infer_corrected_t}
 \title{Corrected T-Test}
 \usage{
-infer_corrected_t(x, alpha = 0.05, loss)
+infer_corrected_t(x, alpha = 0.05, loss, ...)
 }
 \arguments{
 \item{x}{(\code{\link{ResampleResult}} or  \code{\link{BenchmarkResult}})\cr

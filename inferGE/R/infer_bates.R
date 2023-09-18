@@ -15,76 +15,97 @@
 #' `r format_bib("bates2021")`
 #'
 #' @export
-infer_bates = function(x, alpha, loss) {
+infer_bates = function(x, alpha, loss, ...) {
   UseMethod("infer_bates")
 }
 
+
 #' @export
-infer_bates.BenchmarkResult = function(x, alpha = 0.05, loss) { #nolint
-  infer_method_bmr(x, alpha, loss, infer_bates)
+infer_bates.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", ...) { #nolint
+  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
+
+  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
+
+  infer_bates(loss_table, alpha = alpha, loss = names(loss_fn))
 }
 
 #' @export
-infer_bates.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
-  loss_fn = get_loss_fn(loss, x)
+infer_bates.loss_table = function(x, alpha = 0.05, loss, ...) { # nolint
+  n_iters = max(x$iter)
+  folds = sqrt(n_iters)
 
-  res = x$resampling
-  assert_r6(res, "ResamplingNestedCV")
+  sizes = x[, get(".N"), by = "iter"][[2]]
 
-  predictions = x$predictions()
-
-  folds = sqrt(length(predictions))
-
-  a_list = b_list = es_in = es_out = list()
-
-  # TODO: Would be nicer to do it with data table ops like Lennart did for Bayle
-  for (outer in seq_len(folds)) {
-    # the outer resampling
-
-    iter = res$flatten(outer, NULL)
-
-    pred_outer = predictions[[iter]]
-    pred_inner = map(seq_len(folds - 1), function(inner) predictions[[res$flatten(outer, inner)]])
-    # FIXME: This will fail when the measure requires other information
-    pointwise_outer_loss = loss_fn(truth = pred_outer$truth, response = pred_outer$response)
-    pointwise_inner_loss = unlist(map(pred_inner, function(x) loss_fn(truth = x$truth, response = x$response)))
-
-    a_list[[outer]] = (mean(pointwise_inner_loss) - mean(pointwise_outer_loss))^2
-    b_list[[outer]] = var(pointwise_outer_loss) / length(pointwise_outer_loss)
-    es_in[[outer]] = pointwise_inner_loss
-    es_out[[outer]] = pointwise_outer_loss
+  if (length(unique(sizes)) != 1) {
+    warning("Not all folds have the same number of observations!")
   }
 
-  # FIXME: This is sometimes negative
-  mse = mean(unlist(a_list)) - mean(unlist(b_list))
+  resampling = rsmp("nested_cv", folds = folds)
+  tmp = lapply(seq_len(n_iters), function(iter) {
+    u = resampling$unflatten(iter)
+    list(
+      outer = rep(u$outer, times = sizes[iter]),
+      inner = rep(u$inner, times = sizes[iter])
+    )
+  })
 
-  err_ncv = mean(unlist(es_in))
-  err_cv = mean(unlist(es_out))
+  new_cols = rbindlist(tmp)
+  x = cbind(x, new_cols)
 
+  x_outer = x[is.na(get("inner"))]
+  x_inner = x[!is.na(get("inner"))]
+
+  b_list = x_outer[, list(x = var(get(loss)) / get(".N")), by = outer][["x"]]
+
+  tmp1 = x_outer[, list(avg_inner = mean(get(loss))), by = "outer"]
+  tmp2 = x_inner[, list(avg_outer = mean(get(loss))), by = "outer"]
+  tmp_join = merge(tmp1, tmp2, on = "outer")
+
+  a_list = tmp_join[, list(a = (avg_inner - avg_outer)^2)][["a"]]
+
+  err_ncv = mean(x_inner[[loss]])
+  mse = mean(a_list) - mean(b_list)
+
+  err_cv = x_outer[, list(x = mean(get(loss)))][["x"]]
+
+  # left term going from goning from (k -1) / k * n to k / n
+  # right from going from (k - 2) / k * n to (k - 1) / l * n
   bias = (1 + (folds - 2) / folds) * (err_ncv - err_cv)
 
-  se_cv = sd(unlist(es_out)) / sqrt(folds)
   # We do the max(mse, 0) because the mse estimate can sometimes be negative.
   # The ensure_within ensures that it is within the range of assumig that all the estimates from the outer folds
   # are 100% dependent vs. assuming that they are 100% independent
-  se = ensure_within(sqrt(max(mse, 0)), se_cv, se_cv * sqrt(folds))
-  halfwidth = abs(qnorm(alpha / 2)) * (folds - 1) / folds * se
-  corrected_ncv = err_ncv - bias
-  lower = corrected_ncv - halfwidth
-  upper = corrected_ncv + halfwidth
 
-  # FIXME: If we know the lower / upper bound of the loss_fn we should probably restrict the interval to take that
-  # into account
+  # we recommend re-scaling to obtain an estimate for a sample of size n by instead taking:
+  mse = (folds - 1) / folds * mse
+
+  N = nrow(x_outer)
+  se_cv = sd(x_outer[[loss]]) / sqrt(N)
+
+  # As a minor detail, in practice we also restrict
+  mse_sqrt_corrected = ensure_within(
+    x = sqrt(max(mse, 0)),
+    lower = se_cv,
+    upper = se_cv * sqrt(folds)
+  )
+
+
+  # whether we didn't really use nested CV
+  adjusted = mse_sqrt_corrected != sqrt(max(mse, 0))
+  s = qnorm(1 - alpha / 2) * mse_sqrt_corrected
 
   data.table(
-    estimate = corrected_ncv,
-    lower = lower,
-    upper = upper,
+    estimate = err_ncv - bias,
+    lower = err_ncv - bias - s,
+    upper = err_ncv - bias + s,
     info = list(list(
-      bias = bias,
-      mse = mse,
+      bias = bias, # bias estimate ()
+      mse_sqrt = sqrt(mse), # estimate without correction
+      mse_sqrt_corrected = mse_sqrt_corrected,
       err_ncv = err_ncv,
-      err_cv = err_cv
+      err_cv = err_cv,
+      se_cv = se_cv,
+      adjusted = adjusted
     ))
   )
 }

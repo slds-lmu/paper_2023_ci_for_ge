@@ -37,11 +37,7 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       n1 = round(n_task * ratio)
       n2 = n_task - n1
 
-      if (n1 %% 2 == 0L) {
-        n_sub = n1 / 2
-      } else {
-        n_sub = (n1 - 1) / 2
-      }
+      n_sub = (n1 - n1 %% 2) / 2
 
       task1 = task$clone()
       task2 = task$clone()
@@ -64,8 +60,6 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
 
         task1$row_roles$use = ids1
         task2$row_roles$use = ids2
-
-        # we have to fix the ration
 
         subsamplings_variance[[length(subsamplings_variance) + 1L]] = list(
           rsmp("subsampling", repeats = J, ratio = new_ratio)$instantiate(task1),
@@ -121,9 +115,10 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
   ),
   active = list(
     iters = function(rhs) {
-      private$.total_iters
+      self$param_set$values$J + 2 * self$param_set$values$M * self$param_set$values$J
     }
   )
 )
 
-mlr3::mlr_resamplings$add("conservative_z", ResamplingConservativeZ)
+#' @includee zzz.R
+custom_resamplings[["conservative_z"]] = ResamplingConservativeZ
