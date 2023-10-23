@@ -20,13 +20,14 @@ Imports:
     data.table,
 Collate: 
     'BenchmarkLoss.R'
-    'DataBackendCached.R'
     'zzz.R'
+    'ResamplingAusternZhou.R'
     'ResamplingBootstrapCCV.R'
     'ResamplingConservativeZ.R'
     'ResamplingNestedCV.R'
     'bibentries.R'
     'infer_52cv.R'
+    'infer_austern_zhou.R'
     'infer_bates.R'
     'infer_bayle.R'
     'infer_conservative_z.R'

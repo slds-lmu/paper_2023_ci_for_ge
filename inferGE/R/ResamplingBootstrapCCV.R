@@ -45,7 +45,6 @@ ResamplingBootstrapCVV = R6Class("ResamplingBootstrapCVV",
   ),
   private = list(
     .sample = function(ids, task = NULL, ...) {
-      # browser()
       pv = self$param_set$get_values()
 
       if (is.null(task)) {

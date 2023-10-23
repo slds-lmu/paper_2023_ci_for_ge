@@ -48,7 +48,6 @@ infer_corrected_t.loss_table = function(x, alpha = 0.05, loss, resampling_info, 
 
   loss_table = x
 
-  browser()
   # the different mu in the rows are the mu_j
   mus = loss_table[, list(estimate = mean(get(loss))), by = "iter"]
   # the global estimator

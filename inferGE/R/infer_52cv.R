@@ -20,7 +20,6 @@ infer_52cv = function(x, alpha = 0.05, ...) {
 #' @export
 infer_52cv.loss_table = function(x, alpha = 0.05, loss, ...) {
   assert_numeric(alpha, len = 1, lower = 0, upper = 1)
-  browser()
 
   if (!test_subset(loss, colnames(x))) {
     stopf("Loss '%s' not present in loss table.", loss)

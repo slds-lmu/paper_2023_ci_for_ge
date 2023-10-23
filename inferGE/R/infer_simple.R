@@ -11,7 +11,6 @@ infer_simple.loss_table = function(x, alpha = 0.05, loss, ...) {
     ci = infer_holdout(x[get("iter") == i, ], alpha, loss)
   })
 
-  browser()
 
   dt = rbindlist(l)
 

@@ -16,7 +16,7 @@ infer_bayle.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_s
 
   loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
 
-  infer_bayle(loss_table, alpha = alpha, loss = names(loss_fn))
+  infer_bayle(loss_table, alpha = alpha, loss = names(loss_fn), variance = variance)
 }
 
 #' @export
@@ -32,8 +32,7 @@ infer_bayle.loss_table = function(x, alpha = 0.05, loss, variance = "all-pairs",
 
   var_est = if (variance == "within-fold") {
     # For ResamplingCV and LOO, iter are the folds
-    tmp = loss_table[, j = list(loss = .N / (.N - 1) * (get("loss") - mean(get("loss")))^2), by = "iter"]
-    1 / (n * k) * sum(tmp[[loss]])
+    loss_table[, list(var_fold = var(get(loss))), by = "iter"][, mean(get("var_fold"))]
   } else {
     mean((loss_table[[loss]] - estimate)^2)
   }
