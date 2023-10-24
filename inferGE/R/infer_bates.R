@@ -15,32 +15,33 @@
 #' `r format_bib("bates2021")`
 #'
 #' @export
-infer_bates = function(x, alpha, loss, ...) {
+infer_bates = function(x, alpha = 0.05, loss, ...) {
   UseMethod("infer_bates")
 }
 
 
 #' @export
-infer_bates.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", ...) { #nolint
+infer_bates.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
 
-  infer_bates(loss_table, alpha = alpha, loss = names(loss_fn))
+  infer_bates(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }
 
 #' @export
-infer_bates.loss_table = function(x, alpha = 0.05, loss, ...) { # nolint
-  n_iters = max(x$iter)
-  folds = sqrt(n_iters)
+infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
+  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
+  assert_class(resampling, "ResamplingNestedCV")
+  assert_string(loss)
+  assert_choice(loss, names(x))
+
+  folds = resampling$param_set$values$folds
+  n_iters = resampling$iters
 
   sizes = x[, get(".N"), by = "iter"][[2]]
 
-  if (length(unique(sizes)) != 1) {
-    warning("Not all folds have the same number of observations!")
-  }
-
-  resampling = rsmp("nested_cv", folds = folds)
+  # get information about inner / outer
   tmp = lapply(seq_len(n_iters), function(iter) {
     u = resampling$unflatten(iter)
     list(
@@ -100,7 +101,7 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, ...) { # nolint
     upper = err_ncv - bias + s,
     info = list(list(
       bias = bias, # bias estimate ()
-      mse_sqrt = sqrt(mse), # estimate without correction
+      mse_sqrt = suppressWarnings(sqrt(mse)), # estimate without correction, mse can be negative so suppress warnings
       mse_sqrt_corrected = mse_sqrt_corrected,
       err_ncv = err_ncv,
       err_cv = err_cv,

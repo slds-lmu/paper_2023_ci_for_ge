@@ -24,7 +24,7 @@
 #' task = tsk("penguins")
 #' res$instantiate(task)
 #' res
-ResamplingBootstrapCVV = R6Class("ResamplingBootstrapCVV",
+ResamplingBootstrapCCV = R6Class("ResamplingBootstrapCCV",
   inherit = Resampling,
   public = list(
     #' @description
@@ -119,4 +119,4 @@ ResamplingBootstrapCVV = R6Class("ResamplingBootstrapCVV",
 )
 
 #' @include zzz.R
-custom_resamplings[["bootstrap_ccv"]] = function() ResamplingBootstrapCVV$new()
+custom_resamplings[["bootstrap_ccv"]] = function() ResamplingBootstrapCCV$new()

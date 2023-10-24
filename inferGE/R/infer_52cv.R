@@ -18,12 +18,21 @@ infer_52cv = function(x, alpha = 0.05, ...) {
 }
 
 #' @export
-infer_52cv.loss_table = function(x, alpha = 0.05, loss, ...) {
-  assert_numeric(alpha, len = 1, lower = 0, upper = 1)
+infer_52cv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
+  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  if (!test_subset(loss, colnames(x))) {
-    stopf("Loss '%s' not present in loss table.", loss)
-  }
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+
+  infer_52cv(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
+}
+
+#' @export
+infer_52cv.loss_table = function(x, alpha = 0.05, loss, resampling = resampling) {
+  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
+  assert_class(resampling, "ResamplingRepeatedCV")
+  assert_true(resampling$param_set$values$repeats == 5L && resampling$param_set$values$folds == 2L)
+  assert_string(loss)
+  assert_choice(loss, names(x))
 
   fold_name = make.unique(c(colnames(x), "fold"))[ncol(x) + 1L]
   replication_name = make.unique(c(colnames(x), "replication"))[ncol(x) + 1L]
@@ -47,13 +56,4 @@ infer_52cv.loss_table = function(x, alpha = 0.05, loss, ...) {
     lower = p11 - s * z,
     upper = p11 + s * z
   )
-}
-
-#' @export
-infer_52cv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", ...) { #nolint
-  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
-
-  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
-
-  infer_52cv(loss_table, alpha = alpha, loss = names(loss_fn))
 }

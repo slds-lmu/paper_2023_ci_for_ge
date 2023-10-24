@@ -4,7 +4,7 @@
 \alias{infer_bates}
 \title{Inference Method for Nested Cross-Validation}
 \usage{
-infer_bates(x, alpha, loss, ...)
+infer_bates(x, alpha = 0.05, loss, ...)
 }
 \arguments{
 \item{x}{(\code{\link{ResampleResult}} or  \link{``})\cr

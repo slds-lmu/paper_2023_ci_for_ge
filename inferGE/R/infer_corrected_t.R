@@ -18,10 +18,10 @@ infer_corrected_t = function(x, alpha = 0.05, loss, ...) {
 }
 
 #' @export
-infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", ...) { #nolint
+infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, ...) { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
 
   infer_corrected_t(loss_table, alpha = alpha, loss = names(loss_fn),
     resampling_info = list(id = x$resampling$id, params = x$resampling$param_set$values),

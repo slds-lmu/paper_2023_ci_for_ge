@@ -2,7 +2,7 @@
 % Please edit documentation in R/ResamplingBootstrapCCV.R
 \name{mlr_resamplings_bootstrap_ccv}
 \alias{mlr_resamplings_bootstrap_ccv}
-\alias{ResamplingBootstrapCVV}
+\alias{ResamplingBootstrapCCV}
 \title{Bootstrap Case Cross-Validation Percentile findInterval()}
 \description{
 Create bootstrap samples like in \code{\link[mlr3:mlr_resamplings_bootstrap]{mlr3::ResamplingBootstrap}}.
@@ -41,7 +41,7 @@ Jiang, Wenyu, Varma, Sudhir, Simon, Richard (2008).
 \doi{10.2202/1544-6115.1322}.
 }
 \section{Super class}{
-\code{\link[mlr3:Resampling]{mlr3::Resampling}} -> \code{ResamplingBootstrapCVV}
+\code{\link[mlr3:Resampling]{mlr3::Resampling}} -> \code{ResamplingBootstrapCCV}
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
@@ -54,8 +54,8 @@ The number of iterations.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-ResamplingBootstrapCVV-new}{\code{ResamplingBootstrapCVV$new()}}
-\item \href{#method-ResamplingBootstrapCVV-clone}{\code{ResamplingBootstrapCVV$clone()}}
+\item \href{#method-ResamplingBootstrapCCV-new}{\code{ResamplingBootstrapCCV$new()}}
+\item \href{#method-ResamplingBootstrapCCV-clone}{\code{ResamplingBootstrapCCV$clone()}}
 }
 }
 \if{html}{\out{
@@ -71,22 +71,22 @@ The number of iterations.}
 </details>
 }}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ResamplingBootstrapCVV-new"></a>}}
-\if{latex}{\out{\hypertarget{method-ResamplingBootstrapCVV-new}{}}}
+\if{html}{\out{<a id="method-ResamplingBootstrapCCV-new"></a>}}
+\if{latex}{\out{\hypertarget{method-ResamplingBootstrapCCV-new}{}}}
 \subsection{Method \code{new()}}{
 creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ResamplingBootstrapCVV$new()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ResamplingBootstrapCCV$new()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ResamplingBootstrapCVV-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-ResamplingBootstrapCVV-clone}{}}}
+\if{html}{\out{<a id="method-ResamplingBootstrapCCV-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-ResamplingBootstrapCCV-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ResamplingBootstrapCVV$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ResamplingBootstrapCCV$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -120,5 +120,5 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
   )
 )
 
-#' @includee zzz.R
+#' @include zzz.R
 custom_resamplings[["conservative_z"]] = ResamplingConservativeZ

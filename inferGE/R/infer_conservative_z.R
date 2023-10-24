@@ -1,5 +1,3 @@
-
-
 #' @title Conservative Z-Test
 #'
 #' @description
@@ -14,21 +12,18 @@ infer_conservative_z = function(x, alpha = 0.05, loss, ...) {
 }
 
 #' @export
-infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", ...) { #nolint
+infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { # nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
 
-  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
-
-  infer_conservative_z(loss_table, alpha = alpha, loss = names(loss_fn),
-    resampling_info = list(id = x$resampling$id, params = x$resampling$param_set$values)
-  )
+  infer_conservative_z(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }
 
 
 #' @export
-infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling_info, ...) {
-  resampling_id = resampling_info$id
-  resampling_params = resampling_info$params
+infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
+  resampling_id = resampling$id
+  resampling_params = resampling$param_set$values
 
   J = resampling_params$J
   M = resampling_params$M

@@ -1,7 +1,7 @@
 Package: inferGE
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     person("Sebastian", "Fischer", , "sebf.fischer@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
@@ -9,16 +9,18 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Depends: 
+Depends:
     R (>= 4.0.0),
     mlr3
-Imports: 
-    R6, 
+Imports:
+    checkmate,
     data.table,
-Collate: 
+    mlr3misc,
+    R6
+Collate:
     'BenchmarkLoss.R'
     'zzz.R'
     'ResamplingAusternZhou.R'
@@ -30,11 +32,10 @@ Collate:
     'infer_austern_zhou.R'
     'infer_bates.R'
     'infer_bayle.R'
+    'infer_bootstrap_ccv.R'
     'infer_conservative_z.R'
     'infer_corrected_t.R'
+    'infer_glmnet.R'
     'infer_holdout.R'
-    'infer_jiang.R'
     'infer_naive_cv.R'
-    'infer_simple.R'
-    'infer_subsampling.R'
     'utils.R'

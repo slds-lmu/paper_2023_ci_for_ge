@@ -5,5 +5,5 @@ test_that("infer_corrected_t works", {
 
   rr = resample(task, learner, resampling)
 
-  result = infer_corrected_t(rr)
+  expect_ci_method(infer_corrected_t, rr)
 })

@@ -4,28 +4,24 @@ infer_bayle = function(x, alpha, loss, variance, ...) {
 }
 
 #' @export
-infer_bayle.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, predict_set = "test", variance = "all-pairs", ...) { #nolint
-  #if (variance == "within-fold") {
-  #  assert_class(x$resampling, "ResamplingCV")
-  #  assert_true(n >= 2 * k)
-  #} else {
-  #  assert_true(inherits(x$resampling, "ResamplingCV") || inherits(x$resampling, "ResamplingLOO"))
-  #}
-
+infer_bayle.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, variance = "all-pairs") { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  loss_table = calculate_loss(x$predictions(predict_set), loss_fn)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
 
-  infer_bayle(loss_table, alpha = alpha, loss = names(loss_fn), variance = variance)
+  infer_bayle(loss_table, alpha = alpha, loss = names(loss_fn), variance = variance, resampling = x$resampling)
 }
 
 #' @export
-infer_bayle.loss_table = function(x, alpha = 0.05, loss, variance = "all-pairs", ...) {
+infer_bayle.loss_table = function(x, alpha = 0.05, loss, variance = "all-pairs", resampling) {
   assert_choice(variance, c("all-pairs", "within-fold"))
-  assert_numeric(alpha, lower = 0, upper = 1)
+  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
+  assert_class(resampling, "ResamplingCV")
+  assert_string(loss)
+  assert_choice(loss, names(x))
 
-  n = length(unique(x$row_id))
-  k = max(x$iter)
+  n = resampling$task_nrow
+  k = resampling$param_set$values$folds
   loss_table = x
 
   estimate = mean(loss_table[[loss]])

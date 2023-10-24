@@ -202,19 +202,18 @@ make_task = function(task_id, target, size, repl) {
   return(task)
 }
 
-make_resampling = function(resampling_id, resampling_params) {
+make_resampling = function(resampling_id, resampling_params, task) {
   resampling = do.call(rsmp, c(list(.key = resampling_id), resampling_params))
+  if (resampling$id == "austern_zhou") {
+    resampling$task_nrow = task$nrow
+  }
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
   learner = make_learner(instance$learner_id, instance$learner_params)
   task = make_task(task_id = instance$task_id, target = instance$target, size = instance$size, repl = job$repl)
   resampling = make_resampling(resampling_id, resampling_params)
-  #return(list(
-  #  learner = learner,
-  #  task = task,
-  #  resampling = resampling
-  #))
+  resampling$instantiate(task)
 
   # FIXME: Maybe we want better seeding here  so that the resampling splits are the same across
   # different learners on the same task. but probably not that important
@@ -230,7 +229,8 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
 
   list(
     test_predictions = rr$predictions("test"),
-    holdout_scores = rr$score(measures, predict_sets = "holdout")
+    holdout_scores = rr$score(measures, predict_sets = "holdout"),
+    resampling = resampling
   )
 }
 

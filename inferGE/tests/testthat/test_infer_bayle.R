@@ -8,9 +8,10 @@ test_that("infer_bayle works", {
   tbl = infer_bayle(rr, variance = "all-pairs")
   tbl1 = infer_bayle(rr, variance = "within-fold")
 
-  expect_data_table(tbl, nrow = 1, ncol = 5)
+  expect_data_table(tbl, nrow = 1, ncol = 4)
   expect_set_equal(
     colnames(tbl),
-    c("estimate", "lower", "upper", "variance", "method")
+    c("estimate", "lower", "upper", "info")
   )
+  expect_ci_method(infer_bayle, rr)
 })
