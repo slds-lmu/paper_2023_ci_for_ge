@@ -20,10 +20,6 @@ datasets = {
     'electricity' : 151,
     'covertype' : 44121,
     'higgs' : 45570,
-
-    # for testing
-    # 'sarcos' : 44976,
-    'iris' : 61,
 }
 
 def main():
@@ -64,12 +60,6 @@ def main():
 
         df.to_csv(here('data/original/' + object['name'] + '.csv'), index=False)
         df.to_parquet(here('data/original/' + object['name'] + '.parquet'), index=False)
-
-        # create a pandas dataframe with columns 'name', 'target_name', 'n2', 'n_missing'
-
-        table = pd.DataFrame(columns=['name', 'target_name', 'n', 'n_missing'])
-
-        # fill it with the informatio
 
 
 if __name__ == '__main__':

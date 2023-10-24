@@ -9,44 +9,41 @@ library(here)
 library(checkmate)
 library(stringr)
 library(mlr3misc)
+library(mlr3oml)
 
-get_original = function(input_string){
-  result = str_extract(input_string, ".*?(?=_[0-9])")
-  return(result)
-}
-
-# This function evaluates
-
-#' @title Evaluate a simualted dataset
+#' @title Evaluate a simulated dataset
 #' @description
 #' This function evaluates a simulated dataset using multiple methods.
-#' 1. We train two models:
-#'    a) On the simulated data (from the model that was trained using the training data from the original data)
-#'    b) On the training data from the original data.
-#'    We then compare their performance on the test data from the original data.
-#' 2. We partition both the simulated and the original datasets into many small training datasets and one
-#'    test dataset. Then we estimate and plot the distribution of the PE for both DGPs (Data Generating Processes).
-#' 3. We train two models on the original and simulated dataset.
-#'    We then cross-evaluate each dataset on the other dataset. (TODO:)
-#' @param simulated_name The name of the simulated dataset.
-#' @param seed The seed.
-main = function(simulated_name, seed) {
-  set.seed(seed)
-  original_name = get_original(simulated_name)
-  simulated = arrow::read_parquet(here("data", "simulated", paste0(simulated_name, ".pq")))
-  original = arrow::read_parquet(here("data", "original", paste0(original_name, ".pq")))
-  
+#' a) Cross-Evaluation
+#' b) Distribution of the generalization error
+#' @param simulated_id (`integer(1)`) The OpenML data id of the simulated dataset.
+#' @param seed The seed
+evaluate = function(simulated_id, seed = 42) {
+  withr::local_seed(seed)
+  odata = odt(simulated_id, parquet = TRUE)
+  backend = as_data_backend(odata)
 
-  assert_set_equal(colnames(original), colnames(simulated))
+  # We can use datasets name to find the original.
+  # Note that we don't use the original data from OpenML but instead read the parquet files
+  # that are written by datamodels/fetch_data.py (removes NAs)
+  simulated_name = odata$name
+  original_name = gsub("simulated_", "", simulated_name)
+
+  original = arrow::read_parquet(here("data", "original", paste0(original_name, ".parquet")))
+
+  # we just need a subset of the simulated data because we are restricted by the original
+  # dataset's size
+  simulated_subset = sample(5100000, nrow(original), replace = FALSE)
+  simulated = backend$data(simulated_subset, setdiff(backend$colnames, backend$primary_key))
 
   info = read_json(here("data", "original", paste0(original_name, ".json")))
   target = info$target[[1L]]
 
-
   colnames(simulated) = make.names(colnames(simulated), unique = TRUE)
   colnames(original) = make.names(colnames(original), unique = TRUE)
+  assert_set_equal(colnames(original), colnames(simulated))
   
-  if (target %nin% colnames(simulated)) stop("target renamed")
+  if (target %nin% colnames(simulated)) stop("Something went wrong")
 
   train_ids = as.integer(unlist(info$train_ids))
   test_ids = as.integer(unlist(info$test_ids))
@@ -56,6 +53,7 @@ main = function(simulated_name, seed) {
     train_ids = train_ids + 1
     test_ids = test_ids + 1
   }
+
   if (is.numeric(original[[target]])) {
     task_type = "regr"
   } else {
@@ -67,16 +65,10 @@ main = function(simulated_name, seed) {
     ppl("robustify") %>>% po("learner", base_learner)
   )
   
-  learner$param_set$set_values(
-    collapsefactors.target_level_count = 2
-  )
-  
-  learner$param_set$set_values()
-
   learner$id = "rfsrc"
   learner$fallback = lrn(paste0(task_type, ".featureless"))
 
-  test_perf = compare_test_perf(
+  crosswise_comparison = compare_crosswise(
     simulated = simulated,
     original = original,
     train_ids = train_ids,
@@ -99,19 +91,38 @@ main = function(simulated_name, seed) {
   results = list(
     simulated = simulated_name,
     original = original_name,
-    test_perf = test_perf,
+    crosswise_comparison = crosswise_comparison,
     ge_distr = ge_distr
   )
 
-  pth = file.path(here("datamodels", "evaluation", "results", original_name))
-  print(pth)
-  if (!file.exists(pth)) {
-    dir.create(pth, recursive = TRUE)
-  }
-  saveRDS(results, file.path(pth, "result.rds"))
+  return(results)
 }
 
-compare_test_perf = function(simulated, original, train_ids, test_ids, target, learner, task_type) {
+
+#' @title Crosswise comparison
+#' 
+#' @description
+#' We obtain four datasets:
+#' a) original: train
+#' b) original: test
+#' c) simulated: train (same size as original train, but sampled arbitrarily)
+#' d) simulated: test (same size as original test, but sampled arbitrarily)
+#' 
+#' Then we sample 10 disjoint datasets from the training dataset (size 3000) and train models.
+#' We evaluate these models on both the original and the simulated test dataset.
+#' 
+#' @param simulated (`data.table()`) A simulated dataset where the model was learning using 
+#'   `train_ids` from the `original` data.
+#' @param original (``data.table()`) The original dataset.
+#' @param train_ids (`integer()`) The IDs of the original data used to learn the density
+#' @param test_ids Which IDs were used as 
+#' @param target The target variable
+#' @param learner The learner to use
+#' @param task_type The task type, either `"regr"` or `"classif"`.
+compare_crosswise = function(simulated, original, train_ids, test_ids, target, learner, task_type) {
+  assert_true(length(train_ids) + length(test_ids) == nrow(original))
+  assert_true(nrow(simulated) == nrow(original))
+
   if (task_type == "regr") {
     task_converter = as_task_regr
   } else if (task_type == "classif") {
@@ -123,58 +134,70 @@ compare_test_perf = function(simulated, original, train_ids, test_ids, target, l
   n_rep = 10
   n_train = 3000
   n_needed = n_rep * n_train
-  
+
   if (length(train_ids) < n_needed) {
     stop("Not enough training data.")
   }
-  
-  if (nrow(simulated) < n_needed) {
-    stop("Not enough simulated data.")
-  }
-  
-  original_train = original[train_ids[seq_len(n_needed)], ]
+
+  ii = sample(train_ids, n_needed)
+
+  original_train = original[ii, ]
+  simulated_train = original[ii, ]
+
   original_test = original[test_ids, ]
-  simulated_train = simulated[seq_len(n_needed), ]
+  simulated_test = original[test_ids, ]
+  
   
   # Dataset to evaluate the original and simulated dataset
-  data_eval_orig = rbindlist(list(original_train, original_test))
-  data_eval_simul = rbindlist(list(simulated_train, original_test))
+  data_orig_orig = rbindlist(list(original_train, original_test))
+  data_orig_simul = rbindlist(list(original_train, simulated_test))
+  data_simul_orig = rbindlist(list(simulated_train, original_test))
+  data_simul_simul = rbindlist(list(simulated_train, simulated_test))
   
-  if (!(nrow(data_eval_simul) == nrow(data_eval_orig))) {
-    stop("Something went wrong.")
+  datasets = list(
+    data_orig_orig, 
+    data_orig_simul,
+    data_simul_orig,
+    data_simul_simul
+  )
+
+  n = unique(sapply(datasets, nrow))
+
+  if (length(n) != 1) {
+    stop("something went wrong")
   }
-  
-  cv_10fold = rsmp("cv")$instantiate(task = task_converter(original_train, target = target))
 
-  # We abuse test sets from 10 fold CV to get distinct training sets
-  train_sets = lapply(1:10, function(fold) {
-    cv_10fold$test_set(fold)
+  task_orig_orig = task_converter(data_orig_orig, target = target, id = "orig_orig")
+  task_orig_simul = task_converter(data_orig_simul, target = target, id = "orig_simul")
+  task_simul_orig = task_converter(data_simul_orig, target = target, id = "simul_orig")
+  task_simul_simul = task_converter(data_simul_simul, target = target, id = "simul_simul")
+
+  # (note that we fit models twice here, but this makes the code easier and compute is not
+  train_sets = lapply(seq_len(10), function(i) {
+    seq((i - 1) * n_train + 1, i * n_train)
   })
-  lapply(train_sets, function(x) if (max(x) > n_needed) stop("Something went wrong."))
 
-  # each time we use the same train set
-  test_sets = lapply(1:10, function(fold) seq(n_needed + 1, nrow(data_eval_orig)))
-  
-  task_orig = task_converter(data_eval_orig, id = "eval_orig", target = target)
-  task_simul = task_converter(data_eval_simul, id = "eval_simul", target = target)
-  
-  #task_orig$set_col_roles(task_orig$feature_types[get("type") %in% c("ordered", "factor"), "id"][[1L]], "stratum")
-  #task_simul$set_col_roles(task_simul$feature_types[get("type") %in% c("ordered", "factor"), "id"][[1L]], "stratum")
+  test_sets = lapply(seq_len(10), function(i) {
+    seq(n_needed + 1, n)
+  })
 
-  rsmp_orig = rsmp("custom")$instantiate(task = task_orig, train_sets = train_sets, test_sets = test_sets)
-  rsmp_simul = rsmp("custom")$instantiate(task = task_simul, train_sets = train_sets, test_sets = test_sets)
+  res_orig_orig = rsmp("custom", id = "orig_orig")$instantiate(task = task_orig_orig, train_sets = train_sets, test_sets = test_sets)
+  res_orig_simul = rsmp("custom", id = "orig_simul")$instantiate(task = task_orig_simul, train_sets = train_sets, test_sets = test_sets)
+  res_simul_orig = rsmp("custom", id = "simul_orig")$instantiate(task = task_simul_orig, train_sets = train_sets, test_sets = test_sets)
+  res_simul_simul = rsmp("custom", id = "simul_simul")$instantiate(task = task_simul_simul, train_sets = train_sets, test_sets = test_sets)
+  
   learners = list(learner, lrn(paste0(task_type, ".featureless")))
 
   design = benchmark_grid(
-    tasks = list(task_orig, task_simul),
+    tasks = list(task_orig_orig, task_orig_simul, task_simul_orig, task_simul_simul),
     learners = learners,
-    resampling = list(rsmp_orig, rsmp_simul),
+    resamplings = list(res_orig_orig, res_orig_simul, res_simul_orig, res_simul_simul),
     paired = TRUE
   )
 
   bmr = benchmark(design, store_backends = FALSE, store_models = FALSE)
 
-  return(bmr)
+  bmr$score()
 }
 
 # Compares the distribution of the generalization error for the original and simulated dataset.
@@ -202,9 +225,6 @@ compare_ge_distr = function(simulated, original, train_ids, test_ids, target, le
   task_simulated = task_converter(data_eval_orig, target = target, id = "original")
   task_original = task_converter(data_eval_simul, target = target, id = "simulated")
   
-  #task_simulated$set_col_roles(task_orig$feature_types[get("type") %in% c("ordered", "factor"), "id"][[1L]], "stratum")
-  #task_simul$set_col_roles(task_simul$feature_types[get("type") %in% c("ordered", "factor"), "id"][[1L]], "stratum")
-  
   train_sets = lapply(1:100, function(i) seq((i - 1) * 200 + 1, i * 200))
   test_sets = lapply(1:100, function(i) seq(20000, n_use))
 
@@ -218,20 +238,6 @@ compare_ge_distr = function(simulated, original, train_ids, test_ids, target, le
   )
   
   bmr = benchmark(design, store_models = FALSE, store_backends = TRUE)
-  
-  return(bmr)
-}
 
-if (!interactive()) {
-  p = arg_parser("Round a floating point number")
-  p = add_argument(p, "--simulated", help = "The name of the simulated dataset.")
-  p = add_argument(p, "--original", help = "The name of the original dataset.")
-  p = add_argument(p, "--learner", help = "The learner to use.", default = "lm")
-  p = add_argument(p, "--seed", help = "The name of the original dataset.", default = 42)
-  argv = parse_args(p)
-
-  main(
-    simulated_name = argv$simulated,
-    seed = argv$seed
-  )
+  bmr$score()
 }
