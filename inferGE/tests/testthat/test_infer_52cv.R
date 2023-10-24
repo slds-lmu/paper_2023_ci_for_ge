@@ -5,6 +5,5 @@ test_that("infer_52cv works", {
 
   rr = resample(task, learner, resampling)
 
-  res = infer_52cv(rr, loss = "zero_one")
-  expect_data_table(res)
+  expect_ci_method(infer_52cv, rr)
 })

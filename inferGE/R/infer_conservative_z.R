@@ -1,5 +1,3 @@
-
-
 #' @title Conservative Z-Test
 #'
 #' @description
@@ -9,42 +7,34 @@
 #'   The resample result or benchmark result
 #'
 #' @export
-infer_conservative_z = function(x, alpha = 0.05, loss) {
+infer_conservative_z = function(x, alpha = 0.05, loss, ...) {
   UseMethod("infer_conservative_z")
 }
 
 #' @export
-infer_conservative_z.BenchmarkResult = function(x, alpha = 0.05, loss) {
-  infer_method_bmr(x, alpha)
+infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { # nolint
+  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+
+  infer_conservative_z(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }
 
 
 #' @export
-infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss) {
-  res = x$resampling
-  assert_r6(res, "ResamplingConservativeZ")
-  assert_numeric(alpha, lower = 0, upper = 1)
-  J = x$resampling$param_set$values$J
-  M = x$resampling$param_set$values$M
+infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
+  resampling_id = resampling$id
+  resampling_params = resampling$param_set$values
 
-  assert_choice(loss, c("se", "zero_one"))
+  J = resampling_params$J
+  M = resampling_params$M
 
-  if (loss == "se") {
-    measure = msr("regr.mse")
-  } else {
-    measure = msr("classif.acc")
-  }
+  tbl = x[, list(score = mean(get(loss))), by = "iter"]
+  colnames(tbl) = c("iter", "measure")
 
-
-  # We use the first J resamplings to estimate the value and the rest for the variance
-
-  tbl = as.data.table(x$score(measure))[, c("iteration", measure$id), with = FALSE]
-  colnames(tbl) = c("iteration", "measure")
-
-  estimate = tbl[iteration <= J, mean(measure)]
+  estimate = tbl[get("iter") <= J, mean(get("measure"))]
 
   # this table we use only to estimate the variance
-  tbl_var = tbl[iteration > J, ]
+  tbl_var = tbl[get("iter") > J, ]
   tbl_var$replication = rep(seq_len(M), each = J * 2)
   tbl_var$partition = rep(rep(1:2, each = J), times = M)
 
@@ -64,7 +54,6 @@ infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss) {
     lower = estimate - c * sqrt(sigma2),
     upper = estimate + c * sqrt(sigma2)
   )
-
 }
 
 

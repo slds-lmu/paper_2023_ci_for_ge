@@ -4,7 +4,7 @@
 \alias{infer_conservative_z}
 \title{Conservative Z-Test}
 \usage{
-infer_conservative_z(x, alpha = 0.05, loss)
+infer_conservative_z(x, alpha = 0.05, loss, ...)
 }
 \arguments{
 \item{x}{(\code{\link{ResampleResult}} or  \code{\link{BenchmarkResult}})\cr

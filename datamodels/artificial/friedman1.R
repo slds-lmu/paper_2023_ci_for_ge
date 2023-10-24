@@ -17,7 +17,7 @@ if (TRUE) {
   data = task$data()
 
   name = paste("friedman1")
-  path = here::here("data", "artificial", paste0(name, ".pq"))
+  path = here::here("data", "artificial", paste0(name, ".parquet"))
   arrow::write_parquet(data, path)
   }
 }

@@ -10,13 +10,19 @@ mlr_task_generators = mlr3::mlr_task_generators
 
 lg = mlr3::mlr_reflections$loggers[["mlr3"]]
 
+custom_resamplings = new.env()
+
+register_mlr3 = function() {
+  rsmplings = mlr3::mlr_resamplings
+  iwalk(as.list(custom_resamplings), function(x, nm) rsmplings$add(nm, x))
+}
+
 
 .onLoad = function(libname, pkgname) {
-  mlr_learners = mlr3::mlr_learners
-  mlr_learners$add("regr.tabnet", LearnerRegrTabNet)
-  mlr_learners$add("classif.tabnet", LearnerClassifTabNet)
-  # nocov start
   backports::import(pkgname)
+  register_namespace_callback(pkgname, "mlr3", register_mlr3)
 } # nocov end
+
+
 
 leanify_package()

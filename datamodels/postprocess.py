@@ -57,7 +57,7 @@ def fix_categories(df, allowed_values):
 def main(simulated_name):
     original_name = get_original(simulated_name)
     original = pd.read_csv(str(here('data/original/' + original_name + '.csv')))
-    simulated = pd.read_parquet(str(here('data/simulated/' + simulated_name + '.pq')))
+    simulated = pd.read_parquet(str(here('data/simulated/' + simulated_name + '.parquet')))
     unique_values = get_unique_categorical_values(original)
     
     print('Number of rows before: ' + str(simulated.shape[0]))
@@ -68,9 +68,7 @@ def main(simulated_name):
     # subset dataframe to first 5 100 000 rows
     processed = processed.iloc[:5100000, :]    
 
-    processed.columns = processed.columns.str.replace(" ", "_").str.replace('[^A-Za-z0-9_]+', '')
-
-    processed.to_parquet(str(here('data/simulated/' + 'simulated_' + original_name + '.pq')), index = False)
+    processed.to_parquet(str(here('data/simulated/' + 'simulated_' + original_name + '.parquet')), index = False)
     
     print('Number of rows afterwards: ' + str(processed.shape[0]))
 
@@ -104,6 +102,6 @@ if __name__ == "__main__":
         # that the data is not sorted -> permute and subset here
         higgs_subset = higgs_data.sample(n=5100000, replace=False)
 
-        higgs_subset.to_parquet(str(here('data/subset/subset_higgs.pq')), index=False)
+    higgs_subset.to_parquet(str(here('data/subset/subset_higgs.parquet')), index=False)
 
 

@@ -119,4 +119,4 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
 
 
 #' @include zzz.R
-mlr_resamplings$add("nested_cv", function() ResamplingNestedCV$new())
+custom_resamplings[["nested_cv"]] = function() ResamplingNestedCV$new()

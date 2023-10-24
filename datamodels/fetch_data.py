@@ -63,7 +63,7 @@ def main():
             json.dump(object, file)
 
         df.to_csv(here('data/original/' + object['name'] + '.csv'), index=False)
-        df.to_parquet(here('data/original/' + object['name'] + '.pq'), index=False)
+        df.to_parquet(here('data/original/' + object['name'] + '.parquet'), index=False)
 
         # create a pandas dataframe with columns 'name', 'target_name', 'n2', 'n_missing'
 

@@ -29,7 +29,7 @@ datasets = {
 }
 
 for name, info in datasets.items():
-    df = pd.read_parquet(str(here(f"data/artificial/{name}.pq")))
+    df = pd.read_parquet(str(here(f"data/artificial/{name}.parquet")))
 
     object_cols = df.select_dtypes(include=['object']).columns
     df[object_cols] = df[object_cols].astype('category')
@@ -85,7 +85,7 @@ for name in simulated_datasets:
         info = json.load(file)
 
     simulated_name = 'simulated_' + name
-    df = pd.read_parquet(str(here(f"data/simulated/{simulated_name}.pq")))
+    df = pd.read_parquet(str(here(f"data/simulated/{simulated_name}.parquet")))
 
     object_cols = df.select_dtypes(include=['object']).columns
     df[object_cols] = df[object_cols].astype('category')
@@ -130,7 +130,7 @@ for name in simulated_datasets:
 
 if False: 
     print("uploading higgs:")
-    df = pd.read_parquet(str(here(f"data/subset/subset_higgs.pq")))
+    df = pd.read_parquet(str(here(f"data/subset/subset_higgs.parquet")))
     object_cols = df.select_dtypes(include=['object']).columns
     df[object_cols] = df[object_cols].astype('category')
 

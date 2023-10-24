@@ -12,50 +12,48 @@
 #'
 #' @references
 #' `r format_bib("dietterich1998approximate")`
-infer_52cv = function(x, alpha = 0.05, loss) {
+#' @export
+infer_52cv = function(x, alpha = 0.05, ...) {
   UseMethod("infer_52cv")
 }
+
 #' @export
-infer_52cv.ResampleResult = function(x, alpha = 0.05, loss) { #nolint
-  assert_class(x$resampling, "ResamplingRepeatedCV")
-  assert_true(x$resampling$param_set$values$folds == 2L)
-  assert_true(x$resampling$param_set$values$repeats == 5L)
+infer_52cv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
+  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  # TODO: fix later
-  assert_choice(loss, c("se", "zero_one"))
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
 
-  if (loss == "se") {
-    measure = msr("regr.mse")
-  } else {
-    measure = msr("classif.acc")
-  }
+  infer_52cv(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
+}
 
-  # iters 1, 2 are from the first repeat, 3, 4 from the second etc.
-  tbl = as.data.table(x$score(measure))[, c("iteration", measure$id), with = FALSE]
-  tbl$iteration = NULL
-  names(tbl) = "measure"
-  tbl$replication = rep(1:5, each = 2)
-  tbl$fold = rep(1:2, times = 5)
+#' @export
+infer_52cv.loss_table = function(x, alpha = 0.05, loss, resampling = resampling) {
+  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
+  assert_class(resampling, "ResamplingRepeatedCV")
+  assert_true(resampling$param_set$values$repeats == 5L && resampling$param_set$values$folds == 2L)
+  assert_string(loss)
+  assert_choice(loss, names(x))
 
-  # only take the estimate on the first fold from the first replication
-  estimate = tbl[1, "measure"][[1L]]
+  fold_name = make.unique(c(colnames(x), "fold"))[ncol(x) + 1L]
+  replication_name = make.unique(c(colnames(x), "replication"))[ncol(x) + 1L]
+
+  x[[fold_name]] = rep(1:2, times = 5)
+  x[[replication_name]] = rep(1:5, each = 2)
 
   # first we calculate the mean over both folds for each replication
-  tbl[, measure_avg := mean(measure), by = replication]
+  ps = x[, list(avg = mean(get(loss))), by = c(replication_name, fold_name)]
 
-  # formula: sqrt(1/5 * sum{i = 1, ...5 } (measure1_i - measure_avg_i)^2 + (measure2_i - measure_avg_i)^2)
-  s = tbl[, sqrt(1/5 * sum((measure - measure_avg)^2))]
+  p11 = ps[get(fold_name) == 1L & get(replication_name) == 1L, ]$avg
+
+  ps[, `:=`(avg = get("avg"), repl_avg = mean(get("avg"))), by = c(replication_name)]
+
+  s = ps[, sqrt(1/5 * sum((get("avg") - get("repl_avg"))^2))]
 
   z = qt(1 - alpha / 2, df = 5)
 
   data.table(
-    estimate = estimate,
-    lower = estimate - s * z,
-    upper = estimate + s * z
+    estimate = unname(p11),
+    lower = p11 - s * z,
+    upper = p11 + s * z
   )
-}
-
-#' @export
-infer_52cv.BenchmarkResult = function(x, alpha = 0.05, loss) { #nolint
-  infer_method_bmr(x, alpha, loss, infer_52cv)
 }

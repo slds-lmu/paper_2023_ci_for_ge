@@ -5,6 +5,5 @@ test_that("infer_holdout works", {
     rsmp("holdout")
   )
 
-  res = infer_holdout(rr)
-
+  expect_ci_method(infer_holdout, rr)
 })

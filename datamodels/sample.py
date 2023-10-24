@@ -61,7 +61,7 @@ def sample(name, n, seed, k, max_length):
         
     df = pd.concat(all_samples, axis = 0)
 
-    name = str(here('data/simulated')) + '/' + name + '_' + str(n) + '_' + str(seed) + '.pq'
+    name = str(here('data/simulated')) + '/' + name + '_' + str(n) + '_' + str(seed) + '.parquet'
     df.to_parquet(name, index = False)
     
     return df

@@ -1,7 +1,7 @@
 import pandas as pd
 
 original = pd.read_csv('data/original/adult.csv')
-simulated = pd.read_parquet('data/simulated/adult_50000_42.pq')
+simulated = pd.read_parquet('data/simulated/adult_50000_42.parquet')
 
 choices = original['native-country'].unique()
 values = simulated['native-country'].unique()

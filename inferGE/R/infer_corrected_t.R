@@ -12,38 +12,44 @@
 #' @references
 #' `r format_bib("nadeau1999inference")`
 #' @export
-infer_corrected_t = function(x, alpha = 0.05, loss) {
+infer_corrected_t = function(x, alpha = 0.05, loss, ...) {
+  assert_numeric(alpha, lower = 0, upper = 1)
   UseMethod("infer_corrected_t")
 }
 
 #' @export
-infer_corrected_t.BenchmarkResult = function(x, alpha = 0.05, loss) { # nolint
-  infer_method_bmr(x, alpha, loss)
+infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, ...) { #nolint
+  if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
+
+  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+
+  infer_corrected_t(loss_table, alpha = alpha, loss = names(loss_fn),
+    resampling_info = list(id = x$resampling$id, params = x$resampling$param_set$values),
+    task_info = list(nrow = x$task$nrow)
+  )
 }
 
 #' @export
-infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
-  res = x$resampling
-  assert_r6(res, "ResamplingSubsampling")
-  assert_numeric(alpha, lower = 0, upper = 1)
+infer_corrected_t.loss_table = function(x, alpha = 0.05, loss, resampling_info, task_info, ...) { # nolint
   # FIXME: if param_vals available
-  pv = res$param_set$values
+  if (resampling_info$id != "subsampling") {
+    stopf("Corrected t test works with subsampling.")
+  }
+  pv = resampling_info$params
+
   J = pv$repeats
   ratio = pv$ratio
-  n = res$task_nrow
+  n = task_info$nrow
 
   # in the nadeau paper n1 is the train-set size and n2 the test set size
 
-  n1 = round(ratio * res$task_nrow)
+  n1 = round(ratio * n)
   n2 = n - n1
 
-  n1 = (1 - ratio) * res$task_nrow
-
-  loss_fn = get_loss_fn(loss, x)
-  loss_table = get_loss_table(x, loss_fn)
+  loss_table = x
 
   # the different mu in the rows are the mu_j
-  mus = loss_table[, list(estimate = mean(get("loss"))), by = "iter"]
+  mus = loss_table[, list(estimate = mean(get(loss))), by = "iter"]
   # the global estimator
   estimate = mean(mus$estimate)
   # The naive SD estimate (does not take correlation between folds into account)
@@ -51,7 +57,7 @@ infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
 
   # The corrected SD estimate
   sd_corrected = estimate_sd * sqrt(1 / J + n2 / n1)
-  z = abs(qnorm(min(alpha, 1 - alpha) / 2))
+  z = qnorm(1 - alpha / 2)
 
   halfwidth = sd_corrected * z
 
@@ -63,7 +69,7 @@ infer_corrected_t.ResampleResult = function(x, alpha = 0.05, loss) { # nolint
     lower = lower,
     upper = upper,
     info = list(list(
-      variance = sd_corrected^2
+      variance_corrected = sd_corrected^2
     ))
   )
 }
