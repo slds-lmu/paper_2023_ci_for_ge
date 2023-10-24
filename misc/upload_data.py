@@ -20,12 +20,12 @@ datasets = {
     #"colon" : {"target" : "y"},
     #"friedman1" : {"target" : "y"},
     # TODO
-    "bates_regr_100" : {"target" : "y"},
-    #"bates_classif_100" : {"target" : "y"},
-    #"breast" : {"target" : "y"},
-    #"chen_10_null" : {"target" : "y"},
-    #"chen_10" : {"target" : "y"},
-    #"prostate" : {"target" : "y"},
+    #"bates_regr_100" : {"target" : "y"},
+    "bates_classif_100" : {"target" : "y"},
+    "breast" : {"target" : "y"},
+    "chen_10_null" : {"target" : "y"},
+    "chen_10" : {"target" : "y"},
+    "prostate" : {"target" : "y"},
 }
 
 for name, info in datasets.items():

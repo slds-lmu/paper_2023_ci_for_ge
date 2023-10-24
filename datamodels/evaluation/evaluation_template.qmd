@@ -1,0 +1,47 @@
+---
+output: pdf_document
+title: "Evaluation of Simulated Dataset"
+params:
+  original: "diamonds"
+  simulated: NULL
+  seed: 42
+---
+
+```{r, include = FALSE}
+library(mlr3)
+library(mlr3pipelines)
+library(mlr3learners)
+library(data.table)
+library(jsonlite)
+library(here)
+library(checkmate)
+
+unlockBinding("params", globalenv())
+library(data.table)
+if (is.null(params$original)) {
+  stop("Must provide name of original dataset to be evaluated.")
+}
+original = fread(here("data", "original", paste0(params$original, ".csv")))
+if (is.null(params$simulated)) {
+  params$simulated = paste0(params$original, "_", nrow(original), "_", params$seed, ".csv")
+}
+simulated = fread(here("data", "simulated", params$simulated))
+```
+
+# Dataset Evaluation
+
+This notebook evaluates how well the simulated data `r params$simulated` approximates the 
+distribution in `r params$original`.
+
+## Summary statistics
+
+Below is a summary of the original dataset.
+```{r}
+summary(original)
+```
+
+Here we see a summary of the simulated dataset.
+
+```{r}
+summary(simulated)
+```

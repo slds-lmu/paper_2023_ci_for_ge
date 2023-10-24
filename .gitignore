@@ -38,7 +38,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-datamodels/evaluation/
+datamodels/evaluation/results
 datamodels/models/
 
 data/original
