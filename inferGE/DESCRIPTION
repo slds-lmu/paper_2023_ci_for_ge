@@ -10,6 +10,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Suggests:
+    rpart,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends:
@@ -22,6 +23,9 @@ Imports:
     R6
 Collate:
     'BenchmarkLoss.R'
+    'LearnerClassifTabNet.R'
+    'LearnerRegrTabNet.R'
+    'PipeOpMetaRobustify.R'
     'zzz.R'
     'ResamplingAusternZhou.R'
     'ResamplingBootstrapCCV.R'
@@ -38,4 +42,5 @@ Collate:
     'infer_glmnet.R'
     'infer_holdout.R'
     'infer_naive_cv.R'
+    'params_tabnet.R'
     'utils.R'

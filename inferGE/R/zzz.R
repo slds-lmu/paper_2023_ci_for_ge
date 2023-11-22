@@ -15,12 +15,21 @@ custom_resamplings = new.env()
 register_mlr3 = function() {
   rsmplings = mlr3::mlr_resamplings
   iwalk(as.list(custom_resamplings), function(x, nm) rsmplings$add(nm, x))
+  learners = mlr3::mlr_learners
+  learners$add("regr.tabnet", LearnerRegrTabNet)
+  learners$add("classif.tabnet", LearnerClassifTabNet)
+}
+
+register_mlr3pipelines = function() {
+  mlr_pipeops = mlr3pipelines::mlr_pipeops
+  mlr_pipeops$add("metarobustify", PipeOpMetaRobustify)
 }
 
 
 .onLoad = function(libname, pkgname) {
   backports::import(pkgname)
   register_namespace_callback(pkgname, "mlr3", register_mlr3)
+  register_namespace_callback(pkgname, "mlr3pipelines", register_mlr3pipelines)
 } # nocov end
 
 

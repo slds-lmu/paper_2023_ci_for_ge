@@ -10,5 +10,6 @@ library(testthat)
 library(checkmate)
 library(inferGE)
 library(mlr3)
+library(mlr3pipelines)
 
 test_check("inferGE")
