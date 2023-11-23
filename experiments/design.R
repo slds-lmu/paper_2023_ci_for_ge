@@ -129,7 +129,7 @@ make_learner = function(learner_id, learner_params, task, resampling) {
     learner
 
   if (startsWith(class(resampling)[[1L]], "ResamplingBootstrap")) {
-    graph = po("metarobustify")
+    graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
   }
 
   learner = as_learner(graph)
@@ -315,4 +315,4 @@ if (FALSE) {
   testJob(10794) # tabnet and classif
   # test bootstrap
 }
-submitJobs(chunks)
+#submitJobs(chunks)

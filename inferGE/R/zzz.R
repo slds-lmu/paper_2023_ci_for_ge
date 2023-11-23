@@ -27,7 +27,6 @@ register_mlr3pipelines = function() {
 
 
 .onLoad = function(libname, pkgname) {
-  backports::import(pkgname)
   register_namespace_callback(pkgname, "mlr3", register_mlr3)
   register_namespace_callback(pkgname, "mlr3pipelines", register_mlr3pipelines)
 } # nocov end
