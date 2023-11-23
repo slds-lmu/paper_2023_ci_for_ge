@@ -189,10 +189,6 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   learner = make_learner(instance$learner_id, instance$learner_params[[1]], task = task, resampling = resampling)
   resampling$instantiate(task)
 
-  if (!("factor" %in% learner$properties) && ("factor" %in% task$feature_types$type)) {
-    task = po("encode")$train(list(task))[[1L]]
-  }
-
   # FIXME: Maybe we want better seeding here  so that the resampling splits are the same across
   # different learners on the same task. but probably not that important
   rr = resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
