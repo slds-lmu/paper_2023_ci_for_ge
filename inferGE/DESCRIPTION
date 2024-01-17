@@ -31,6 +31,7 @@ Collate:
     'ResamplingAusternZhou.R'
     'ResamplingBootstrapCCV.R'
     'ResamplingConservativeZ.R'
+    'ResamplingNestedBootstrap.R'
     'ResamplingNestedCV.R'
     'bibentries.R'
     'infer_52cv.R'
