@@ -146,3 +146,5 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
 
 #' @include zzz.R
 custom_resamplings[["nested_cv"]] = function() ResamplingNestedCV$new()
+# FIXME: remove this
+custom_resamplings[["repeated_nested_cv"]] = function() ResamplingNestedCV$new()
