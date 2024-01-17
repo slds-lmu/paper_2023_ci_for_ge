@@ -13,8 +13,19 @@ test_that("PipeOpMetaRobustify works", {
     taskout$data(2)
   )
 
+  taskout2 = po_meta$predict(list(task))[[1L]]
+
   graph = po("metarobustify") %>>% ppl("robustify") %>>% lrn("classif.rpart")
 
-  rr = resample(tsk("iris"), graph, rsmp("bootstrap", repeats = 1, ratio = 1), stored)
+  task = tsk("iris")
+  task$row_roles$use = 1:140
+  task$row_roles$holdout = 141:150
+
+  learner$predict_sets = c("test", "holdout")
+
+  learner$train(task)
+
+  rr = resample(task, learner, rsmp("bootstrap", repeats = 1, ratio = 1))
   expect_class(rr, "ResampleResult")
+  expect_equal(length(rr$predictions("holdout")[[1]]$truth), 10)
 })

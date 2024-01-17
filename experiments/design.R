@@ -41,27 +41,26 @@ N_REP = if (TEST) { # nolint
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
-    holdout            = list(id = "holdout", params = list(ratio = 2 / 3)),
-    nested_cv          = list(id = "nested_cv", params = list(folds = 10)),
-    subsampling_10     = list(id = "subsampling", params = list(repeats = 10)),
-    subsampling_100    = list(id = "subsampling", params = list(repeats = 100)),
-    cv_5               = list(id = "cv", params = list(folds = 10)),
-    cv_10              = list(id = "cv", params = list(folds = 10)),
-    cv_20              = list(id = "cv", params = list(folds = 10)),
-    repeated_cv_10_10 = list(id = "repeated_cv", params = list(folds = 10, repeats = 10)),
+<<<<<<< Updated upstream
+    holdout            = list(id = "holdout",        params = list(ratio = 2 / 3)),
+    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 10)),
+    subsampling_10     = list(id = "subsampling",    params = list(repeats = 10, ratio = 0.9)),
+    subsampling_50     = list(id = "subsampling",    params = list(repeats = 50, ratio = 0.9)),
+    cv_10              = list(id = "cv",             params = list(folds = 10)),
+    repeated_cv_5_10   = list(id = "repeated_cv",    params = list(folds = 10, repeats = 5)),
     conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
-    diettrich          = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
-    prediction_error   = list(id = "holdout", params = list(ratio = 1)),
-    bootstrap_10       = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
-    bootstrap_100      = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
-    # needed for the bootstrap method
+    diettrich          = list(id = "repeated_cv",    params = list(repeats = 5, folds = 2)),
+    bootstrap_10       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 10)),
+    bootstrap_50       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 50)),
+    # needed for the bootstrap method and to obtain PE on the holdout data
     insample           = list(id = "insample", params = list())
   ), small = list(
+    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 20, reps_inner = 10, ratio = 1)), # 
     loo                = list(id = "loo", params = list()),
-    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)),
-    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 10)),
-    # TODO: nested_cv with repetitions
-    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 10, repeats = 5))
+    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 
+    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)), # -> 0.6 * n * 20 iters: n = 50 -> 600, n = 100 -> 1200
+    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 10, repeats = 20)) # -> 2000 iters
+    # needed for the bootstrap method
   ))
 } else {
   stop("not done yet")
@@ -70,7 +69,7 @@ RESAMPLINGS = if (TEST) {
 SIZES = if (TEST) {
   list(
     small = c(50, 100),
-    other = c(200, 500, 1000, 2000, 5000)
+    other = c(500, 1000, 5000)
   )
 } else {
   stop("not done yet")
@@ -89,9 +88,17 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     list(
+<<<<<<< Updated upstream
       ridge  = list(id = f("glmnet"), params = list(alpha = 0)),
       rpart  = list(id = f("ranger"), params = list(num.trees = 1)),
       ranger = list(id = f("ranger"), params = list())
+=======
+      ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0)),
+      rpart  = list(id = f("rpart"),    params = list(xval = 10)),
+      ranger = list(id = f("ranger"),    params = list(num.trees = 100))
+      #tabnet001 = list(id = f("tabnet"), params = list(momentum = 0.01)),
+      #tabnet005 = list(id = f("tabnet"), params = list(momentum = 0.05))
+>>>>>>> Stashed changes
     )
   }
 
