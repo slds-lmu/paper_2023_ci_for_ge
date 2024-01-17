@@ -1,4 +1,4 @@
-library(batchtools)
+librry(batchtools)
 library(mlr3misc)
 library(mlr3oml)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
@@ -8,9 +8,8 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
 }
 
 data_ids = list(
-  # FIXME:  add 45668 again (regr)
-  classif = c(45654, 45665, 45669, 45672, 45689, 45703, 45704, 45693, 45668),
-  regr = c(45664, 45655, 45666, 45670, 45671, 45692, 45694, 45695, 45696)
+  classif = c(45689, 45704, 45703, 45654, 45665, 45668, 45669, 45672, 45693),
+  regr = c(45664, 45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
 )
 
 SEED = 42
@@ -41,7 +40,6 @@ N_REP = if (TEST) { # nolint
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
-<<<<<<< Updated upstream
     holdout            = list(id = "holdout",        params = list(ratio = 2 / 3)),
     nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 10)),
     subsampling_10     = list(id = "subsampling",    params = list(repeats = 10, ratio = 0.9)),
@@ -55,11 +53,11 @@ RESAMPLINGS = if (TEST) {
     # needed for the bootstrap method and to obtain PE on the holdout data
     insample           = list(id = "insample", params = list())
   ), small = list(
-    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 20, reps_inner = 10, ratio = 1)), # 
-    loo                = list(id = "loo", params = list()),
-    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 
-    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)), # -> 0.6 * n * 20 iters: n = 50 -> 600, n = 100 -> 1200
-    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 10, repeats = 20)) # -> 2000 iters
+    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 20, reps_inner = 10, ratio = 1)), # 200 iterations
+    loo                = list(id = "loo", params = list()), # 50 or 100
+    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
+    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)), # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
+    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 5, repeats = 20)) # -> 500 iters
     # needed for the bootstrap method
   ))
 } else {
@@ -88,17 +86,11 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     list(
-<<<<<<< Updated upstream
-      ridge  = list(id = f("glmnet"), params = list(alpha = 0)),
-      rpart  = list(id = f("ranger"), params = list(num.trees = 1)),
-      ranger = list(id = f("ranger"), params = list())
-=======
       ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0)),
       rpart  = list(id = f("rpart"),    params = list(xval = 10)),
       ranger = list(id = f("ranger"),    params = list(num.trees = 100))
       #tabnet001 = list(id = f("tabnet"), params = list(momentum = 0.01)),
       #tabnet005 = list(id = f("tabnet"), params = list(momentum = 0.05))
->>>>>>> Stashed changes
     )
   }
 
@@ -193,11 +185,18 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # we pass the task to make_learner() so we can skip some robustify steps
   # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
   learner = make_learner(instance$learner_id, instance$learner_params[[1]], task = task, resampling = resampling)
-  resampling$instantiate(task)
+
+  # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
+  withr::with_seed(seed = job$seed,
+    resampling$instantiate(task)
+  )
 
   # FIXME: Maybe we want better seeding here  so that the resampling splits are the same across
   # different learners on the same task. but probably not that important
-  rr = resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
+  resample_seed =
+  withr::with_seed(seed = job$seed,
+  )
+  rr = resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE, )
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("rmse", "mae")))
@@ -209,7 +208,6 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   list(
     test_predictions = map(rr$predictions("test"), data.table::as.data.table),
     holdout_predictions = map(rr$predictions("holdout"), function(x) x$score(measures)),
-    #holdout_scores = rr$score(measures, predict_sets = "holdout"),
     resampling = resampling
   )
 }
