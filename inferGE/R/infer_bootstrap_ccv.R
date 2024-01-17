@@ -1,11 +1,13 @@
 #' @export
-infer_bootstrap_ccv = function(x, alpha, ...) {
+#' @param y
+infer_bootstrap_ccv = function(x, y, alpha = 0.05, ...) {
+  stop("Implement Bias correction.")
   UseMethod("infer_bootstrap_ccv")
 }
 
 
 #' @export
-infer_bootstrap_ccv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, ...) { # nolint
+infer_bootstrap_ccv.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL, ...) { # nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
   loss_table = calculate_loss(x$predictions("test"), loss_fn)

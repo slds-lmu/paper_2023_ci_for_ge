@@ -1,5 +1,6 @@
 #' @export
 infer_holdout = function(x, alpha = 0.05, loss, ...) { # nolint
+  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
   UseMethod("infer_holdout")
 }
 
@@ -15,7 +16,6 @@ infer_holdout.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #noli
 
 #' @export
 infer_holdout.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
-  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
   assert_class(resampling, "ResamplingHoldout")
   assert_string(loss)
   assert_choice(loss, names(x))

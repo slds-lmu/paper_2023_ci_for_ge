@@ -13,11 +13,8 @@ lg = mlr3::mlr_reflections$loggers[["mlr3"]]
 custom_resamplings = new.env()
 
 register_mlr3 = function() {
-  rsmplings = mlr3::mlr_resamplings
-  iwalk(as.list(custom_resamplings), function(x, nm) rsmplings$add(nm, x))
-  learners = mlr3::mlr_learners
-  learners$add("regr.tabnet", LearnerRegrTabNet)
-  learners$add("classif.tabnet", LearnerClassifTabNet)
+  resamplings = mlr3::mlr_resamplings
+  iwalk(as.list(custom_resamplings), function(x, nm) resamplings$add(nm, x))
 }
 
 register_mlr3pipelines = function() {

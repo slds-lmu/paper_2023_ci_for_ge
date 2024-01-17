@@ -13,6 +13,8 @@ computational cost.
 \itemize{
 \item \code{folds} :: (\code{integer(1)})\cr`
 The number of folds.
+\item \code{repeats} :: (\code{integer(1)})\cr`
+The number of repetitions.
 }
 }
 
@@ -83,7 +85,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \if{latex}{\out{\hypertarget{method-ResamplingNestedCV-unflatten}{}}}
 \subsection{Method \code{unflatten()}}{
 For a given iteration return info about the inner and outer loop.
-In case the iteration belongs to the outer loop, the value \code{inner} is set to \code{NA}.
+In case the iteration belongs to the outer loop, the value \code{inner} is set to \code{NA_integer_}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ResamplingNestedCV$unflatten(iter)}\if{html}{\out{</div>}}
 }
@@ -104,12 +106,15 @@ The iteration.}
 Obtain the iteration for the specified \verb{(outer, inner)} tuple.
 If \code{inner} is missing, the outer iteration is returned.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ResamplingNestedCV$flatten(outer, inner = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ResamplingNestedCV$flatten(rep, outer, inner = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{rep}}{(\code{iterger(1)})\cr
+The repetion.}
+
 \item{\code{outer}}{(\code{integer(1)})\cr
 The index of the outer iteration.}
 

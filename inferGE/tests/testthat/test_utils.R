@@ -2,7 +2,7 @@ test_that("utils works", {
   learner = lrn("classif.debug")
   task = tsk("iris")
   task$row_roles$use = c(1:3, 51:53, 101:103)
-  resampling = rsmp("nested_cv", folds = 3)
+  resampling = rsmp("nested_cv", folds = 3, repeats = 1)
 
   resampling$instantiate(task)
 

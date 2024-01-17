@@ -41,25 +41,27 @@ N_REP = if (TEST) { # nolint
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
-    holdout           = list(id = "holdout", params = list(ratio = 2 / 3)),
-    nested_cv         = list(id = "nested_cv", params = list(folds = 10)),
-    subsampling_10    = list(id = "subsampling", params = list(repeats = 10)),
-    subsampling_100   = list(id = "subsampling", params = list(repeats = 100)),
-    cv_5             = list(id = "cv", params = list(folds = 10)),
-    cv_10             = list(id = "cv", params = list(folds = 10)),
-    cv_20             = list(id = "cv", params = list(folds = 10)),
-    #repeated_cv_10_10 = list(id = "repeated_cv", params = list(folds = 10, repeats = 10)),
-    conservative_z    = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
-    diettrich         = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
-    prediction_error  = list(id = "holdout", params = list(ratio = 1)),
-    bootstrap_10      = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
-    bootstrap_100     = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
+    holdout            = list(id = "holdout", params = list(ratio = 2 / 3)),
+    nested_cv          = list(id = "nested_cv", params = list(folds = 10)),
+    subsampling_10     = list(id = "subsampling", params = list(repeats = 10)),
+    subsampling_100    = list(id = "subsampling", params = list(repeats = 100)),
+    cv_5               = list(id = "cv", params = list(folds = 10)),
+    cv_10              = list(id = "cv", params = list(folds = 10)),
+    cv_20              = list(id = "cv", params = list(folds = 10)),
+    repeated_cv_10_10 = list(id = "repeated_cv", params = list(folds = 10, repeats = 10)),
+    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
+    diettrich          = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
+    prediction_error   = list(id = "holdout", params = list(ratio = 1)),
+    bootstrap_10       = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
+    bootstrap_100      = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
     # needed for the bootstrap method
-    insample          = list(id = "insample", params = list())
+    insample           = list(id = "insample", params = list())
   ), small = list(
-    loo               = list(id = "loo", params = list()),
-    austern_zhou      = list(id = "austern_zhou", params = list(folds = 10)),
-    bootstrap_ccv     = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 10))
+    loo                = list(id = "loo", params = list()),
+    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)),
+    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 10)),
+    # TODO: nested_cv with repetitions
+    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 10, repeats = 5))
   ))
 } else {
   stop("not done yet")
@@ -87,12 +89,9 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     list(
-      ridge001 = list(id = f("glmnet"), params = list(alpha = 0, lambda = 0.01)),
-      ridge005  = list(id = f("glmnet"), params = list(alpha = 0, lambda = 0.05)),
-      rpart1  = list(id = f("ranger"), params = list(num.trees = 1)),
-      ranger100 = list(id = f("ranger"), params = list(num.trees = 100)),
-      tabnet001 = list(id = f("tabnet"), params = list(momentum = 0.01)),
-      tabnet005 = list(id = f("tabnet"), params = list(momentum = 0.05))
+      ridge  = list(id = f("glmnet"), params = list(alpha = 0)),
+      rpart  = list(id = f("ranger"), params = list(num.trees = 1)),
+      ranger = list(id = f("ranger"), params = list())
     )
   }
 
@@ -160,7 +159,7 @@ make_task = function(data_id, size, repl) {
   tmpdata = backend$data(ids, backend$colnames)
   # mlr3 bugs in cbind ...
   names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
-  
+
   in_memory_backend = as_data_backend(tmpdata, primary_key = "..row_id")
 
   task = if (is.factor(tmpdata[[target]])) {

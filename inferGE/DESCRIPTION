@@ -8,7 +8,7 @@ Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.2.3.9000
 Suggests:
     rpart,
     testthat (>= 3.0.0)
@@ -20,11 +20,12 @@ Imports:
     checkmate,
     data.table,
     mlr3misc,
-    R6
+    mlr3pipelines,
+    R6,
+    withr
 Collate:
+    '632.R'
     'BenchmarkLoss.R'
-    'LearnerClassifTabNet.R'
-    'LearnerRegrTabNet.R'
     'PipeOpMetaRobustify.R'
     'zzz.R'
     'ResamplingAusternZhou.R'
@@ -33,6 +34,8 @@ Collate:
     'ResamplingNestedCV.R'
     'bibentries.R'
     'infer_52cv.R'
+    'utils.R'
+    'infer_632.R'
     'infer_austern_zhou.R'
     'infer_bates.R'
     'infer_bayle.R'
@@ -41,6 +44,7 @@ Collate:
     'infer_corrected_t.R'
     'infer_glmnet.R'
     'infer_holdout.R'
+    'infer_ls_boot.R'
     'infer_naive_cv.R'
+    'losses.R'
     'params_tabnet.R'
-    'utils.R'

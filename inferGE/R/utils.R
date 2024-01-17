@@ -41,7 +41,17 @@ get_loss_table = function(x, loss_fn) {
 get_loss_fn = function(loss = NULL, rr) {
   loss = loss %??% switch(rr$task$task_type, classif = "zero_one", regr = "se", stop())
   assert_string(loss)
+
+  if (loss == "percentual_se") {
+    assert_true(rr$task_type == "regr")
+    return(percentual_se)
+  } else if (loss == "standardized_se") {
+    assert_true(rr$task_type == "regr")
+    return(standardized_se)
+  }
+
   loss_info = get(loss, mlr3measures::measures, inherits = FALSE)
+
   # FIXME: This is currently not really transparent in mlr3
   assert_false(loss_info$aggregated,
     .var.name = "The measure must allow to calculate unaggregated observation-wise losses.")
@@ -60,4 +70,8 @@ default_loss_fn = function(task_type) {
     regr = list(se = mlr3measures::se),
     stopf("Task type '%s' currently not supported.", task_type)
   )
+}
+
+assert_alpha = function(x) {
+  assert_numeric(x, len = 1L, lower = 0, upper = 1)
 }

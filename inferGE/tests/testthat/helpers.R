@@ -1,3 +1,6 @@
+lapply(list.files(system.file("testthat", package = "mlr3"),
+  pattern = "^helper.*\\.[rR]$", full.names = TRUE), source)
+
 expect_ci_method = function(inference, rr) {
   r05 = inference(rr, alpha = 0.05)
   r05_def = inference(rr)
