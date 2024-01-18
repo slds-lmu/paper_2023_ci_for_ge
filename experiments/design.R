@@ -1,4 +1,4 @@
-librry(batchtools)
+library(batchtools)
 library(mlr3misc)
 library(mlr3oml)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
@@ -8,21 +8,21 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
 }
 
 data_ids = list(
-  classif = c(45689, 45704, 45703, 45654, 45665, 45668, 45669, 45672, 45693),
-  regr = c(45664, 45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
+  classif = c(45570, 45689, 45704, 45703, 45654, 45665, 45668, 45669, 45672, 45693),
+  regr = c(45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
 )
 
 SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/newtest22"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/runtime_est1"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
 
 if (!file.exists(REGISTRY_PATH)) {
-  makeExperimentRegistry(
+  reg = makeExperimentRegistry(
     file.dir = REGISTRY_PATH,
     seed = SEED,
     packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "torch", "mlr3misc"),
@@ -57,7 +57,7 @@ RESAMPLINGS = if (TEST) {
     loo                = list(id = "loo", params = list()), # 50 or 100
     austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
     bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)), # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
-    repeated_nested_cv = list(id = "repeated_nested_cv", params = list(folds = 5, repeats = 20)) # -> 500 iters
+    repeated_nested_cv = list(id = "nested_cv", params = list(folds = 5, repeats = 20)) # -> 500 iters
     # needed for the bootstrap method
   ))
 } else {
@@ -86,9 +86,11 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     list(
-      ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0)),
-      rpart  = list(id = f("rpart"),    params = list(xval = 10)),
-      ranger = list(id = f("ranger"),    params = list(num.trees = 100))
+      cv_ridge     = list(id = f("cv_glmnet"), params = list(alpha = 0)),
+      ridge        = list(id = f("glmnet"), params = list(alpha = 0, lambda = 0.05)),
+      rpart        = list(id = f("rpart"),    params = list(xval = 10)),
+      ranger_100   = list(id = f("ranger"),    params = list(num.trees = 100)),
+      ranger_50    = list(id = f("ranger"),    params = list(num.trees = 50))
       #tabnet001 = list(id = f("tabnet"), params = list(momentum = 0.01)),
       #tabnet005 = list(id = f("tabnet"), params = list(momentum = 0.05))
     )
@@ -186,28 +188,31 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
   learner = make_learner(instance$learner_id, instance$learner_params[[1]], task = task, resampling = resampling)
 
+  # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
+  # but just to be sure.
+  # This ensures that thee resampling instances are the same when a resampling method is applied to learner A and B,
+  # which reduces variance in the comparison between learners
+  resample_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
   # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
-  withr::with_seed(seed = job$seed,
+  withr::with_seed(seed = resample_seed,
     resampling$instantiate(task)
   )
 
-  # FIXME: Maybe we want better seeding here  so that the resampling splits are the same across
-  # different learners on the same task. but probably not that important
-  resample_seed =
-  withr::with_seed(seed = job$seed,
+  # for good measure we specify the seed here as well
+  rr = withr::with_seed(seed = resample_seed + 1, 
+    resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
   )
-  rr = resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE, )
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("rmse", "mae")))
   } else if (task$task_type == "classif") {
-    measures = msrs(paste0("classif.", c("acc", "bacc", "precision", "recall", "sensitivity", "specificity")))
+    measures = msrs(paste0("classif.", c("acc", "bacc", "bbrier", "logloss")))
   }
 
   # FIXME: Is this output enough to calculate all the proxy quantities?
   list(
     test_predictions = map(rr$predictions("test"), data.table::as.data.table),
-    holdout_predictions = map(rr$predictions("holdout"), function(x) x$score(measures)),
+    holdout_predictions = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures)))),
     resampling = resampling
   )
 }
