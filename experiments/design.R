@@ -3,6 +3,7 @@ library(mlr3misc)
 library(mlr3oml)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
+
 if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) {
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
 }
@@ -56,8 +57,7 @@ RESAMPLINGS = if (TEST) {
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 20, reps_inner = 10, ratio = 1)), # 200 iterations
     loo                = list(id = "loo", params = list()), # 50 or 100
     austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
-    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)), # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
-    repeated_nested_cv = list(id = "nested_cv", params = list(folds = 5, repeats = 20)) # -> 500 iters
+    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
     # needed for the bootstrap method
   ))
 } else {
@@ -85,15 +85,17 @@ LEARNERS = if (TEST) {
     f = function(x) {
       paste0(task_type, ".", x)
     }
-    list(
+    learners = list(
       cv_ridge     = list(id = f("cv_glmnet"), params = list(alpha = 0)),
       ridge        = list(id = f("glmnet"), params = list(alpha = 0, lambda = 0.05)),
       rpart        = list(id = f("rpart"),    params = list(xval = 10)),
       ranger_100   = list(id = f("ranger"),    params = list(num.trees = 100)),
       ranger_50    = list(id = f("ranger"),    params = list(num.trees = 50))
-      #tabnet001 = list(id = f("tabnet"), params = list(momentum = 0.01)),
-      #tabnet005 = list(id = f("tabnet"), params = list(momentum = 0.05))
     )
+
+    imap(learners, function(learner, name) {
+      insert_named(learner, list(name = name))
+    })
   }
 
   LEARNERS = list(
@@ -118,7 +120,7 @@ LEARNERS = if (TEST) {
 # @param name The name from the learner_ids list.
 # @param task The task for which to create the learner (classif or regr).
 
-make_learner = function(learner_id, learner_params, task, resampling) {
+make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
   learner = do.call(lrn,
     args = c(list(.key = learner_id), learner_params)
   )
@@ -143,7 +145,7 @@ make_learner = function(learner_id, learner_params, task, resampling) {
   learner$predict_sets = c("test", "holdout")
   learner$encapsulate = c(train = "try", predict = "try")
   learner$fallback = fallback
-  learner$id = learner_id
+  learner$id = learner_name
   return(learner)
 }
 
@@ -186,7 +188,13 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   resampling = make_resampling(resampling_id, resampling_params)
   # we pass the task to make_learner() so we can skip some robustify steps
   # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
-  learner = make_learner(instance$learner_id, instance$learner_params[[1]], task = task, resampling = resampling)
+  learner = make_learner(
+    learner_id = instance$learner_id,
+    learner_params = instance$learner_params[[1]],
+    learner_name = instance$learner_name,
+    task = task,
+    resampling = resampling
+  )
 
   # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
   # but just to be sure.
@@ -199,7 +207,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   )
 
   # for good measure we specify the seed here as well
-  rr = withr::with_seed(seed = resample_seed + 1, 
+  rr = withr::with_seed(seed = resample_seed + 1,
     resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
   )
 
@@ -258,6 +266,7 @@ make_prob_designs = function(type) {
     new$size = dt$size
     new$learner_id = map_chr(dt$learner, "id")
     new$learner_params = map(dt$learner, function(x) list(x$params))
+    new$learner_name = map(dt$learner, function(x) list(x$name))
     new$task_type = task_type
 
     new
