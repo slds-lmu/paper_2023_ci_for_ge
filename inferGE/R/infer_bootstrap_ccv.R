@@ -1,5 +1,4 @@
 #' @export
-#' @param y
 infer_bootstrap_ccv = function(x, y = NULL, alpha = 0.05, ...) {
   assert_alpha(alpha)
   UseMethod("infer_bootstrap_ccv")

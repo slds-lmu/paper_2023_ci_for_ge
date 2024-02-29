@@ -11,7 +11,6 @@ test_that("NestedBootstrap", {
 
   resampling$instantiate(task)
   walk(seq_len(resampling$iters), function(iter) {
-    print(iter)
     resampling$train_set(iter)
   })
 

@@ -1,12 +1,7 @@
-# this is not the most efficient implementation
-# we could have the runtime
-
 #' @export
 ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
   inherit = mlr3::Resampling,
   public = list(
-    #' @description
-    #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       param_set = ps(
         folds = p_int(lower = 1L, tags = "required"),
@@ -17,10 +12,10 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
         label = "Nested Cross-Validation", man = "mlr3::mlr_resamplings_nested_cv"
       )
     },
-    #' @description For a given iteration return info about the inner and outer loop.
-    #' In case the iteration belongs to the outer loop, the value `inner` is set to `NA_integer_`.
-    #' @param iter (`integer(1)`)\cr
-    #'   The iteration.
+    # @description For a given iteration return info about the inner and outer loop.
+    # In case the iteration belongs to the outer loop, the value `inner` is set to `NA_integer_`.
+    # @param iter (`integer(1)`)\cr
+    #   The iteration.
     unflatten = function(iter) {
       assert_int(iter, lower = 1L, upper = self$iters)
       pv = self$param_set$get_values()
@@ -46,14 +41,14 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
         )
       }
     },
-    #' @description Obtain the iteration for the specified `(outer, inner)` tuple.
-    #' If `inner` is missing, the outer iteration is returned.
-    #' @param rep (`iterger(1)`)\cr
-    #'   The repetion.
-    #' @param outer (`integer(1)`)\cr
-    #'   The index of the outer iteration.
-    #' @param inner (`integer(1)`)\cr
-    #'   The index of the inner iteration.
+    # @description Obtain the iteration for the specified `(outer, inner)` tuple.
+    # If `inner` is missing, the outer iteration is returned.
+    # @param rep (`iterger(1)`)\cr
+    #   The repetion.
+    # @param outer (`integer(1)`)\cr
+    #   The index of the outer iteration.
+    # @param inner (`integer(1)`)\cr
+    #   The index of the inner iteration.
     flatten = function(rep, outer, inner = NULL) {
       pv = self$param_set$get_values()$folds
       folds = assert_int(pv$folds)

@@ -2,8 +2,6 @@
 ResamplingBootstrapCCV = R6Class("ResamplingBootstrapCCV",
   inherit = Resampling,
   public = list(
-    #' @description
-    #' creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
       param_set = ps(
         ratio = p_dbl(0, upper = 1, tags = "required"),
