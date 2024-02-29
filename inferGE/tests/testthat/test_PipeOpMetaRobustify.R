@@ -1,4 +1,5 @@
 test_that("PipeOpMetaRobustify works", {
+  library(mlr3pipelines)
   po_meta = mlr3pipelines::po("metarobustify")
 
   task = tsk("iris")
@@ -20,6 +21,8 @@ test_that("PipeOpMetaRobustify works", {
   task = tsk("iris")
   task$row_roles$use = 1:140
   task$row_roles$holdout = 141:150
+
+  learner = as_learner(graph)
 
   learner$predict_sets = c("test", "holdout")
 

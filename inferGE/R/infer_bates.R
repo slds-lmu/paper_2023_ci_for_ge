@@ -1,21 +1,5 @@
-#' @title Inference Method for Nested Cross-Validation
-#'
-#' @description
-#' Inference method for Nested Cross-Validation.
-#'
-#' @param x ([`ResampleResult`] or  [``])\cr
-#'   The resample result or benchmark result using a [`ResamplingNestedCV`] as the resampling technique.
-#' @param alpha (`numeric(1)`)\cr
-#'   The alpha level for the confidence interval.
-#' @param loss (`character(1)`)\cr
-#'   The observation loss. One of `mlr3measures::measures` that calculates oberservation-wise losses in an unaggergated
-#'   manner. E.g. `"se"` for the squared error or `"zero_one"` for the 0-1 loss.
-#'
-#' @references
-#' `r format_bib("bates2021")`
-#'
 #' @export
-infer_bates = function(x, alpha = 0.05, loss, ...) {
+infer_bates = function(x, alpha = 0.05, ...) {
   assert_alpha(x = alpha)
   UseMethod("infer_bates")
 }
@@ -56,9 +40,9 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
 
   tmp1 = x_outer[, list(avg_inner = mean(get(loss))), by = c("rep", "outer")]
   tmp2 = x_inner[, list(avg_outer = mean(get(loss))), by = c("rep", "outer")]
-  tmp_join = merge(tmp1, tmp2, on = c("rep", "outer"))
+  tmp_join = merge(tmp1, tmp2, by = c("rep", "outer"))
 
-  a_list = tmp_join[, list(a = (avg_inner - avg_outer)^2)][["a"]]
+  a_list = tmp_join[, list(a = (get("avg_inner") - get("avg_outer"))^2)][["a"]]
 
   err_ncv = mean(x_inner[[loss]])
   mse = mean(a_list - b_list)
@@ -67,6 +51,7 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
 
   # left term going from (k -1) / k * n to k / n
   # right from going from (k - 2) / k * n to (k - 1) / l * n
+  # different than in ntestedcv implementation but authors did not respond to my email
   bias = (1 + (folds - 2) / folds) * (err_ncv - err_cv)
 
   # We do the max(mse, 0) because the mse estimate can sometimes be negative.

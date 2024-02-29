@@ -1,34 +1,55 @@
 #' @export
-#' @include utils.R
-infer_ls_boot = function(x, alpha = 0.05, loss, ...) { # nolint
+infer_ls_boot = function(x, y, alpha = 0.05, ...) {
   assert_alpha(alpha)
   UseMethod("infer_ls_boot")
 }
 
 #' @export
-infer_ls_boot.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
+infer_ls_boot.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) { #nolint
+  assert_class(x, "ResampleResult")
+  assert_class(x$resampling, "ResamplingBootstrap")
+  assert_class(y, "ResampleResult")
+  assert_class(y$resampling, "ResamplingInsample")
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
+  # train predictions are present
+  assert_false(isTRUE(all.equal(length(x$predictions("train")[[1L]]), list())))
 
-  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+  loss_table_test = calculate_loss(x$predictions("test"), loss_fn)
+  loss_table_train = calculate_loss(x$predictions("train"), loss_fn)
+  loss_table_insample = calculate_loss(y$predictions("test"), loss_fn)
 
-  infer_ls_boot(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
+  # loss_fn is a named list
+  gamma = est_gamma(truth = y$prediction("test")$truth, response = y$prediction("test")$response, loss  = loss_fn[[1L]])
+
+  infer_ls_boot(x = loss_table_test, y = loss_table_train, z = loss_table_insample, gamma = gamma,
+    alpha = alpha, loss = names(loss_fn))
 }
 
-
 #' @export
-infer_ls_boot.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
-  assert_class(resampling, "ResamplingBootstrap")
-  assert_string(loss)
-  assert_choice(loss, names(x))
+infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
+  err_oob = mean(x[, list(oob = mean(get(loss))), by = "iter"]$oob)
+  errs_in = y[, list(err_in = mean(get(loss))), by = "iter"]$err_in
+  err_in = mean(z[[loss]])
+  est = est_632plus(err_oob, err_in, gamma)
 
-  estimate = mean(x[[loss]])
-  se = sd(x[[loss]]) / sqrt(nrow(x))
+  bias = err_in - err_oob
 
-  z = qnorm(1 - alpha / 2)
-
+  qs = unname(quantile(errs_in, c(alpha / 2, 1 - alpha / 2)))
   data.table(
-    estimate = estimate,
-    lower = estimate - se * z,
-    upper = estimate + se * z
+    estimate = est,
+    lower = qs[1] - bias,
+    upper = qs[2] - bias
   )
+}
+
+est_gamma = function(truth, response, loss) {
+  mean(map_dbl(seq_along(truth), function(i) {
+    mean(loss(rep(truth[i], length(response)), response))
+  }))
+}
+
+est_632plus = function(err_oob, err_in, gamma) {
+  R = (err_oob - err_in) / (gamma - err_in)
+  w = 0.632 / (1 - 0.368 * R)
+  (1 - w) * err_in + w * err_oob
 }

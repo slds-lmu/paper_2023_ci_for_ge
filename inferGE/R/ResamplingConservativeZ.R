@@ -6,7 +6,7 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       param_set = ps(
         J = p_int(lower = 1L, tags = "required"),
         M = p_int(lower = 1L, tags = "required"),
-        ratio   = p_dbl(0, 1, tags = "required")
+        ratio   = p_dbl(2/3, 1, tags = "required")
       )
       super$initialize(
         id = "conservative_z",
@@ -18,15 +18,12 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
   ),
   private = list(
     .total_iters = NULL,
-    .sample = function(ids, ...) {
+    .sample = function(ids, task, ...) {
       dots = list(...)
-      task = dots$task
-      J = self$param_set$values$J
-      M = self$param_set$values$M
-      ratio = self$param_set$values$ratio
-
-      assert_true(ratio >= 2 / 3)
-      # otherwise not enough data to estimate the variance with the same n2
+      pv = self$param_set$get_values()
+      J = pv$J
+      M = pv$M
+      ratio = pv$ratio
 
       instance = list(
         subsampling = rsmp("subsampling", repeats = J, ratio = ratio)$instantiate(task)
@@ -37,10 +34,11 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       n1 = round(n_task * ratio)
       n2 = n_task - n1
 
+      # each subsampling of the paired subsampling is applied to datasets of size n_sub
       n_sub = (n1 - n1 %% 2) / 2
 
-      task1 = task$clone()
-      task2 = task$clone()
+      task1 = task$clone(deep = TRUE)
+      task2 = task$clone(deep = TRUE)
 
       subsamplings_variance = list()
 
@@ -49,17 +47,15 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       # n2 + n1' = n_sub
       # n2 = n_sub - round(n_sub * new_ratio)
       # n_sub - n_2 = round(n_sub * new_ratio)
-      # new_ratio = (n_sub - n_2 ) / n_sub
+      # new_ratio = (n_sub - n_2 ) / n_sub + rounding
 
       new_ratio = (n_sub - n2) / n_sub
 
       for (m in seq_len(M)) {
         ids = sample(task$row_roles$use, n_sub * 2)
-        ids1 = ids[seq(1, n_sub)]
-        ids2 = ids[seq(n_sub + 1, 2 * n_sub)]
 
-        task1$row_roles$use = ids1
-        task2$row_roles$use = ids2
+        task1$row_roles$use = ids[seq(1, n_sub)]
+        task2$row_roles$use = ids[seq(n_sub + 1, 2 * n_sub)]
 
         subsamplings_variance[[length(subsamplings_variance) + 1L]] = list(
           rsmp("subsampling", repeats = J, ratio = new_ratio)$instantiate(task1),

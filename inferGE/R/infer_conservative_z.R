@@ -8,6 +8,7 @@
 #'
 #' @export
 infer_conservative_z = function(x, alpha = 0.05, loss, ...) {
+  assert_alpha(alpha)
   UseMethod("infer_conservative_z")
 }
 
@@ -24,6 +25,9 @@ infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) 
 infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
   resampling_id = resampling$id
   resampling_params = resampling$param_set$values
+
+  # this inference method implementation is a bit weird, because the corresponding Resampling method
+  # does both the subsampling and the repeated paired subsampling
 
   J = resampling_params$J
   M = resampling_params$M

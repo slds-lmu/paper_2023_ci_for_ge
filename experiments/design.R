@@ -36,7 +36,7 @@ if (!file.exists(REGISTRY_PATH)) {
 N_REP = if (TEST) { # nolint
   1L
 } else {
-  1000L
+  500L
 }
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
@@ -49,8 +49,9 @@ RESAMPLINGS = if (TEST) {
     repeated_cv_5_10   = list(id = "repeated_cv",    params = list(folds = 10, repeats = 5)),
     conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
     diettrich          = list(id = "repeated_cv",    params = list(repeats = 5, folds = 2)),
-    bootstrap_10       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 10)),
-    bootstrap_50       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 50)),
+    # in order to estimate 2.5 % quantile, we just need more than 10 reps
+    bootstrap_40       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 20)),
+    bootstrap_100      = list(id = "bootstrap",      params = list(ratio = 1, repeats = 20)),
     # needed for the bootstrap method and to obtain PE on the holdout data
     insample           = list(id = "insample", params = list())
   ), small = list(
@@ -67,7 +68,7 @@ RESAMPLINGS = if (TEST) {
 SIZES = if (TEST) {
   list(
     small = c(50, 100),
-    other = c(500, 1000, 5000)
+    other = c(500, 1000, 5000, 1000)
   )
 } else {
   stop("not done yet")
@@ -195,10 +196,17 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     task = task,
     resampling = resampling
   )
+  # for bootstrap, we also need the train predictions for the location-shifted bootstrap method
+  # so we can estimate the quantiles
+  is_bootstrap = inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")
+  if (is_bootstrap) {
+    learner$predict_sets = union(learner$predict_sets, "train")
+  }
+
 
   # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
   # but just to be sure.
-  # This ensures that thee resampling instances are the same when a resampling method is applied to learner A and B,
+  # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
   # which reduces variance in the comparison between learners
   resample_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
   # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
@@ -218,11 +226,15 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   }
 
   # FIXME: Is this output enough to calculate all the proxy quantities?
-  list(
+  result = list(
     test_predictions = map(rr$predictions("test"), data.table::as.data.table),
     holdout_predictions = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures)))),
     resampling = resampling
   )
+  if (is_bootstrap) {
+    result$train_predictions = map(rr$predictions("train"), data.table::as.data.table)
+  }
+  return(result)
 }
 
 batchExport(list(

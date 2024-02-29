@@ -1,7 +1,8 @@
 test_that("infer_austern_zhou works", {
+  withr::local_seed(1)
   resampling = rsmp("austern_zhou", folds = 3)
   task = tsk("iris")
-  task$row_roles$use = c(1, 2, 3, 51, 52, 53, 101, 102, 103)
+  task$row_roles$use = c(1, 2, 3, 51, 52, 53, 101, 102, 103, 104, 105, 106)
   learner = lrn("classif.featureless")
 
   rr = resample(

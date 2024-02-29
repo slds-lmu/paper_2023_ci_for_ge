@@ -4,7 +4,7 @@ test_that("infer_bates works for ResampleResult", {
   task = tsk("sonar")
 
   rr = resample(task, learner, res)
-  #res = infer_bates(rr, alpha = 0.05)
+  res = infer_bates(rr, alpha = 0.05)
 
   expect_ci_method(infer_bates, rr)
 })

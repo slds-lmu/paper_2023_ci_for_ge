@@ -1,6 +1,6 @@
 #' @export
-infer_holdout = function(x, alpha = 0.05, loss, ...) { # nolint
-  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
+infer_holdout = function(x, alpha = 0.05, ...) { # nolint
+  assert_alpha(alpha)
   UseMethod("infer_holdout")
 }
 
@@ -30,6 +30,4 @@ infer_holdout.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolin
     lower = estimate - se * z,
     upper = estimate + se * z
   )
-
-
 }

@@ -1,28 +1,7 @@
-#' @title Nested Cross-Validation
-#'
-#' @name mlr_resamplings_nested_cv
-#'
-#' @description
-#' Nested cross-validation which allows for valid inference of the generalization error at considerably higher
-#' computational cost.
-#'
-#' @section Parameters:
-#' * `folds` :: (`integer(1)`)\cr`
-#'   The number of folds.
-#' * `repeats` :: (`integer(1)`)\cr`
-#'   The number of repetitions.
-#'
-#' @templateVar id nested_cv
-#' @template resampling
-#'
-#' @references
-#' `r format_bib("bates2021")`
+# this is not the most efficient implementation
+# we could have the runtime
+
 #' @export
-#' @examples
-#' res = rsmp("nested_cv", folds = 2)
-#' task = tsk("penguins")
-#' res$instantiate(task)
-#' res
 ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
   inherit = mlr3::Resampling,
   public = list(

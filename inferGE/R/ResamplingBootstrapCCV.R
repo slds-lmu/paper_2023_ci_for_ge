@@ -1,29 +1,4 @@
-#' @title Bootstrap Case Cross-Validation Percentile findInterval()
-#'
-#' @name mlr_resamplings_bootstrap_ccv
-#'
-#' @description
-#' Create bootstrap samples like in [`mlr3::ResamplingBootstrap`].
-#' For each of these bootstrap samples, conduct "leave one case out" (LOCO) cross-validation.
-#' This implies that the training sizes in the LOCO differ.
-#'
-#' @section Parameters:
-#' * `repeats` :: (`integer(1)`)\cr
-#'   Number of repetitions.
-#' * `ratio` :: (`numeric(1)`)\cr
-#'   Ratio of observations to put into the training set.
-#'
-#' @templateVar id bootstrap_ccv
-#' @template resampling
-#'
-#' @references
-#' `r format_bib("jiang2008")`
 #' @export
-#' @examples
-#' res = rsmp("bootstrap_ccv", ratio = 0.5, repeats = 2)
-#' task = tsk("penguins")
-#' res$instantiate(task)
-#' res
 ResamplingBootstrapCCV = R6Class("ResamplingBootstrapCCV",
   inherit = Resampling,
   public = list(
@@ -34,6 +9,7 @@ ResamplingBootstrapCCV = R6Class("ResamplingBootstrapCCV",
         ratio = p_dbl(0, upper = 1, tags = "required"),
         repeats = p_int(1L, tags = "required")
       )
+      param_set$values$ratio = 1
 
       super$initialize(
         id = "bootstrap_ccv",
