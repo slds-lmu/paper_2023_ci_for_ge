@@ -39,7 +39,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/ttest1"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run1"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -48,7 +48,7 @@ if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
     file.dir = REGISTRY_PATH,
     seed = SEED,
-    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI"),
+    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr"),
     work.dir = here::here()
   )
 } else {
@@ -69,17 +69,16 @@ RESAMPLINGS = if (TEST) {
     cv_10              = list(id = "cv",             params = list(folds = 10)),
     repeated_cv_5_10   = list(id = "repeated_cv",    params = list(folds = 10, repeats = 5)),
     diettrich          = list(id = "repeated_cv",    params = list(repeats = 5, folds = 2)),
+    bootstrap_50       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 50)),
     bootstrap_100      = list(id = "bootstrap",      params = list(ratio = 1, repeats = 100)),
-    # needed for the bootstrap method and to obtain PE on the holdout data
     insample           = list(id = "insample", params = list())
   ), small = list(
-    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 100)), # 2500
+    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 200)), #5000
     conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10, ratio = 1)), # 1000 iterations
     loo                = list(id = "loo", params = list()), # 50 or 100
     austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
     bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
-    # needed for the bootstrap method
   ))
 } else {
   stop("not done yet")
@@ -87,7 +86,7 @@ RESAMPLINGS = if (TEST) {
 
 SIZES = if (TEST) {
   list(
-    small = c(50L, 100L),
+    small = c(50L, 200L),
     other = c(500L, 1000L, 5000L, 10000L)
   )
 } else {
@@ -179,7 +178,7 @@ make_task = function(data_id, size, repl, resampling_id) {
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
   holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
-  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM holdout_table WHERE iter = %i", repl))$row_id
+  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 
@@ -217,6 +216,7 @@ make_resampling = function(resampling_id, resampling_params) {
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
+  lgr::get_logger("mlr3")$set_threshold("warn")
   task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl, resampling_id = resampling_id)
   resampling = make_resampling(resampling_id, resampling_params)
 
