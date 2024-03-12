@@ -1,8 +1,11 @@
 library(mlr3oml)
 library(mlr3misc)
 library(mlr3)
+library(here)
+library(DBI)
+library(duckdb)
 options(mlr3oml.parquet = TRUE)
-options(mlr3oml.cache = TRUE)
+#options(mlr3oml.cache = TRUE)
 n_data = 5100000L
 n_subsets = 500L
 sizes = c(50L, 100L, 500L, 1000L, 5000L, 10000L)
@@ -14,12 +17,17 @@ data_ids = unname(unlist(list(
 
 #walk(data_ids, function(id) odt(id)$data)
 
-future::plan("multicore", workers = 5)
+write_parquet = function(data, path) {
+  con = dbConnect(duckdb::duckdb())
+  dbCreateTable(con, "ids", data)
+  dbExecute(con, sprintf("COPY ids TO '%s.parquet' (FORMAT PARQUET);", path))
+  dbDisconnect(con)
+}
 
 splits = lapply(data_ids, function(data_id) {
   print(data_id)
-  if (!dir.exists(paste0("~/gh/paper_2023_ci_for_ge/data/splits/", data_id))) {
-    dir.create(paste0("~/gh/paper_2023_ci_for_ge/data/splits/", data_id), recursive = TRUE)
+  if (!dir.exists(here("data", "splits", data_id))) {
+    dir.create(here("data", "splits", data_id), recursive = TRUE)
   } else {
     return(NULL)
   }
@@ -31,11 +39,12 @@ splits = lapply(data_ids, function(data_id) {
   if (inherits(task, "TaskClassif")) {
     task$col_roles$stratum = task$target_names
   }
-  write.csv(holdout_ids[1:50000], paste0("~/gh/paper_2023_ci_for_ge/data/splits/", data_id, "/",  "holdout_50000.csv"), row.names = FALSE)
-  write.csv(holdout_ids, paste0("~/gh/paper_2023_ci_for_ge/data/splits/", data_id, "/",  "holdout_100000.csv"), row.names = FALSE)
+  write_parquet(data.frame(id = holdout_ids[1:50000]), here("data", "splits", data_id,  "holdout_50000"))
+  write_parquet(data.frame(id = holdout_ids), here("data", "splits", data_id, "holdout_100000"))
 
 
   train_splits = lapply(sizes, function(size) {
+    set.seed(data_id + size)
     print(size)
     task$row_roles$use = sample(partition_ids, size * n_subsets)
     resampling = rsmp("cv", folds = n_subsets)$instantiate(task)
@@ -43,14 +52,10 @@ splits = lapply(data_ids, function(data_id) {
     names(inst) = c("row_id", "iter")
     inst = inst[, c("iter", "row_id")]
 
-    write.csv(inst, paste0("~/gh/paper_2023_ci_for_ge/data/splits/", data_id, "/",  size, ".csv"), row.names = FALSE)
+    write_parquet(inst, here("data", "splits", data_id, paste0(size)))
   })
 
   train_splits = set_names(train_splits, as.character(sizes))
 
   NULL
-  #list(
-  #  holdout = holdout_ids,
-  #  train = train_splits
-  #)
 })
