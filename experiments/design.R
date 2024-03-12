@@ -1,6 +1,7 @@
 library(batchtools)
 library(mlr3misc)
 library(mlr3oml)
+library(duckdb)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
 
@@ -47,8 +48,8 @@ if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
     file.dir = REGISTRY_PATH,
     seed = SEED,
-    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "torch", "mlr3misc"),
-    work.dir = here::here("experiments")
+    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "torch", "mlr3misc", "here", "duckdb", "DBI"),
+    work.dir = here::here()
   )
 } else {
   reg = loadRegistry(REGISTRY_PATH, writeable = TEST)
@@ -148,7 +149,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   graph = ppl("robustify", learner = learner, task = task) %>>%
     learner
 
-  if (startsWith(class(resampling)[[1L]], "ResamplingBootstrap")) {
+  if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")) {
     graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
   }
 
@@ -169,15 +170,18 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 
 make_task = function(data_id, size, repl) {
   # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observations
-  ids_holdout = if (resampling_id == "insample") {
-    fread(here::here("data", "splits", data_id, "holdout_100000.csv"))[[1L]]
-  } else {
-    fread(here::here("data", "splits", data_id, "holdout_50000.csv"))[[1L]]
-  }
+  con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
+  holdout_ids_path = here::here("data", "splits", data_id, if (resampling_id == "insample")  "holdout_100000.parquet"  else "holdout_50000.parquet")
+  use_ids_path = here::here("data", "splits", data_id, paste0(use_ids, ".parquet"))
 
-  ids_use = fread(here::here("data", "splits", data_id, paste0(repl, ".csv")))[[1L]]
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
+  holdout_ids = dbGetQuery(con, paste0("SELECT 'row_id' from holdout_table"))$row_id
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
+  use_ids = dbGetQuery(con, sprintf("SELECT 'row_id' from holdout_table WHERE 'iter' = %i", repl))$row_id
 
-  ids = c(ids_use, ids_holdout)
+  con = dbConnect(duckdb::duckdb(), here::here("data", "parquet", data_id, paste0(size, ".parquet")))
+
+  ids = c(use_ids, holdout_ids)
 
   odata = odt(data_id, parquet = TRUE)
   target = odata$target_names
@@ -200,8 +204,8 @@ make_task = function(data_id, size, repl) {
 
   # do not stratify here!
 
-  task$row_roles$use = ids_use
-  task$row_roles$holdout = ids_holdout
+  task$row_roles$use = use_ids
+  task$row_roles$holdout = holdout_ids
 
   return(task)
 }

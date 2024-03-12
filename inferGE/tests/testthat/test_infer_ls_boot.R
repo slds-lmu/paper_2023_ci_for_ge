@@ -8,7 +8,8 @@ test_that("can estimate overfitting rate", {
 })
 
 test_that("location shifted bootstrap", {
-  learner = lrn("classif.rpart", predict_sets = c("train", "test"))
+  learner = as_learner(PipeOpMetaRobustify$new() %>>%lrn("classif.rpart", predict_sets = c("train", "test")),)
+  learner$predict_sets = c("train", "test")
   task = tsk("iris")
   boot = rsmp("bootstrap", ratio = 1, repeats = 50)
   insample = rsmp("insample")

@@ -18,8 +18,8 @@ data_ids = unname(unlist(list(
 #walk(data_ids, function(id) odt(id)$data)
 
 write_parquet = function(data, path) {
-  con = dbConnect(duckdb::duckdb())
-  dbCreateTable(con, "ids", data)
+  con = dbConnect(duckdb::duckdb(), ":memory:")
+  dbWriteTable(con, "ids", data, row.names = FALSE)
   dbExecute(con, sprintf("COPY ids TO '%s.parquet' (FORMAT PARQUET);", path))
   dbDisconnect(con)
 }
@@ -39,8 +39,8 @@ splits = lapply(data_ids, function(data_id) {
   if (inherits(task, "TaskClassif")) {
     task$col_roles$stratum = task$target_names
   }
-  write_parquet(data.frame(id = holdout_ids[1:50000]), here("data", "splits", data_id,  "holdout_50000"))
-  write_parquet(data.frame(id = holdout_ids), here("data", "splits", data_id, "holdout_100000"))
+  write_parquet(data.frame(row_id = holdout_ids[1:50000]), here("data", "splits", data_id,  "holdout_50000"))
+  write_parquet(data.frame(row_id = holdout_ids), here("data", "splits", data_id, "holdout_100000"))
 
 
   train_splits = lapply(sizes, function(size) {
