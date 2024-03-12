@@ -21,7 +21,7 @@ write_parquet = function(data, path) {
   con = dbConnect(duckdb::duckdb(), ":memory:")
   dbWriteTable(con, "ids", data, row.names = FALSE)
   dbExecute(con, sprintf("COPY ids TO '%s.parquet' (FORMAT PARQUET);", path))
-  dbDisconnect(con)
+  dbDisconnect(con, shutdown = TRUE)
 }
 
 splits = lapply(data_ids, function(data_id) {

@@ -39,7 +39,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/runtime_est1"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/ttest1"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -48,7 +48,7 @@ if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
     file.dir = REGISTRY_PATH,
     seed = SEED,
-    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "torch", "mlr3misc", "here", "duckdb", "DBI"),
+    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI"),
     work.dir = here::here()
   )
 } else {
@@ -168,18 +168,20 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   return(learner)
 }
 
-make_task = function(data_id, size, repl) {
-  # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observations
+make_task = function(data_id, size, repl, resampling_id) {
+  # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observation
+  # all others are only used for proxy quantities, where we aggregate over multiple such estimates 
+  # only for holdout do we have one iter, so there we also use 100k
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
-  holdout_ids_path = here::here("data", "splits", data_id, if (resampling_id == "insample")  "holdout_100000.parquet"  else "holdout_50000.parquet")
-  use_ids_path = here::here("data", "splits", data_id, paste0(use_ids, ".parquet"))
+  holdout_ids_path = here::here("data", "splits", data_id, if (resampling_id %in% c("insample", "holdout"))  "holdout_100000.parquet"  else "holdout_50000.parquet")
+  use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
 
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
-  holdout_ids = dbGetQuery(con, paste0("SELECT 'row_id' from holdout_table"))$row_id
+  holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
-  use_ids = dbGetQuery(con, sprintf("SELECT 'row_id' from holdout_table WHERE 'iter' = %i", repl))$row_id
+  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM holdout_table WHERE iter = %i", repl))$row_id
 
-  con = dbConnect(duckdb::duckdb(), here::here("data", "parquet", data_id, paste0(size, ".parquet")))
+  DBI::dbDisconnect(con, shutdown = TRUE)
 
   ids = c(use_ids, holdout_ids)
 
@@ -311,7 +313,7 @@ make_prob_designs = function(type) {
     new$learner_params = map(dt$learner, function(x) list(x$params))
     new$learner_name = map(dt$learner, function(x) list(x$name))
     new$task_type = task_type
-    new$task_name = task_names[[as.character(new$data_id)]]
+    new$task_name = data_names[as.character(new$data_id)]
 
     new
   }) |> rbindlist()
