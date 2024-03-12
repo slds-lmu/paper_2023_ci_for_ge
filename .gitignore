@@ -46,6 +46,7 @@ data/simulated
 data/artificial
 data/simulated_final
 data/subset
+data/splits
 
 *.pyc
 figures

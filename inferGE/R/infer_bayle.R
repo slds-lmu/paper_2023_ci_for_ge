@@ -16,7 +16,6 @@ infer_bayle.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, variance 
 #' @export
 infer_bayle.loss_table = function(x, alpha = 0.05, loss, variance = "all-pairs", resampling) {
   assert_choice(variance, c("all-pairs", "within-fold"))
-  assert_numeric(alpha, len = 1L, lower = 0, upper = 1)
   assert(check_class(resampling, "ResamplingCV"), check_class(resampling, "ResamplingRepeatedCV"),
     check_class(resampling, "ResamplingLOO"))
   if (inherits(resampling, "ResamplingLOO")) {

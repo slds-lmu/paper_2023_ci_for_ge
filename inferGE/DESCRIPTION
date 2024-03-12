@@ -22,10 +22,13 @@ Imports:
     mlr3measures,
     mlr3misc,
     mlr3pipelines,
+    paradox,
     R6,
     withr
+Sugests:
+    future,
+    lgr
 Collate:
-    '632.R'
     'BenchmarkLoss.R'
     'PipeOpMetaRobustify.R'
     'zzz.R'
@@ -36,6 +39,9 @@ Collate:
     'ResamplingNestedCV.R'
     'bibentries.R'
     'infer_52cv.R'
+    'infer_ls_boot.R'
+    'infer_ts_bootstrap.R'
+    'infer_632plus.R'
     'infer_austern_zhou.R'
     'infer_bates.R'
     'infer_bayle.R'
@@ -44,8 +50,7 @@ Collate:
     'infer_corrected_t.R'
     'infer_glmnet.R'
     'infer_holdout.R'
-    'infer_ls_boot.R'
-    'infer_ts_bootstrap.R'
+    'infer_oob.R'
     'losses.R'
     'params_tabnet.R'
     'utils.R'

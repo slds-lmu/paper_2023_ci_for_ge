@@ -9,11 +9,13 @@ assert_binary = getFromNamespace("assert_binary", ns = "mlr3measures")
 
 #' @export
 percentual_se = function(truth, response, ...) {
+  assert_regr(truth, response = response)
   mlr3measures::se(truth, response) / (abs(truth) + EPS)
 }
 
 #' @export
 standardized_se = function(truth, response, ...) {
+  assert_regr(truth, response = response)
   mlr3measures::se(truth, response) / sd(truth) + EPS
 }
 
@@ -25,9 +27,11 @@ logloss = function(truth, prob, eps = 1e-15, ...) {
   p = pmax(eps, pmin(1 - eps, p))
 }
 
-bbrier = function(truth, prob, positive, ...) {
-  assert_binary(truth, prob = prob, positive = positive)
-  .se(truth == positive, prob)
+bbrier = function(truth, prob, ...) {
+  # we don't really care which is the 'real' positive class, we just want one class
+  positive = levels(truth)[1L]
+  assert_binary(truth, prob = prob[, positive], positive = positive)
+  .se(truth == positive, prob[, positive])
 }
 
 MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
@@ -38,15 +42,15 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
         id = "regr.std_se",
         range = c(0, Inf),
         minimize = TRUE,
-        predict_type = "reponse",
+        predict_type = "response",
         packages = "inferGE",
         label = "Standardized MSE"
       )
     }
   ),
   private = list(
-    .score = function(prediction) {
-      standardized_se(truth = prediction$truth, response = prediction$response)
+    .score = function(prediction, ...) {
+      mean(standardized_se(truth = prediction$truth, response = prediction$response, ...))
     }
   )
 )
@@ -59,19 +63,19 @@ MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
         id = "regr.percentual_se",
         range = c(0, Inf),
         minimize = TRUE,
-        predict_type = "reponse",
+        predict_type = "response",
         packages = "inferGE",
         label = "Percentual MSE"
       )
     }
   ),
   private = list(
-    .score = function(prediction) {
-      percentual_se(truth = prediction$truth, response = prediction$response)
+    .score = function(prediction, ...) {
+      mean(percentual_se(truth = prediction$truth, response = prediction$response, ...))
     }
   )
 )
 
 #' @include zzz.R
-custom_measures[["regr.std_se"]] = function() MeasureRegrStdMSE$new()
-custom_measures[["regr.percentual_se"]] = function() MeasureRegrPercentualMSE$new()
+custom_measures[["regr.std_mse"]] = function() MeasureRegrStdMSE$new()
+custom_measures[["regr.percentual_mse"]] = function() MeasureRegrPercentualMSE$new()

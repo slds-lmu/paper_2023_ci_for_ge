@@ -9,8 +9,29 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
 }
 
 data_ids = list(
-  classif = c(45570, 45689, 45704, 45703, 45654, 45665, 45668, 45669, 45672, 45693),
+  classif = c(45570, 45689, 45704, 45654, 45665, 45668, 45669, 45672, 45693),
   regr = c(45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
+)
+
+data_names = list(
+  "45570" = "higgs",
+  "45689" = "adult",
+  "45704" = "covertype",
+  "45654" = "bates_classif_20",
+  "45665" = "colon",
+  "45668" = "bates_classif_100",
+  "45669" = "breast",
+  "45672" = "prostate",
+  "45693" = "electricity",
+  "45692" = "diamonds",
+  "45694" = "phyisiochemical_protein",
+  "45655" = "bates_regr_20",
+  "45666" = "friedman1",
+  "45667" = "bates_regr_100",
+  "45670" = "chen_10_null",
+  "45671" = "chen_10",
+  "45695" = "sgemm_gpu",
+  "45696" = "video_transcoding"
 )
 
 SEED = 42
@@ -42,20 +63,18 @@ N_REP = if (TEST) { # nolint
 RESAMPLINGS = if (TEST) {
   list(other = list(
     holdout            = list(id = "holdout",        params = list(ratio = 2 / 3)),
-    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 10)),
     subsampling_10     = list(id = "subsampling",    params = list(repeats = 10, ratio = 0.9)),
     subsampling_50     = list(id = "subsampling",    params = list(repeats = 50, ratio = 0.9)),
     cv_10              = list(id = "cv",             params = list(folds = 10)),
     repeated_cv_5_10   = list(id = "repeated_cv",    params = list(folds = 10, repeats = 5)),
-    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
     diettrich          = list(id = "repeated_cv",    params = list(repeats = 5, folds = 2)),
-    # in order to estimate 2.5 % quantile, we just need more than 10 reps
-    bootstrap_40       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 20)),
-    bootstrap_100      = list(id = "bootstrap",      params = list(ratio = 1, repeats = 20)),
+    bootstrap_100      = list(id = "bootstrap",      params = list(ratio = 1, repeats = 100)),
     # needed for the bootstrap method and to obtain PE on the holdout data
     insample           = list(id = "insample", params = list())
   ), small = list(
-    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 20, reps_inner = 10, ratio = 1)), # 200 iterations
+    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 100)), # 2500
+    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
+    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10, ratio = 1)), # 1000 iterations
     loo                = list(id = "loo", params = list()), # 50 or 100
     austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
     bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
@@ -67,8 +86,8 @@ RESAMPLINGS = if (TEST) {
 
 SIZES = if (TEST) {
   list(
-    small = c(50, 100),
-    other = c(500, 1000, 5000, 1000)
+    small = c(50L, 100L),
+    other = c(500L, 1000L, 5000L, 10000L)
   )
 } else {
   stop("not done yet")
@@ -87,10 +106,8 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     learners = list(
-      cv_ridge     = list(id = f("cv_glmnet"), params = list(alpha = 0)),
-      ridge        = list(id = f("glmnet"), params = list(alpha = 0, lambda = 0.05)),
+      cv_ridge     = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 10L)),
       rpart        = list(id = f("rpart"),    params = list(xval = 10)),
-      ranger_100   = list(id = f("ranger"),    params = list(num.trees = 100)),
       ranger_50    = list(id = f("ranger"),    params = list(num.trees = 50))
     )
 
@@ -151,8 +168,15 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 }
 
 make_task = function(data_id, size, repl) {
-  ids_use = seq(1, size) + size * (repl - 1)
-  ids_holdout = 5000001:5100000
+  # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observations
+  ids_holdout = if (resampling_id == "insample") {
+    fread(here::here("data", "splits", data_id, "holdout_100000.csv"))[[1L]]
+  } else {
+    fread(here::here("data", "splits", data_id, "holdout_50000.csv"))[[1L]]
+  }
+
+  ids_use = fread(here::here("data", "splits", data_id, paste0(repl, ".csv")))[[1L]]
+
   ids = c(ids_use, ids_holdout)
 
   odata = odt(data_id, parquet = TRUE)
@@ -174,6 +198,8 @@ make_task = function(data_id, size, repl) {
 
   task$id = odata$name
 
+  # do not stratify here!
+
   task$row_roles$use = ids_use
   task$row_roles$holdout = ids_holdout
 
@@ -185,8 +211,9 @@ make_resampling = function(resampling_id, resampling_params) {
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
-  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl)
+  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl, resampling_id = resampling_id)
   resampling = make_resampling(resampling_id, resampling_params)
+
   # we pass the task to make_learner() so we can skip some robustify steps
   # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
   learner = make_learner(
@@ -220,7 +247,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   )
 
   if (task$task_type == "regr") {
-    measures = msrs(paste0("regr.", c("rmse", "mae")))
+    measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
   } else if (task$task_type == "classif") {
     measures = msrs(paste0("classif.", c("acc", "bacc", "bbrier", "logloss")))
   }
@@ -229,7 +256,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   result = list(
     test_predictions = map(rr$predictions("test"), data.table::as.data.table),
     holdout_predictions = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures)))),
-    resampling = resampling
+    resampling_iters = resampling$iters
   )
   if (is_bootstrap) {
     result$train_predictions = map(rr$predictions("train"), data.table::as.data.table)
@@ -280,6 +307,7 @@ make_prob_designs = function(type) {
     new$learner_params = map(dt$learner, function(x) list(x$params))
     new$learner_name = map(dt$learner, function(x) list(x$name))
     new$task_type = task_type
+    new$task_name = task_names[[as.character(new$data_id)]]
 
     new
   }) |> rbindlist()

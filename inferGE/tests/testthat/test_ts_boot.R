@@ -5,3 +5,4 @@ test_that("infer_ts_boot works", {
 
   expect_ci_method(infer_ts_boot, rr)
 })
+

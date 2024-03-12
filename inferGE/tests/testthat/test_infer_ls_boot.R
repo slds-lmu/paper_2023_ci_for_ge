@@ -10,7 +10,7 @@ test_that("can estimate overfitting rate", {
 test_that("location shifted bootstrap", {
   learner = lrn("classif.rpart", predict_sets = c("train", "test"))
   task = tsk("iris")
-  boot = rsmp("bootstrap", ratio = 1, repeats = 40)
+  boot = rsmp("bootstrap", ratio = 1, repeats = 50)
   insample = rsmp("insample")
 
   rr_boot = resample(task, learner, boot)
@@ -18,3 +18,4 @@ test_that("location shifted bootstrap", {
 
   expect_ci_method(infer_ls_boot, rr_boot, y = rr_insample)
 })
+

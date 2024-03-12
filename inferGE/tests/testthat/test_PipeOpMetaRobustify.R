@@ -1,6 +1,5 @@
 test_that("PipeOpMetaRobustify works", {
-  library(mlr3pipelines)
-  po_meta = mlr3pipelines::po("metarobustify")
+  po_meta = PipeOpMetaRobustify$new()
 
   task = tsk("iris")
   task$row_roles$use = c(1, 1)

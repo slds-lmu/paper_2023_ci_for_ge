@@ -27,7 +27,8 @@ infer_ls_boot.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) { #n
 
 #' @export
 infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
-  err_oob = mean(x[, list(oob = mean(get(loss))), by = "iter"]$oob)
+  # Use definition from Efron, but remove terms that are 0
+  err_oob = mean(x[, list(oob = mean(get(loss))), by = "row_id"]$oob)
   errs_in = y[, list(err_in = mean(get(loss))), by = "iter"]$err_in
   err_in = mean(z[[loss]])
   est = est_632plus(err_oob, err_in, gamma)

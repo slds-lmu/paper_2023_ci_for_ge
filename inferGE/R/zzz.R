@@ -4,6 +4,8 @@
 #' @import mlr3misc
 #' @import mlr3
 #' @import checkmate
+#' @importFrom stats qnorm qt quantile sd var
+#' @importFrom utils getFromNamespace
 NULL
 
 mlr_task_generators = mlr3::mlr_task_generators
