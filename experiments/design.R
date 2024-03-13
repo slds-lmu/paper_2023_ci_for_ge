@@ -4,7 +4,6 @@ library(mlr3oml)
 library(duckdb)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
-
 if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) {
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
 }
@@ -74,11 +73,11 @@ RESAMPLINGS = if (TEST) {
     insample           = list(id = "insample", params = list())
   ), small = list(
     nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 200)), #5000
-    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.9)),
+    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.8)),
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10, ratio = 1)), # 1000 iterations
     loo                = list(id = "loo", params = list()), # 50 or 100
-    austern_zhou       = list(id = "austern_zhou", params = list(folds = 10)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
-    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 20)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
+    austern_zhou       = list(id = "austern_zhou", params = list(folds = 5)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
+    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 100)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
   ))
 } else {
   stop("not done yet")
@@ -169,7 +168,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 
 make_task = function(data_id, size, repl, resampling_id) {
   # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observation
-  # all others are only used for proxy quantities, where we aggregate over multiple such estimates 
+  # all others are only used for proxy quantities, where we aggregate over multiple such estimates
   # only for holdout do we have one iter, so there we also use 100k
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
   holdout_ids_path = here::here("data", "splits", data_id, if (resampling_id %in% c("insample", "holdout"))  "holdout_100000.parquet"  else "holdout_50000.parquet")
@@ -216,6 +215,33 @@ make_resampling = function(resampling_id, resampling_params) {
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
+  mlr3::Task$set("public", "holdout_ratio", NULL, overwrite = TRUE)
+  mlr3::Task$set("public", "holdout_rows", NULL, overwrite = TRUE)
+  # don't do this at home
+  mlr3::Task$set("active", "row_roles", function(rhs) {
+    if (missing(rhs)) {
+      roro = private$.row_roles
+      if (!is.null(self$holdout_ratio)) {
+        if (self$holdout_ratio == 1) {
+          roro$holdout = self$holdout_rows
+        } else {
+          roro$holdout = sample(self$holdout_rows, size = self$holdout_ratio * length(self$holdout_rows))
+        }
+      }
+
+      return(roro)
+    }
+
+    assert_has_backend(self)
+    assert_list(rhs, .var.name = "row_roles")
+    assert_names(names(rhs), "unique", permutation.of = mlr_reflections$task_row_roles, .var.name = "names of row_roles")
+    rhs = map(rhs, assert_row_ids, .var.name = "elements of row_roles")
+
+    private$.hash = NULL
+    private$.row_roles = rhs
+  }, overwrite = TRUE)
+
+
   lgr::get_logger("mlr3")$set_threshold("warn")
   task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl, resampling_id = resampling_id)
   resampling = make_resampling(resampling_id, resampling_params)
@@ -246,6 +272,11 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   withr::with_seed(seed = resample_seed,
     resampling$instantiate(task)
   )
+
+  holdout = task$row_roles$holdout
+
+  task$holdout_ratio = 1 / resampling$iters
+  task$holdout_rows = holdout
 
   # for good measure we specify the seed here as well
   rr = withr::with_seed(seed = resample_seed + 1,
