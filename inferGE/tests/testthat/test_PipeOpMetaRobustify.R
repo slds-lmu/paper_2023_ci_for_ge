@@ -31,3 +31,12 @@ test_that("PipeOpMetaRobustify works", {
   expect_class(rr, "ResampleResult")
   expect_equal(length(rr$predictions("holdout")[[1]]$truth), 10)
 })
+
+test_that("ids remain intact when no duplicates", {
+  po_meta = PipeOpMetaRobustify$new()
+  task = tsk("iris")$filter(2:3)
+  po_meta$train(list(task))
+  taskout = po_meta$predict(list(task))[[1L]]
+  expect_equal(taskout$row_ids, c(2, 3))
+})
+
