@@ -128,9 +128,9 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # but just to be sure.
   # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
   # which reduces variance in the comparison between learners
-  resample_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
+  resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
   # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
-  withr::with_seed(seed = resample_seed,
+  withr::with_seed(seed = resampling_seed,
     resampling$instantiate(task)
   )
 
@@ -140,9 +140,20 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   task$holdout_rows = holdout
 
   # for good measure we specify the seed here as well
-  rr = withr::with_seed(seed = resample_seed + 1,
+  rr = withr::with_seed(seed = resampling_seed + 1,
     resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
   )
+
+  convert_predictions = function(pred) pred$data
+
+  result = list(
+    resampling_seed = resampling_seed,
+    test_predictions = map(rr$predictions("test"), convert_predictions)
+  )
+
+  if ("train" %in% learner$predict_sets) {
+    result$train_predictions = map(rr$predictions("train"), convert_predictions)
+  }	 
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
@@ -150,86 +161,87 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     measures = msrs(paste0("classif.", c("acc", "bacc", "bbrier", "logloss")))
   }
 
-  result = list(
-    test_predictions = map(rr$predictions("test"), data.table::as.data.table),
-    train_predictions =  if ("train" %in% learner$predict_sets) map(rr$predictions("train"), data.table::as.data.table),
-    holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures)))),
-    resample_seed = resample_seed
-  )
-  if (is_bootstrap) {
-    result$train_predictions = map(rr$predictions("train"), data.table::as.data.table)
-  }
+  result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
+
   return(result)
 }
 
-make_resample_result = function(i, jt) {
+make_resample_result = function(i, jt, reg) {
   job_id = jt[i, "job.id"][[1L]]
   data_id = jt[i, "data_id"][[1L]]
   resampling_id = jt[i, "resampling_id"][[1L]]
-  resampling_params = jt[i, "resampling_params"][[1L]]
+  resampling_params = jt[i, "resampling_params"][[1L]][[1L]]
   learner_id = jt[i, "learner_id"][[1L]]
-  learner_params = jt[i, "learner_params"][[1L]]
+  learner_params = jt[i, "learner_params"][[1L]][[1L]]
   learner_name = jt[i, "learner_name"][[1L]]
   size = jt[i, "size"][[1L]]
   repl = jt[i, "repl"][[1L]]
 
-  result = loadResult(job_id)
+  result = loadResult(job_id, reg = reg)
 
-  # FIXME: resample_seed will be part of the result next time
-  job = makeJob(job_id)
-  resample_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
-  # resample_seed = result$resample_seed
+  # FIXME: resampling_seed will be part of the result next time
+  job = makeJob(job_id, reg = reg)
+  resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
+  # resampling_seed = result$resamping_seed
 
-  resampling = make_resampling(resampling_id, resampling_params)
+  resampling = make_resampling(resampling_id, list(resampling_params))
   task = make_task(data_id, size, repl)
   learner = make_learner(learner_id, learner_params, learner_name, task, resampling)
   withr::with_seed(resampling_seed, {
     resampling$instantiate(task)
   })
 
-  data = data.table(
-    task = list(task),
-    learner = learner,
-    learner_state = replicate(list(), n = resampling$iters)
-    resampling = list(resampling),
-    iteration = seq_len(resampling$iters),
-    prediction = result$test_predictions
-    uhash = UUIDgenerate(),
-    param_values = replicate(learner_params, n = resampling$iters)
-    learner_hash = list(learner$hash)
-  )
+  predictions = lapply(seq_along(result$test_predictions), function(iter) {
+    x = list(test = result$test_predictions[[iter]])
+    if (!is.null(result$train_predictions)) {
+      x$train = result$train_predictions[[iter]]
+    }		
+    return(x)
+  })
 
-  ReampleResult$new(ResultData$new(data, store_backends = TRUE))
+  data = as_result_data(
+   task = task,
+   learners = lapply(seq_len(resampling$iters), function(i) learner),
+   resampling = resampling, 
+   iterations = resampling$iters,
+   learner_states = NULL,
+   store_backends = TRUE)
+
+
+  rr = ResampleResult$new(data)
+  browser()
+  print(rr)
+  return(rr)
 }
 
 
 calculate_ci = function(config) {
-  args = config$args
-  name = names(config)
-  inference = config$infer
+  name = config[[1]]
+  inference = config[[2]]
+  args = config[[3]]
 
-  reg = loadRegistry(EXPERIMENT_PATH, writeable = FALSE)
+  reg = loadRegistry(EXPERIMENT_PATH, writeable = FALSE, make.default = FALSE)
 
   job_tables = map(args, function(.resampling_name) {
-    unwrap(getJobTable(reg))[list(.resampling_name), , on = "resampling_name"]
+    jt = unwrap(getJobTable(reg = reg))[list(.resampling_name), , on = "resampling_name"]
+    jt[order(data_id, size, learner_id), ]
   })
-
 
   n = nrow(job_tables[[1L]])
 
   # here we need to reassemble the resample result
   map_dtr(seq_len(n), function(i) {
     rrs = map(job_tables, function(jt) {
-      make_resample_result(i, jt)
+      make_resample_result(i, jt, reg = reg)
     })
-helper
     names(rrs) = names(args)
 
     loss_fns = if (rrs[[1L]]$task$task_type == "classif") {
       list(
         logloss  = inferGE::logloss,
         bbrier   = inferGE::bbrier,
-        zero_one = mlr3mmeasures::zero_one
+        zero_one = mlr3measures::zero_one
+      )
     } else {
       list(
         ae              = mlr3measurs::ae,
@@ -239,16 +251,25 @@ helper
       )
     }
 
-    map_dtr(seq_len(loss_fns), function(i) {
-      cbind(
+    learner_id = job_tables[[1]][i, "learner_id"][[1]]
+    task_name = job_tables[[1]][i, "task_name"][[1]]
+    size = job_tables[[1]][i, "size"][[1]]
+
+    dt = map_dtr(seq_along(loss_fns), function(i) {
+      browser()
+      x = cbind(
         data.table(
           measure = names(loss_fns)[i],
           learner = learner_id,
-          task = task_id,
+          task = task_name,
           size = size
         ),
         do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i])))
       )
+
+      return(x)
     })
+
+    return(dt)
   })
 }

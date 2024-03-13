@@ -76,7 +76,6 @@ MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
   private = list(
     .score = function(prediction, ...) {
       mean(percentual_se(truth = prediction$truth, response = prediction$response, ...))
-      logloss = inferGE
     }
   )
 )

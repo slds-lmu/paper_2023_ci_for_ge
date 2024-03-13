@@ -13,9 +13,11 @@ PipeOpMetaRobustify = R6::R6Class("PipeOpMetaRobustify",
     }
   ),
   private = list(
-    .train = function(inputs) {
+    .convert = function(inputs) {
       self$state = list()
       taskin = inputs[[1]]
+
+      if (!anyDuplicated(taskin$row_ids))  return(inputs)
 
       converter = switch(inputs[[1]]$task_type,
         classif = as_task_classif,
@@ -25,8 +27,7 @@ PipeOpMetaRobustify = R6::R6Class("PipeOpMetaRobustify",
       taskout = converter(taskin$data(), target = taskin$target_names, id = taskin$id)
       list(taskout)
     },
-    .predict = function(inputs) {
-        inputs
-    }
+    .train = function(inputs) private$.convert(inputs),
+    .predict = function(inputs) private$.convert(inputs)
   )
 )

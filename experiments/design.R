@@ -4,7 +4,7 @@ library(mlr3oml)
 library(duckdb)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
-source(here::here("exeriments", "helper.R"))
+source(here::here("experiments", "helper.R"))
 
 if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) {
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
@@ -40,7 +40,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run1"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run3"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -93,7 +93,7 @@ SIZES = if (TEST) {
 } else {
   stop("not done yet")
 }
-j
+
 
 TASKS = if (TEST) {
   data_ids
