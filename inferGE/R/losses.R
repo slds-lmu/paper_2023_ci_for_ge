@@ -39,7 +39,7 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
   public = list(
     initialize = function() {
       super$initialize(
-        id = "regr.std_se",
+        id = "regr.std_mse",
         range = c(0, Inf),
         minimize = TRUE,
         predict_type = "response",

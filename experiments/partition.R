@@ -8,7 +8,7 @@ options(mlr3oml.parquet = TRUE)
 #options(mlr3oml.cache = TRUE)
 n_data = 5100000L
 n_subsets = 500L
-sizes = c(50L, 100L, 500L, 1000L, 5000L, 10000L)
+sizes = c(50L, 200L, 500L, 1000L, 5000L, 10000L)
 
 data_ids = unname(unlist(list(
   classif = c(45570, 45689, 45704, 45654, 45665, 45668, 45669, 45672, 45693),

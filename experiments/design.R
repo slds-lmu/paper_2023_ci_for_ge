@@ -62,22 +62,22 @@ N_REP = if (TEST) { # nolint
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
-    holdout            = list(id = "holdout",        params = list(ratio = 2 / 3)),
-    subsampling_10     = list(id = "subsampling",    params = list(repeats = 10, ratio = 0.9)),
-    subsampling_50     = list(id = "subsampling",    params = list(repeats = 50, ratio = 0.9)),
-    cv_10              = list(id = "cv",             params = list(folds = 10)),
-    repeated_cv_5_10   = list(id = "repeated_cv",    params = list(folds = 10, repeats = 5)),
-    diettrich          = list(id = "repeated_cv",    params = list(repeats = 5, folds = 2)),
-    bootstrap_50       = list(id = "bootstrap",      params = list(ratio = 1, repeats = 50)),
-    bootstrap_100      = list(id = "bootstrap",      params = list(ratio = 1, repeats = 100)),
-    insample           = list(id = "insample", params = list())
+    holdout            = list(id = "holdout",          params = list(ratio = 2 / 3)),
+    subsampling_10     = list(id = "subsampling",      params = list(repeats = 10, ratio = 0.9)),
+    subsampling_50     = list(id = "subsampling",      params = list(repeats = 50, ratio = 0.9)),
+    cv_10              = list(id = "cv",               params = list(folds = 10)),
+    repeated_cv_5_10   = list(id = "repeated_cv",      params = list(folds = 10, repeats = 5)),
+    diettrich          = list(id = "repeated_cv",      params = list(repeats = 5, folds = 2)),
+    bootstrap_50       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 50)),
+    bootstrap_100      = list(id = "bootstrap",        params = list(ratio = 1, repeats = 100)),
+    insample           = list(id = "insample",         params = list())
   ), small = list(
-    nested_cv          = list(id = "nested_cv",      params = list(folds = 5, repeats = 200)), #5000
-    conservative_z     = list(id = "conservative_z", params = list(J = 10, M = 10, ratio = 0.8)),
-    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10, ratio = 1)), # 1000 iterations
-    loo                = list(id = "loo", params = list()), # 50 or 100
-    austern_zhou       = list(id = "austern_zhou", params = list(folds = 5)), # -> n / 2 * K + K: n = 50 -> 260, n = 100 -> 510
-    bootstrap_ccv      = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 100)) # -> 0.6 * n * 10 iters: n = 50 -> 600, n = 100 -> 1200
+    nested_cv          = list(id = "nested_cv",        params = list(folds = 5, repeats = 200)),
+    conservative_z     = list(id = "conservative_z",   params = list(J = 15, M = 10, ratio = 0.9)),
+    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10)),
+    loo                = list(id = "loo",              params = list()),
+    austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5)),
+    bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
   ))
 } else {
   stop("not done yet")
@@ -105,9 +105,9 @@ LEARNERS = if (TEST) {
       paste0(task_type, ".", x)
     }
     learners = list(
-      cv_ridge     = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 10L)),
-      rpart        = list(id = f("rpart"),    params = list(xval = 10)),
-      ranger_50    = list(id = f("ranger"),    params = list(num.trees = 50))
+      ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 3L)),
+      rpart  = list(id = f("rpart"),     params = list(xval = 3L)),
+      ranger = list(id = f("ranger"),    params = list(num.trees = 50))
     )
 
     imap(learners, function(learner, name) {
@@ -171,7 +171,7 @@ make_task = function(data_id, size, repl, resampling_id) {
   # all others are only used for proxy quantities, where we aggregate over multiple such estimates
   # only for holdout do we have one iter, so there we also use 100k
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
-  holdout_ids_path = here::here("data", "splits", data_id, if (resampling_id %in% c("insample", "holdout"))  "holdout_100000.parquet"  else "holdout_50000.parquet")
+  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
   use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
 
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
@@ -187,9 +187,9 @@ make_task = function(data_id, size, repl, resampling_id) {
   target = odata$target_names
 
   backend = as_data_backend(odata)
-
   tmpdata = backend$data(ids, backend$colnames)
-  # mlr3 bugs in cbind ...
+  rm(backend)
+  # mlr3 bug in cbind ...
   names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
 
   in_memory_backend = as_data_backend(tmpdata, primary_key = "..row_id")
@@ -292,8 +292,8 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # FIXME: Is this output enough to calculate all the proxy quantities?
   result = list(
     test_predictions = map(rr$predictions("test"), data.table::as.data.table),
-    holdout_predictions = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures)))),
-    resampling_iters = resampling$iters
+    #holdout_predictions = rr$predictions("holdout"),
+    holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
   )
   if (is_bootstrap) {
     result$train_predictions = map(rr$predictions("train"), data.table::as.data.table)

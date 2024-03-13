@@ -5,8 +5,10 @@ ResamplingNestedBootstrap = R6Class("ResamplingNestedBootstrap",
     initialize = function() {
       param_set = ps(
         reps_outer = p_int(lower = 1, tags = "required"),
-        reps_inner = p_int(lower = 1, tags = "required")
+        reps_inner = p_int(lower = 1, tags = "required"),
+        ratio      = p_int(lower = 0, upper = 1, tags = "required")
       )
+      param_set$values$ratio = 1
 
       super$initialize(
         id = "nested_bootstrap",
@@ -44,8 +46,9 @@ ResamplingNestedBootstrap = R6Class("ResamplingNestedBootstrap",
     .sample = function(ids, task, ...) {
       task = task$clone(deep = TRUE)
       pv = self$param_set$get_values()
+      ratio = pv$ratio
 
-      outer_boot = rsmp("bootstrap", repeats = pv$reps_outer, ratio = 1)$instantiate(task)
+      outer_boot = rsmp("bootstrap", repeats = pv$reps_outer, ratio = ratio)$instantiate(task)
 
       resamplings = map(seq_len(outer_boot$iters), function(i) {
         ids = outer_boot$train_set(i)
@@ -53,7 +56,7 @@ ResamplingNestedBootstrap = R6Class("ResamplingNestedBootstrap",
 
         list(
           rsmp("insample")$instantiate(task),
-          rsmp("bootstrap", ratio = 1, repeats = pv$reps_inner)$instantiate(task)
+          rsmp("bootstrap", ratio = ratio, repeats = pv$reps_inner)$instantiate(task)
         )
       })
 

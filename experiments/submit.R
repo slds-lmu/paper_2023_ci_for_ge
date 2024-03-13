@@ -6,14 +6,14 @@ TEST = TRUE
 
 if (TEST) {
   # BEWARE THE CORRECT NUMBER AT THE END
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/newtest11"
+  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run1"
 } else {
   REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
 
-reg = loadRegistry(REGISTRY_PATH, writeable = FALSE)
+reg = loadRegistry(REGISTRY_PATH, writeable = TRUE)
 
-job_table = getJobTable(findExpired())
+job_table = getJobTable()
 
 ids = job_table$job.id
 chunks = data.table(
