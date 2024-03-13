@@ -6,14 +6,14 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run3"
-EVAL_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/eval15"
+EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run5"
+EVAL_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/eval18"
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
 } else {
   makeRegistry(EVAL_PATH,
-    packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid"),
+    packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "mlr3measures"),
     seed = 1L,
   )
 }

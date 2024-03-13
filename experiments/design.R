@@ -40,7 +40,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run3"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run5"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -177,7 +177,7 @@ make_prob_designs = function(type) {
     new$size = dt$size
     new$learner_id = map_chr(dt$learner, "id")
     new$learner_params = map(dt$learner, function(x) list(x$params))
-    new$learner_name = map(dt$learner, function(x) list(x$name))
+    new$learner_name = map_chr(dt$learner, function(x) x$name)
     new$task_type = task_type
     new$task_name = data_names[as.character(new$data_id)]
 

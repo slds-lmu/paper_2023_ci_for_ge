@@ -204,7 +204,7 @@ make_resample_result = function(i, jt, reg) {
    learners = lapply(seq_len(resampling$iters), function(i) learner),
    predictions = predictions,
    resampling = resampling, 
-   iterations = resampling$iters,
+   iterations = seq_len(resampling$iters),
    learner_states = NULL,
    store_backends = TRUE)
 
@@ -245,7 +245,7 @@ calculate_ci = function(config) {
       )
     } else {
       list(
-        ae              = mlr3measurs::ae,
+        ae              = mlr3measures::ae,
         se              = mlr3measures::se,
         percentual_se   = inferGE::percentual_se,
         standardized_se = inferGE::standardized_se
