@@ -19,6 +19,7 @@ standardized_se = function(truth, response, ...) {
   mlr3measures::se(truth, response) / sd(truth) + EPS
 }
 
+#' @export
 logloss = function(truth, prob, eps = 1e-15, ...) {
   assert_classif(truth, prob = prob)
   checkmate::assert_number(eps, lower = 0, upper = 1)
@@ -27,6 +28,7 @@ logloss = function(truth, prob, eps = 1e-15, ...) {
   p = pmax(eps, pmin(1 - eps, p))
 }
 
+#' @export
 bbrier = function(truth, prob, ...) {
   # we don't really care which is the 'real' positive class, we just want one class
   positive = levels(truth)[1L]
@@ -34,6 +36,7 @@ bbrier = function(truth, prob, ...) {
   .se(truth == positive, prob[, positive])
 }
 
+#' @export
 MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
   inherit = mlr3::MeasureRegr,
   public = list(
@@ -55,6 +58,7 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
   )
 )
 
+#' @export
 MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
   inherit = mlr3::MeasureRegr,
   public = list(
@@ -72,6 +76,7 @@ MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
   private = list(
     .score = function(prediction, ...) {
       mean(percentual_se(truth = prediction$truth, response = prediction$response, ...))
+      logloss = inferGE
     }
   )
 )

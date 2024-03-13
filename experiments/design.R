@@ -4,6 +4,8 @@ library(mlr3oml)
 library(duckdb)
 devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
 
+source(here::here("exeriments", "helper.R"))
+
 if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) {
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
 }
@@ -91,6 +93,7 @@ SIZES = if (TEST) {
 } else {
   stop("not done yet")
 }
+j
 
 TASKS = if (TEST) {
   data_ids
@@ -132,174 +135,6 @@ LEARNERS = if (TEST) {
 # There are more methods than entries here (multiple methods for CV e.g.)
 # For every resampling we do not only make predictions on the test set, bu also on the holdout set
 
-
-# @param x An element from the learner_ids list.
-# @param name The name from the learner_ids list.
-# @param task The task for which to create the learner (classif or regr).
-
-make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
-  learner = do.call(lrn,
-    args = c(list(.key = learner_id), learner_params)
-  )
-
-
-  # we need this because bootstrapping is broken with mlr3pipelines
-  graph = ppl("robustify", learner = learner, task = task) %>>%
-    learner
-
-  if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")) {
-    graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
-  }
-
-  learner = as_learner(graph)
-
-  if (startsWith(learner_id, "classif")) {
-    fallback = lrn("classif.featureless")
-    fallback$predict_type = learner$predict_type = "prob"
-  } else {
-    fallback = lrn("regr.featureless")
-  }
-  learner$predict_sets = c("test", "holdout")
-  learner$encapsulate = c(train = "try", predict = "try")
-  learner$fallback = fallback
-  learner$id = learner_name
-  return(learner)
-}
-
-make_task = function(data_id, size, repl, resampling_id) {
-  # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observation
-  # all others are only used for proxy quantities, where we aggregate over multiple such estimates
-  # only for holdout do we have one iter, so there we also use 100k
-  con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
-  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
-  use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
-
-  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
-  holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
-  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
-  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
-
-  ids = c(use_ids, holdout_ids)
-
-  odata = odt(data_id, parquet = TRUE)
-  target = odata$target_names
-
-  backend = as_data_backend(odata)
-  tmpdata = backend$data(ids, backend$colnames)
-  rm(backend)
-  # mlr3 bug in cbind ...
-  names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
-
-  in_memory_backend = as_data_backend(tmpdata, primary_key = "..row_id")
-
-  task = if (is.factor(tmpdata[[target]])) {
-    as_task_classif(in_memory_backend, target = target)
-  } else {
-    as_task_regr(in_memory_backend, target = target)
-  }
-
-  task$id = odata$name
-
-  # do not stratify here!
-
-  task$row_roles$use = use_ids
-  task$row_roles$holdout = holdout_ids
-
-  return(task)
-}
-
-make_resampling = function(resampling_id, resampling_params) {
-  resampling = do.call(rsmp, c(list(.key = resampling_id), resampling_params[[1]]))
-}
-
-run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
-  mlr3::Task$set("public", "holdout_ratio", NULL, overwrite = TRUE)
-  mlr3::Task$set("public", "holdout_rows", NULL, overwrite = TRUE)
-  # don't do this at home
-  mlr3::Task$set("active", "row_roles", function(rhs) {
-    if (missing(rhs)) {
-      roro = private$.row_roles
-      if (!is.null(self$holdout_ratio)) {
-        if (self$holdout_ratio == 1) {
-          roro$holdout = self$holdout_rows
-        } else {
-          roro$holdout = sample(self$holdout_rows, size = self$holdout_ratio * length(self$holdout_rows))
-        }
-      }
-
-      return(roro)
-    }
-
-    assert_has_backend(self)
-    assert_list(rhs, .var.name = "row_roles")
-    assert_names(names(rhs), "unique", permutation.of = mlr_reflections$task_row_roles, .var.name = "names of row_roles")
-    rhs = map(rhs, assert_row_ids, .var.name = "elements of row_roles")
-
-    private$.hash = NULL
-    private$.row_roles = rhs
-  }, overwrite = TRUE)
-
-
-  lgr::get_logger("mlr3")$set_threshold("warn")
-  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl, resampling_id = resampling_id)
-  resampling = make_resampling(resampling_id, resampling_params)
-
-  # we pass the task to make_learner() so we can skip some robustify steps
-  # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
-  learner = make_learner(
-    learner_id = instance$learner_id,
-    learner_params = instance$learner_params[[1]],
-    learner_name = instance$learner_name,
-    task = task,
-    resampling = resampling
-  )
-  # for bootstrap, we also need the train predictions for the location-shifted bootstrap method
-  # so we can estimate the quantiles
-  is_bootstrap = inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")
-  if (is_bootstrap) {
-    learner$predict_sets = union(learner$predict_sets, "train")
-  }
-
-
-  # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
-  # but just to be sure.
-  # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
-  # which reduces variance in the comparison between learners
-  resample_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
-  # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
-  withr::with_seed(seed = resample_seed,
-    resampling$instantiate(task)
-  )
-
-  holdout = task$row_roles$holdout
-
-  task$holdout_ratio = 1 / resampling$iters
-  task$holdout_rows = holdout
-
-  # for good measure we specify the seed here as well
-  rr = withr::with_seed(seed = resample_seed + 1,
-    resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
-  )
-
-  if (task$task_type == "regr") {
-    measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
-  } else if (task$task_type == "classif") {
-    measures = msrs(paste0("classif.", c("acc", "bacc", "bbrier", "logloss")))
-  }
-
-  # FIXME: Is this output enough to calculate all the proxy quantities?
-  result = list(
-    test_predictions = map(rr$predictions("test"), data.table::as.data.table),
-    #holdout_predictions = rr$predictions("holdout"),
-    holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
-  )
-  if (is_bootstrap) {
-    result$train_predictions = map(rr$predictions("train"), data.table::as.data.table)
-  }
-  return(result)
-}
 
 batchExport(list(
   make_task = make_task,

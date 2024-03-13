@@ -48,7 +48,6 @@ Collate:
     'infer_bootstrap_ccv.R'
     'infer_conservative_z.R'
     'infer_corrected_t.R'
-    'infer_glmnet.R'
     'infer_holdout.R'
     'infer_oob.R'
     'losses.R'
