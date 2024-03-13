@@ -6,11 +6,8 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run1"
-EVAL_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/eval14"
-
-
-
+EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run3"
+EVAL_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/eval15"
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
@@ -52,6 +49,4 @@ batchExport(list(
   reg = EVAL_REG)
 
 batchMap(calculate_ci, config = EVAL_CONFIG)
-
-submitJobs(1)
 

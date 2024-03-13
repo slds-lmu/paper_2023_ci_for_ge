@@ -202,6 +202,7 @@ make_resample_result = function(i, jt, reg) {
   data = as_result_data(
    task = task,
    learners = lapply(seq_len(resampling$iters), function(i) learner),
+   predictions = predictions,
    resampling = resampling, 
    iterations = resampling$iters,
    learner_states = NULL,
@@ -223,7 +224,7 @@ calculate_ci = function(config) {
   reg = loadRegistry(EXPERIMENT_PATH, writeable = FALSE, make.default = FALSE)
 
   job_tables = map(args, function(.resampling_name) {
-    jt = unwrap(getJobTable(reg = reg))[list(.resampling_name), , on = "resampling_name"]
+    jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))[list(.resampling_name), , on = "resampling_name"]
     jt[order(data_id, size, learner_id), ]
   })
 
