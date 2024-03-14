@@ -273,7 +273,8 @@ calculate_ci = function(config, n = NULL) {
           learner = learner_id,
           task = task_name,
           size = size,
-	  repl = repl
+	  repl = repl,
+	  iters = sum(map_int(rrs, "iters"))
         ), ci)
 
       return(x)
