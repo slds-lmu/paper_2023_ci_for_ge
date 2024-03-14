@@ -40,7 +40,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run5"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -87,8 +87,8 @@ RESAMPLINGS = if (TEST) {
 
 SIZES = if (TEST) {
   list(
-    small = c(50L, 200L),
-    other = c(500L, 1000L, 5000L, 10000L)
+    small = c(50, 200L, 500L),
+    other = c(1000L, 5000L, 10000L)
   )
 } else {
   stop("not done yet")

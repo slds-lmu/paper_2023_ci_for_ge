@@ -179,10 +179,8 @@ make_resample_result = function(i, jt, reg) {
 
   result = loadResult(job_id, reg = reg)
 
-  # FIXME: resampling_seed will be part of the result next time
   job = makeJob(job_id, reg = reg)
-  resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
-  # resampling_seed = result$resamping_seed
+  resampling_seed = result$resampling_seed
 
   resampling = make_resampling(resampling_id, list(resampling_params))
   task = make_task(data_id, size, repl)
@@ -214,23 +212,30 @@ make_resample_result = function(i, jt, reg) {
 
 
 calculate_ci = function(config, n = NULL) {
+  set.seed(sample.int(100000, 1))
   name = config[[1]]
   inference = config[[2]]
   args = config[[3]]
 
   reg = loadRegistry(EXPERIMENT_PATH, writeable = FALSE, make.default = FALSE)
 
+  jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))
+  # random subset for testing
   job_tables = map(args, function(.resampling_name) {
-    jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))[list(.resampling_name), , on = "resampling_name"]
+    jt = jt[list(.resampling_name), , on = "resampling_name"]
     jt = jt[order(data_id, size, learner_id), ]
-    if (!is.null(n)) jt = jt[sample(seq_len(nrow(jt)), n), ]
     return(jt)
   })
 
-  n = nrow(job_tables[[1L]])
+  if (!is.null(n)) {
+    rss = sample(seq_len(nrow(job_tables[[1]])), n)
+    job_tables = map(job_tables, function(jt) jt[rss, ])
+  }
+
+  nsub = nrow(job_tables[[1]])
 
   # here we need to reassemble the resample result
-  map_dtr(seq_len(n), function(i) {
+  map_dtr(seq_len(nsub), function(i) {
     rrs = map(job_tables, function(jt) {
       make_resample_result(i, jt, reg = reg)
     })
@@ -260,7 +265,7 @@ calculate_ci = function(config, n = NULL) {
       ci = try(do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i]))), silent = TRUE)
       if (inherits(ci, "try-error")) {
         job_ids = map(job_tables, function(jt) jt[i, "job.id"][[1]])
-	ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(error = ci, job_ids = job_ids))
+	ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci, job_ids = job_ids)))
       }
       x = cbind(
         data.table(
