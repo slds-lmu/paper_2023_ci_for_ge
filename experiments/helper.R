@@ -223,7 +223,7 @@ calculate_ci = function(config, n = NULL) {
   job_tables = map(args, function(.resampling_name) {
     jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))[list(.resampling_name), , on = "resampling_name"]
     jt = jt[order(data_id, size, learner_id), ]
-    if (!is.null(n)) jt = jt[1, ]
+    if (!is.null(n)) jt = jt[sample(seq_len(nrow(jt)), n), ]
     return(jt)
   })
 
@@ -254,21 +254,26 @@ calculate_ci = function(config, n = NULL) {
     learner_id = job_tables[[1]][i, "learner_id"][[1]]
     task_name = job_tables[[1]][i, "task_name"][[1]]
     size = job_tables[[1]][i, "size"][[1]]
+    repl = job_tables[[1]][i, "repl"][[1]]
 
     dt = map_dtr(seq_along(loss_fns), function(i) {
+      ci = try(do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i]))), silent = TRUE)
+      if (inherits(ci, "try-error")) {
+        job_ids = map(job_tables, function(jt) jt[i, "job.id"][[1]])
+	ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(error = ci, job_ids = job_ids))
+      }
       x = cbind(
         data.table(
           measure = names(loss_fns)[i],
           learner = learner_id,
           task = task_name,
-          size = size
-        ),
-        do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i])))
-      )
+          size = size,
+	  repl = repl
+        ), ci)
 
       return(x)
-    })
+    }, .fill = TRUE)
 
     return(dt)
-  })
+  }, .fill = TRUE)
 }

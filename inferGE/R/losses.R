@@ -16,7 +16,7 @@ percentual_se = function(truth, response, ...) {
 #' @export
 standardized_se = function(truth, response, ...) {
   assert_regr(truth, response = response)
-  mlr3measures::se(truth, response) / sd(truth) + EPS
+  mlr3measures::se(truth, response) / (sd(truth) + EPS)
 }
 
 #' @export
