@@ -4,6 +4,7 @@ test_that("infer_52cv works", {
   learner = lrn("classif.rpart")
 
   rr = resample(task, learner, resampling)
+  infer_52cv(rr)
 
   expect_ci_method(infer_52cv, rr)
 })

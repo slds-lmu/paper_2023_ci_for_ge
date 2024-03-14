@@ -20,3 +20,12 @@ test_that("location shifted bootstrap", {
   expect_ci_method(infer_ls_boot, rr_boot, y = rr_insample)
 })
 
+test_that("prob", {
+  rr_boot = resample(tsk("iris"), lrn("classif.rpart", predict_type = "prob", predict_sets = c("train", "test")),
+    rsmp("bootstrap"))
+  rr_in = resample(tsk("iris"), lrn("classif.rpart", predict_type = "prob", predict_sets = c("train", "test")),
+    rsmp("insample"))
+
+  infer_ls_boot(rr_boot, rr_in, los = list(logloss = logloss))
+})
+

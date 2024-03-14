@@ -15,6 +15,7 @@ infer_52cv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
 
 #' @export
 infer_52cv.loss_table = function(x, alpha = 0.05, loss, resampling) {
+  browser()
   assert_class(resampling, "ResamplingRepeatedCV")
   assert_true(resampling$param_set$values$repeats == 5L && resampling$param_set$values$folds == 2L)
   assert_string(loss)
@@ -23,11 +24,10 @@ infer_52cv.loss_table = function(x, alpha = 0.05, loss, resampling) {
   fold_name = make.unique(c(colnames(x), "fold"))[ncol(x) + 1L]
   replication_name = make.unique(c(colnames(x), "replication"))[ncol(x) + 1L]
 
-  x[[fold_name]] = rep(1:2, times = 5)
-  x[[replication_name]] = rep(1:5, each = 2)
-
   # first we calculate the mean over both folds for each replication
-  ps = x[, list(avg = mean(get(loss))), by = c(replication_name, fold_name)]
+  ps = x[, list(avg = mean(get(loss))), by = "iter"]
+  set(ps, j = fold_name, value = rep(1:2, times = 5))
+  set(ps, j = replication_name, value = rep(1:5, each = 2))
 
   p11 = ps[get(fold_name) == 1L & get(replication_name) == 1L, ]$avg
 

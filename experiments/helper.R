@@ -153,7 +153,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
 
   if ("train" %in% learner$predict_sets) {
     result$train_predictions = map(rr$predictions("train"), convert_predictions)
-  }	 
+  }
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
@@ -195,7 +195,7 @@ make_resample_result = function(i, jt, reg) {
     x = list(test = result$test_predictions[[iter]])
     if (!is.null(result$train_predictions)) {
       x$train = result$train_predictions[[iter]]
-    }		
+    }
     return(x)
   })
 
@@ -203,7 +203,7 @@ make_resample_result = function(i, jt, reg) {
    task = task,
    learners = lapply(seq_len(resampling$iters), function(i) learner),
    predictions = predictions,
-   resampling = resampling, 
+   resampling = resampling,
    iterations = seq_len(resampling$iters),
    learner_states = NULL,
    store_backends = TRUE)
