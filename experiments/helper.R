@@ -208,15 +208,12 @@ make_resample_result = function(i, jt, reg) {
    learner_states = NULL,
    store_backends = TRUE)
 
-
   rr = ResampleResult$new(data)
-  browser()
-  print(rr)
   return(rr)
 }
 
 
-calculate_ci = function(config) {
+calculate_ci = function(config, n = NULL) {
   name = config[[1]]
   inference = config[[2]]
   args = config[[3]]
@@ -225,7 +222,9 @@ calculate_ci = function(config) {
 
   job_tables = map(args, function(.resampling_name) {
     jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))[list(.resampling_name), , on = "resampling_name"]
-    jt[order(data_id, size, learner_id), ]
+    jt = jt[order(data_id, size, learner_id), ]
+    if (!is.null(n)) jt = jt[1, ]
+    return(jt)
   })
 
   n = nrow(job_tables[[1L]])
@@ -257,7 +256,6 @@ calculate_ci = function(config) {
     size = job_tables[[1]][i, "size"][[1]]
 
     dt = map_dtr(seq_along(loss_fns), function(i) {
-      browser()
       x = cbind(
         data.table(
           measure = names(loss_fns)[i],
