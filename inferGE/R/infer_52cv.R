@@ -15,7 +15,6 @@ infer_52cv.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
 
 #' @export
 infer_52cv.loss_table = function(x, alpha = 0.05, loss, resampling) {
-  browser()
   assert_class(resampling, "ResamplingRepeatedCV")
   assert_true(resampling$param_set$values$repeats == 5L && resampling$param_set$values$folds == 2L)
   assert_string(loss)

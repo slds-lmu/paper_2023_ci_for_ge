@@ -4,7 +4,7 @@ test_that("can estimate overfitting rate", {
   task2$row_roles$use = rep(task2$row_roles$use, 2)
   pred = lrn("classif.rpart")$train(task)$predict(task2)
   # still reasonably fast, even with n \approx 10000
-  expect_numeric(est_gamma(pred$truth, pred$response, mlr3measures::zero_one))
+  expect_numeric(est_gamma(pred, mlr3measures::zero_one))
 })
 
 test_that("location shifted bootstrap", {
@@ -26,6 +26,6 @@ test_that("prob", {
   rr_in = resample(tsk("iris"), lrn("classif.rpart", predict_type = "prob", predict_sets = c("train", "test")),
     rsmp("insample"))
 
-  infer_ls_boot(rr_boot, rr_in, los = list(logloss = logloss))
+  expect_data_table(infer_ls_boot(rr_boot, rr_in, loss_fn = list(logloss = logloss)))
 })
 

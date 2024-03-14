@@ -19,12 +19,7 @@ infer_ls_boot.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) { #n
   loss_table_insample = calculate_loss(y$predictions("test"), loss_fn)
 
   # loss_fn is a named list
-  gamma = if ("prob" %in% y$predictions("test")[[1L]]$predict_types) {
-    est_gamma(truth = y$prediction("test")$truth, prob = y$prediction("test")$prob, response = y$prediction("test")$response,
-      loss  = loss_fn[[1L]])
-  } else {
-    est_gamma(truth = y$prediction("test")$truth, response = y$prediction("test")$response, loss  = loss_fn[[1L]])
-  }
+  gamma = est_gamma(y$predictions("test")[[1L]], loss_fn[[1L]])
 
   infer_ls_boot(x = loss_table_test, y = loss_table_train, z = loss_table_insample, gamma = gamma,
     alpha = alpha, loss = names(loss_fn))
@@ -48,13 +43,13 @@ infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
   )
 }
 
-est_gamma = function(truth, response, prob = NULL, loss) {
-  mean(map_dbl(seq_along(truth), function(i) {
-    if (!is.null(prob)) {
-      mean(loss(truth = rep(truth[i], length(response)), response = response, prob = prob))
-    } else {
-      mean(loss(truth = rep(truth[i], length(response)), response = response))
-    }
+est_gamma = function(pred, loss) {
+  prob = if ("prob" %in% pred$predict_types) {
+    pred$prob
+  }
+
+  mean(map_dbl(seq_along(pred$truth), function(i) {
+    mean(loss(truth = rep(pred$truth[i], length(pred$response)), response = pred$response, prob = prob))
   }))
 }
 

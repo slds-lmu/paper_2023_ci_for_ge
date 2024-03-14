@@ -21,7 +21,7 @@ infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
   loss_table_insample = calculate_loss(insample_pred, loss_fn)
   err_in = mean(loss_table_insample[[loss]])
 
-  gamma = est_gamma(insample_pred[[1L]]$truth, insample_pred[[1L]]$response, loss_fn[[1L]])
+  gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])
 
   estimate = est_632plus(err_oob, err_in, gamma)
 
