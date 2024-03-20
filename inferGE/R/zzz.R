@@ -8,8 +8,6 @@
 #' @importFrom utils getFromNamespace
 NULL
 
-mlr_task_generators = mlr3::mlr_task_generators
-
 lg = mlr3::mlr_reflections$loggers[["mlr3"]]
 
 custom_resamplings = new.env()
