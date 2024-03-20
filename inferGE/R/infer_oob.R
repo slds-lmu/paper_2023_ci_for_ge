@@ -11,7 +11,6 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   loss = names(loss_fn)
 
   n = x$task$nrow
-  pred = x$prediction("test")
   preds = x$predictions("test")
   loss_table = calculate_loss(preds, loss_fn)
 
@@ -19,10 +18,9 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   # IDs that are in at least one test set
   test_ids = unique(unlist(map(seq_len(x$resampling$iters), function(iter) x$resampling$test_set(iter))))
 
-  # useable ids are those that are in the both the train and test set at least ojnce
+  # useable ids are those that are in the test set at least once
   useable_ids = task_ids[task_ids %in% test_ids]
-  assert_true(length(useable_ids) > 0L)
-  Es = loss_table[, list(loss = mean(get(loss))), by = "row_id"][list(useable_ids), "loss", on = "row_id"]$loss
+  Es = loss_table[, list(loss = mean(get(loss))), by = "row_id"]$loss
 
   # this disregards those that are not useable
   Err1 = mean(Es) # (37)
@@ -33,7 +31,7 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
     map_int(useable_ids, function(id) sum(id == train_ids)) # before (15)
   }))
   # I[i, b] indicates whether `useable_ids[i]` is in the test set of iteration `b`
-  I = N > 0 # (15)
+  I = N == 0 # (15)
 
   qs = map_dbl(seq_along(preds), function(b) {
     (1 / n) * loss_table[list(b), sum(get(loss)), on = "iter"] # (36)

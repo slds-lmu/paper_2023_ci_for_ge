@@ -237,7 +237,10 @@ calculate_ci = function(config, n = NULL) {
   # here we need to reassemble the resample result
   map_dtr(seq_len(nsub), function(i) {
     rrs = map(job_tables, function(jt) {
-      make_resample_result(i, jt, reg = reg)
+      tic()
+      x = make_resample_result(i, jt, reg = reg)
+      toc()
+      return(x)
     })
     names(rrs) = names(args)
 
@@ -262,7 +265,9 @@ calculate_ci = function(config, n = NULL) {
     repl = job_tables[[1]][i, "repl"][[1]]
 
     dt = map_dtr(seq_along(loss_fns), function(i) {
+      tic()
       ci = try(do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i]))), silent = TRUE)
+      toc()
       if (inherits(ci, "try-error")) {
         job_ids = map(job_tables, function(jt) jt[i, "job.id"][[1]])
 	ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci, job_ids = job_ids)))

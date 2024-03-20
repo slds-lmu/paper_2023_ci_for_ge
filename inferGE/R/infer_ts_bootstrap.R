@@ -22,7 +22,7 @@ infer_ts_boot.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #noli
     err_in = mean(loss_table_insample[[loss]])
 
     loss_table_bootstrap = calculate_loss(x$predictions("test")[bootstrap_iters], loss_fn)
-    err_oob = mean(loss_table_bootstrap[, list(oob = mean(get(loss))), by = "iter"]$oob)
+    err_oob = mean(loss_table_bootstrap[, list(oob = mean(get(loss))), by = "row_id"]$oob)
 
     gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])
 
