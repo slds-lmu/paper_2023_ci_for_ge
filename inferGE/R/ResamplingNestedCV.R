@@ -1,3 +1,13 @@
+#' @title Nested Cross-Validation
+#' @description
+#' We have R times:
+#' * K outer resamplings
+#' * K * (K - 1) inner resamplings
+#'
+#' The first K^2 iters are then:
+#' The first K are the outer K iterations.
+#' Then, we have K * (K - 1) inner iterations.
+#'
 #' @export
 ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
   inherit = mlr3::Resampling,
@@ -89,8 +99,12 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
       info = self$unflatten(i)
 
       if (is.na(info$inner)) { # an outer iteration
+        # we first subset subset to the specific iteration and then we remove the outer fold to get the
+        # test set from the outer CV
         self$instance[list(info$rep), ,  on = "rep"][!list(info$outer), "row_id", on = "fold"][[1L]]
       } else {
+        # if we are in the inner CV that removed the `outer` test set from the outer CV, we first remove
+        # the outer fold and the pick one of the remaining folds as the inner test set
         fold_inner = seq_len(folds)[-info$outer][info$inner]
         self$instance[list(info$rep), , on = "rep"][ # subset to the repetition
           !list(info$outer), , on = "fold"][ # subset to the train set of the outer CV
@@ -102,13 +116,15 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
       info = self$unflatten(i)
 
       if (is.na(info$inner)) { # an outer iteration
+        # first, we subset to the repetition, then we simply pick the 'outer' fold as the test set.
         self$instance[list(info$rep), ,  on = "rep"][list(info$outer), "row_id", on = "fold"][[1L]]
       } else {
+        # which of the outer folds is removed for the inner CV
         fold_inner = seq_len(folds)[-info$outer][info$inner]
 
         self$instance[list(info$rep), , on = "rep"][ # subset to the repetition
           !list(info$outer), , on = "fold"][ # subset to the train set of the outer CV
-          list(fold_inner), "row_id", on = "fold"][[1L]] # subset to the train set of the inner CV
+          list(fold_inner), "row_id", on = "fold"][[1L]] # subset to the test set of the inner CV
       }
     },
     .combine = function(instances) {
@@ -120,5 +136,3 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
 
 #' @include zzz.R
 custom_resamplings[["nested_cv"]] = function() ResamplingNestedCV$new()
-# FIXME: remove this
-custom_resamplings[["repeated_nested_cv"]] = function() ResamplingNestedCV$new()
