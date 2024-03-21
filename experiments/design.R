@@ -77,7 +77,8 @@ RESAMPLINGS = if (TEST) {
     conservative_z     = list(id = "conservative_z",   params = list(J = 15, M = 10, ratio = 0.9)),
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
     loo                = list(id = "loo",              params = list()),
-    austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5)),
+    austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5, repeats = 1)),
+    austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5)),
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
   ))
 } else {
