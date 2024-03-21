@@ -20,6 +20,7 @@ infer_austern_zhou.loss_table = function(x, alpha = 0.05, loss, resampling) { # 
   assert_string(loss)
   assert_choice(loss, names(x))
   folds = resampling$param_set$values$folds
+  repeats = resampling$param_set$values$repeats
 
   n = resampling$task_nrow
 
@@ -27,7 +28,7 @@ infer_austern_zhou.loss_table = function(x, alpha = 0.05, loss, resampling) { # 
   x = x[, c(loss, "row_id", "iter"), with = FALSE]
   names(x) = c("loss", "row_id", "iter")
 
-  x[, cv_iter := (get("iter") - 1) %/% folds + 1]
+  x[, cv_iter := (get("iter") - 1) %/% (folds * repeats) + 1]
   x$cv_iter = as.factor(x$cv_iter)
 
   # formula (6)
