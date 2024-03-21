@@ -22,7 +22,7 @@ make_task = function(data_id, size, repl) {
 
   # we convert to a data.table for the experiments, because
   # there is a bug: https://github.com/mlr-org/mlr3/issues/961
-	
+
   tmpdata = backend$data(ids, backend$colnames)
   rm(backend)
   # mlr3 bug in cbind ...
@@ -247,7 +247,7 @@ calculate_ci = function(name, inference, x, y, args, learner_id, task_name, size
     )
   }
 
-  params = c(rrs, list(alpha = 0.5))
+  params = c(rrs, list(alpha = 0.05))
   params = mlr3misc::insert_named(params, args)
 
   dt = map_dtr(seq_along(loss_fns), function(i) {
