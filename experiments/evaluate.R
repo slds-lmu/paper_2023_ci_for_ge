@@ -29,7 +29,7 @@ EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 EVAL_CONFIG = list(
   ## other
 
-  # holdout		   
+  # holdout
   list("standard_holdout",   "infer_holdout",        list(x = "holdout"),                       list()),
 
   # subsampling_10
@@ -55,7 +55,7 @@ EVAL_CONFIG = list(
   list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"), list()),
   list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"), list()),
 
-  # insample 
+  # insample
   # also used for other resam"pling methods
 
   ## small
@@ -75,14 +75,17 @@ EVAL_CONFIG = list(
   # austern_zhou
   list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou"),                  list()),
 
+  # austern_zhou
+  list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep"),              list()),
+
   # bccv
   list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                 list()),
   list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),      list())
 )
 
 tbl1 = rbindlist(map(EVAL_CONFIG, function(cfg) {
-  cfg[[3]] = list(cfg[[3]])			    
-  cfg[[4]] = list(cfg[[4]])			    
+  cfg[[3]] = list(cfg[[3]])
+  cfg[[4]] = list(cfg[[4]])
   as.data.table(cfg)
 }))
 names(tbl1) = c("name", "inference_method", "rrs", "args")
@@ -127,7 +130,7 @@ batchExport(list(
   reg = EVAL_REG)
 
 batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
-  name = tbl2[i, "name"][[1]]	
+  name = tbl2[i, "name"][[1]]
   inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
   x = tbl2[i, "x"][[1]]
   y = tbl2[i, "y"][[1]]
@@ -136,16 +139,16 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
   task_name = tbl2[i, "task_name"][[1]]
   size = tbl2[i, "size"][[1]]
   repl = tbl2[i, "repl"][[1]]
- 
+
   calculate_ci(
     name = name,
     inference = inference,
     x = x,
     y = y,
-    args = args, 
+    args = args,
     learner_id = learner_id,
     task_name = task_name,
-    size = size, 
+    size = size,
     repl = repl
   )
 })
