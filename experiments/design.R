@@ -109,7 +109,7 @@ LEARNERS = if (TEST) {
     }
     learners = list(
       ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 3L)),
-      rpart  = list(id = f("rpart"),     params = list(xval = 3L)),
+      rpart  = list(id = f("rpart"),     params = list()),
       ranger = list(id = f("ranger"),    params = list(num.trees = 50))
     )
 
