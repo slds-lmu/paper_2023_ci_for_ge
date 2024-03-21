@@ -68,7 +68,6 @@ RESAMPLINGS = if (TEST) {
     subsampling_10     = list(id = "subsampling",      params = list(repeats = 10, ratio = 0.9)),
     subsampling_50     = list(id = "subsampling",      params = list(repeats = 50, ratio = 0.9)),
     cv_10              = list(id = "cv",               params = list(folds = 10)),
-    repeated_cv_5_10   = list(id = "repeated_cv",      params = list(folds = 10, repeats = 5)),
     diettrich          = list(id = "repeated_cv",      params = list(repeats = 5, folds = 2)),
     bootstrap_50       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 50)),
     bootstrap_100      = list(id = "bootstrap",        params = list(ratio = 1, repeats = 100)),
@@ -76,7 +75,7 @@ RESAMPLINGS = if (TEST) {
   ), small = list(
     nested_cv          = list(id = "nested_cv",        params = list(folds = 5, repeats = 200)),
     conservative_z     = list(id = "conservative_z",   params = list(J = 15, M = 10, ratio = 0.9)),
-    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 100, reps_inner = 10)),
+    two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
     loo                = list(id = "loo",              params = list()),
     austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5)),
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
@@ -87,7 +86,7 @@ RESAMPLINGS = if (TEST) {
 
 SIZES = if (TEST) {
   list(
-    small = c(50, 200L, 500L),
+    small = c(100L, 500L),
     other = c(1000L, 5000L, 10000L)
   )
 } else {

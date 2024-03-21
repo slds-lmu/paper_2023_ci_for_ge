@@ -19,17 +19,21 @@ make_task = function(data_id, size, repl) {
   target = odata$target_names
 
   backend = as_data_backend(odata)
+
+  # we convert to a data.table for the experiments, because
+  # there is a bug: https://github.com/mlr-org/mlr3/issues/961
+	
   tmpdata = backend$data(ids, backend$colnames)
   rm(backend)
   # mlr3 bug in cbind ...
   names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
 
-  in_memory_backend = as_data_backend(tmpdata, primary_key = "..row_id")
+  backend = as_data_backend(tmpdata, primary_key = "..row_id")
 
   task = if (is.factor(tmpdata[[target]])) {
-    as_task_classif(in_memory_backend, target = target)
+    as_task_classif(backend, target = target)
   } else {
-    as_task_regr(in_memory_backend, target = target)
+    as_task_regr(backend, target = target)
   }
 
   task$id = odata$name
@@ -52,10 +56,10 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   )
 
 
-  # we need this because bootstrapping is broken with mlr3pipelines
   graph = ppl("robustify", learner = learner, task = task) %>>%
     learner
 
+  # we need this because bootstrapping is broken with mlr3pipelines
   if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")) {
     graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
   }
@@ -211,80 +215,59 @@ make_resample_result = function(i, jt, reg) {
 }
 
 
-calculate_ci = function(config, n = NULL) {
+calculate_ci = function(name, inference, x, y, args, learner_id, task_name, size, repl) {
   set.seed(sample.int(100000, 1))
-  name = config[[1]]
-  inference = config[[2]]
-  args = config[[3]]
 
-  reg = loadRegistry(EXPERIMENT_PATH, writeable = FALSE, make.default = FALSE)
-
-  jt = unwrap(getJobTable(findDone(reg = reg), reg = reg))
+  if (is.na(y)) ids = list(x = x) else ids = list(x = x, y = y)
   # random subset for testing
-  job_tables = map(args, function(.resampling_name) {
-    jt = jt[list(.resampling_name), , on = "resampling_name"]
-    jt = jt[order(data_id, size, learner_id), ]
-    return(jt)
+  rrs = map(ids, function(job_id) {
+   jt = EXPERIMENT_TBL[list(job_id), on = "job.id"]
+   make_resample_result(i = 1, jt = jt, reg = EXPERIMENT_REG)
   })
 
-  if (!is.null(n)) {
-    rss = sample(seq_len(nrow(job_tables[[1]])), n)
-    job_tables = map(job_tables, function(jt) jt[rss, ])
+  if (length(rrs) == 2) {
+    stopifnot(rrs[[1]]$task$id == rrs[[2]]$task$id)
+    stopifnot(rrs[[1]]$task$nrow == rrs[[2]]$task$nrow)
+    stopifnot(all(rrs[[1]]$task$row_ids == rrs[[2]]$task$row_ids))
+    stopifnot(all(rrs[[1]]$task$task_type == rrs[[2]]$task$task_type))
   }
 
-  nsub = nrow(job_tables[[1]])
+  loss_fns = if (rrs[[1L]]$task$task_type == "classif") {
+    list(
+      logloss  = inferGE::logloss,
+      bbrier   = inferGE::bbrier,
+      zero_one = mlr3measures::zero_one
+    )
+  } else {
+    list(
+      ae              = mlr3measures::ae,
+      se              = mlr3measures::se,
+      percentual_se   = inferGE::percentual_se,
+      standardized_se = inferGE::standardized_se
+    )
+  }
 
-  # here we need to reassemble the resample result
-  map_dtr(seq_len(nsub), function(i) {
-    rrs = map(job_tables, function(jt) {
-      tic()
-      x = make_resample_result(i, jt, reg = reg)
-      toc()
-      return(x)
-    })
-    names(rrs) = names(args)
+  params = c(rrs, list(alpha = 0.5))
+  params = mlr3misc::insert_named(params, args)
 
-    loss_fns = if (rrs[[1L]]$task$task_type == "classif") {
-      list(
-        logloss  = inferGE::logloss,
-        bbrier   = inferGE::bbrier,
-        zero_one = mlr3measures::zero_one
-      )
-    } else {
-      list(
-        ae              = mlr3measures::ae,
-        se              = mlr3measures::se,
-        percentual_se   = inferGE::percentual_se,
-        standardized_se = inferGE::standardized_se
-      )
+  dt = map_dtr(seq_along(loss_fns), function(i) {
+    tic()
+    params = c(params, list(loss_fn = loss_fns[i]))
+    ci = try(do.call(inference, args = params), silent = TRUE)
+    toc()
+    if (inherits(ci, "try-error")) {
+      ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci)))
     }
+    x = cbind(
+      data.table(
+        measure = names(loss_fns)[i],
+        learner = learner_id,
+        task = task_name,
+        size = size,
+        repl = repl,
+        iters = sum(map_int(rrs, "iters"))
+      ), ci)
 
-    learner_id = job_tables[[1]][i, "learner_id"][[1]]
-    task_name = job_tables[[1]][i, "task_name"][[1]]
-    size = job_tables[[1]][i, "size"][[1]]
-    repl = job_tables[[1]][i, "repl"][[1]]
-
-    dt = map_dtr(seq_along(loss_fns), function(i) {
-      tic()
-      ci = try(do.call(inference, args = c(rrs, list(alpha = 0.05, loss_fn = loss_fns[i]))), silent = TRUE)
-      toc()
-      if (inherits(ci, "try-error")) {
-        job_ids = map(job_tables, function(jt) jt[i, "job.id"][[1]])
-	ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci, job_ids = job_ids)))
-      }
-      x = cbind(
-        data.table(
-          measure = names(loss_fns)[i],
-          learner = learner_id,
-          task = task_name,
-          size = size,
-	  repl = repl,
-	  iters = sum(map_int(rrs, "iters"))
-        ), ci)
-
-      return(x)
-    }, .fill = TRUE)
-
-    return(dt)
+    return(x)
   }, .fill = TRUE)
 }
