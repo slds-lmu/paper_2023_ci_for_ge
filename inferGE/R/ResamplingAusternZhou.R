@@ -13,10 +13,9 @@ ResamplingAusternZhou = R6Class("ResamplingAusternZhou",
     }
   ),
   active = list(
-    # Here the iterations depend on the size of the task and must be set manually
     iters = function() {
       pv = self$param_set$get_values()
-      (self$task_nrow %/% 2 + 2) * pv$folds * pv$repeats
+      (self$task_nrow %/% 2 + 1) * pv$folds * pv$repeats
     }
   ),
   private = list(
@@ -39,8 +38,7 @@ ResamplingAusternZhou = R6Class("ResamplingAusternZhou",
       list(
         left_half = left_half,
         right_half = right_half,
-        cv_left_half = rsmp("repeated_cv", repeats = repeats, folds = folds)$instantiate(task_left_half),
-        cv_full = rsmp("repeated_cv", folds = folds, repeats = repeats)$instantiate(task = task)
+        cv_left_half = rsmp("repeated_cv", repeats = repeats, folds = folds)$instantiate(task_left_half)
       )
     },
     .get_train = function(i) {
@@ -49,12 +47,10 @@ ResamplingAusternZhou = R6Class("ResamplingAusternZhou",
       repeats = pv$repeats
 
       if (i <= repeats * folds) {
-        return(get_private(self$instance$cv_full)$.get_train(i))
-      } else if (i <= 2 * repeats * folds) {
-        return(get_private(self$instance$cv_left_half)$.get_train(i - repeats * folds))
+        return(get_private(self$instance$cv_left_half)$.get_train(i))
       }
 
-      i = i - 2 * repeats * folds
+      i = i - repeats * folds
 
       # which id is being replaced
       repl_iter = (i - 1) %/% (repeats * folds) + 1
@@ -77,12 +73,10 @@ ResamplingAusternZhou = R6Class("ResamplingAusternZhou",
       repeats = pv$repeats
 
       if (i <= repeats * folds) {
-        return(get_private(self$instance$cv_full)$.get_test(i))
-      } else if (i <= 2 * repeats * folds) {
-        return(get_private(self$instance$cv_left_half)$.get_test(i - repeats * folds))
+        return(get_private(self$instance$cv_left_half)$.get_test(i))
       }
 
-      i = i - 2 * repeats * folds
+      i = i - repeats * folds
 
       # which id is being replaced
       repl_iter = (i - 1) %/% (repeats * folds) + 1

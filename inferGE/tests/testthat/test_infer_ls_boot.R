@@ -8,6 +8,7 @@ test_that("can estimate overfitting rate", {
 })
 
 test_that("location shifted bootstrap", {
+  withr::local_seed(1)
   learner = as_learner(PipeOpMetaRobustify$new() %>>%lrn("classif.rpart", predict_sets = c("train", "test")),)
   learner$predict_sets = c("train", "test")
   task = tsk("iris")

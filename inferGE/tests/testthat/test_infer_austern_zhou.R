@@ -8,15 +8,11 @@ test_that("infer_austern_zhou works", {
   rr = resample(
     task, learner, resampling
   )
+  rr_cv = resample(
+    task, learner, rsmp("cv", folds = 3L)
+  )
 
-  expect_ci_method(infer_austern_zhou, rr)
-
-  res  = infer_austern_zhou(rr)
-
-  expect_data_table(res)
-  expect_set_equal(names(res), c("estimate", "lower", "upper", "info"))
-  expect_true(res$estimate < res$upper)
-  expect_true(res$estimate > res$lower)
+  expect_ci_method(infer_austern_zhou, rr, y = rr_cv)
 })
 
 test_that("infer_austern_zhou works with repeats", {
@@ -29,13 +25,9 @@ test_that("infer_austern_zhou works with repeats", {
   rr = resample(
     task, learner, resampling
   )
+  rr_cv = resample(
+    task, learner, rsmp("repeated_cv", folds = 3L, repeats = 10)
+  )
 
-  expect_ci_method(infer_austern_zhou, rr)
-
-  res  = infer_austern_zhou(rr)
-
-  expect_data_table(res)
-  expect_set_equal(names(res), c("estimate", "lower", "upper", "info"))
-  expect_true(res$estimate < res$upper)
-  expect_true(res$estimate > res$lower)
+  expect_ci_method(infer_austern_zhou, rr, y = rr_cv)
 })
