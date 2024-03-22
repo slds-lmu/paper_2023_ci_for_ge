@@ -1,4 +1,4 @@
-make_task = function(data_id, size, repl) {
+make_task = function(data_id, size, repl, resampling) {
   # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observation
   # all others are only used for proxy quantities, where we aggregate over multiple such estimates
   # only for holdout do we have one iter, so there we also use 100k
@@ -7,13 +7,19 @@ make_task = function(data_id, size, repl) {
   use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
 
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
-  holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
-  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
-  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
+
+  holdout_preds = inherits(resampling, "ResamplingInsample") | inherits(resampling, "ResamplingCV")
+
+  if (holdout_preds) {
+    holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
+    DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
+    use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
+    ids = c(use_ids, holdout_ids)
+  } else {
+    ids = use_ids
+  }
 
   DBI::dbDisconnect(con, shutdown = TRUE)
-
-  ids = c(use_ids, holdout_ids)
 
   odata = odt(data_id, parquet = TRUE)
   target = odata$target_names
@@ -41,7 +47,9 @@ make_task = function(data_id, size, repl) {
   # do not stratify here!
 
   task$row_roles$use = use_ids
-  task$row_roles$holdout = holdout_ids
+  if (holdout_preds) {
+    task$row_roles$holdout = holdout_ids
+  }
 
   return(task)
 }
@@ -52,9 +60,8 @@ make_resampling = function(resampling_id, resampling_params) {
 
 make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
   learner = do.call(lrn,
-    args = c(list(.key = learner_id), learner_params)
+   args = c(list(.key = learner_id), learner_params)
   )
-
 
   graph = ppl("robustify", learner = learner, task = task) %>>%
     learner
@@ -72,7 +79,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   } else {
     fallback = lrn("regr.featureless")
   }
-  learner$predict_sets = c("test", "holdout")
+  learner$predict_sets = i"test"
   learner$encapsulate = c(train = "try", predict = "try")
   learner$fallback = fallback
   learner$id = learner_name
@@ -80,36 +87,10 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
-  mlr3::Task$set("public", "holdout_ratio", NULL, overwrite = TRUE)
-  mlr3::Task$set("public", "holdout_rows", NULL, overwrite = TRUE)
-  # don't do this at home
-  mlr3::Task$set("active", "row_roles", function(rhs) {
-    if (missing(rhs)) {
-      roro = private$.row_roles
-      if (!is.null(self$holdout_ratio)) {
-        if (self$holdout_ratio == 1) {
-          roro$holdout = self$holdout_rows
-        } else {
-          roro$holdout = sample(self$holdout_rows, size = self$holdout_ratio * length(self$holdout_rows))
-        }
-      }
-
-      return(roro)
-    }
-
-    assert_has_backend(self)
-    assert_list(rhs, .var.name = "row_roles")
-    assert_names(names(rhs), "unique", permutation.of = mlr_reflections$task_row_roles, .var.name = "names of row_roles")
-    rhs = map(rhs, assert_row_ids, .var.name = "elements of row_roles")
-
-    private$.hash = NULL
-    private$.row_roles = rhs
-  }, overwrite = TRUE)
-
-
   lgr::get_logger("mlr3")$set_threshold("warn")
-  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl)
   resampling = make_resampling(resampling_id, resampling_params)
+  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl,
+    resampling = resampling)
 
   # we pass the task to make_learner() so we can skip some robustify steps
   # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
@@ -120,13 +101,18 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     task = task,
     resampling = resampling
   )
+
   # for bootstrap, we also need the train predictions for the location-shifted bootstrap method
-  # so we can estimate the quantiles
-  is_bootstrap = inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")
-  if (is_bootstrap) {
+  # so we can estimate the quantiles.
+  # For two-stage bootstrap, we need it in principle on
+  if (inherits(resampling, "ResamplingBootstrap")) {
     learner$predict_sets = union(learner$predict_sets, "train")
   }
 
+  if (length(task$row_roles$holdout)) {
+    # use to get the "truth"
+    learner$predict_sets = union(learner$predict_sets, "holdout")
+  }
 
   # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
   # but just to be sure.
@@ -137,11 +123,6 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   withr::with_seed(seed = resampling_seed,
     resampling$instantiate(task)
   )
-
-  holdout = task$row_roles$holdout
-
-  task$holdout_ratio = 1 / resampling$iters
-  task$holdout_rows = holdout
 
   # for good measure we specify the seed here as well
   rr = withr::with_seed(seed = resampling_seed + 1,
@@ -158,14 +139,15 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   if ("train" %in% learner$predict_sets) {
     result$train_predictions = map(rr$predictions("train"), convert_predictions)
   }
+  if ("holdout" %in% learner$predict_sets) {
+    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
+  }
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
   } else if (task$task_type == "classif") {
-    measures = msrs(paste0("classif.", c("acc", "bacc", "bbrier", "logloss")))
+    measures = msrs(paste0("classif.", c("acc", "bbrier", "logloss")))
   }
-
-  result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
 
   return(result)
 }
@@ -216,7 +198,6 @@ make_resample_result = function(i, jt, reg) {
 
 
 calculate_ci = function(name, inference, x, y, args, learner_id, task_name, size, repl) {
-  set.seed(sample.int(100000, 1))
 
   if (is.na(y)) ids = list(x = x) else ids = list(x = x, y = y)
   # random subset for testing
