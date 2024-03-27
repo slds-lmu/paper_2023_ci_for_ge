@@ -47,3 +47,15 @@ test_that("ResamplingConservativeZ works", {
   )
   expect_class(rr, "ResampleResult")
 })
+
+test_that("n2 is the same", {
+  task1 = tsk("iris")
+  res1 = rsmp("conservative_z", J = 10, M = 15, ratio = 0.9)
+  res1$instantiate(task1)
+  expect_equal(length(res1$test_set(1)), length(res1$test_set(11)))
+
+  res2 = rsmp("conservative_z", J = 10, M = 15, ratio = 0.9)
+  task2 = tsk("iris")$filter(1:149)
+  res2$instantiate(task2)
+  expect_equal(length(res2$test_set(1)), length(res2$test_set(11)))
+})

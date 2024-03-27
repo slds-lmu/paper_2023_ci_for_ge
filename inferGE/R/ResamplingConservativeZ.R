@@ -17,7 +17,6 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
     }
   ),
   private = list(
-    .total_iters = NULL,
     .sample = function(ids, task, ...) {
       dots = list(...)
       pv = self$param_set$get_values()
@@ -62,8 +61,6 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
           rsmp("subsampling", repeats = J, ratio = new_ratio)$instantiate(task2)
         )
       }
-
-      private$.total_iters = J + 2 * M * J
 
       instance$subsamplings_variance = subsamplings_variance
 
