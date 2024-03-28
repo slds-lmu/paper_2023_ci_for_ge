@@ -8,7 +8,8 @@ make_task = function(data_id, size, repl, resampling) {
 
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
 
-  holdout_preds = inherits(resampling, "ResamplingInsample") | inherits(resampling, "ResamplingCV")
+  holdout_preds = inherits(resampling, "ResamplingInsample") || inherits(resampling, "ResamplingCV") ||
+    inherits(resampling, "ResamplingRepeatedCV")
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
   use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
@@ -67,7 +68,8 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
     learner
 
   # we need this because bootstrapping is broken with mlr3pipelines
-  if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")) {
+  if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")
+    || inherits(resampling, "ResamplingBootstrapCCV")) {
     graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
   }
 
@@ -142,8 +144,16 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
+    measures[[1]]$id = "se"
+    measures[[2]]$id = "ae"
+    measures[[3]]$id = "standardized_se"
+    measures[[4]]$id = "percentual_mse"
+
   } else if (task$task_type == "classif") {
     measures = msrs(paste0("classif.", c("acc", "bbrier", "logloss")))
+    measures[[1]]$id = "zero_one"
+    measures[[2]]$id = "bbrier"
+    measures[[3]]$id = "logloss"
   }
 
   if ("holdout" %in% learner$predict_sets) {
@@ -198,7 +208,7 @@ make_resample_result = function(i, jt, reg) {
 }
 
 
-calculate_ci = function(name, inference, x, y, args, learner_id, task_name, size, repl) {
+calculate_ci = function(name, inference, x, y, args, learner_name, task_name, size, repl) {
 
   if (is.na(y)) ids = list(x = x) else ids = list(x = x, y = y)
   # random subset for testing
@@ -242,8 +252,10 @@ calculate_ci = function(name, inference, x, y, args, learner_id, task_name, size
     }
     x = cbind(
       data.table(
+        method = name,
+        task_type = rrs[[1]]$task$task_type,
         measure = names(loss_fns)[i],
-        learner = learner_id,
+        learner = learner_name,
         task = task_name,
         size = size,
         repl = repl,

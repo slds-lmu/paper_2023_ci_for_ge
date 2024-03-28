@@ -29,57 +29,63 @@ EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 EVAL_CONFIG = list(
   ## other
 
-  # holdout
-  list("standard_holdout",   "infer_holdout",        list(x = "holdout"),                       list()),
+  # holdout_66 and holdout_90
+  list("holdout_66",   "infer_holdout",              list(x = "holdout"),                            list()),
+  list("holdout_90",   "infer_holdout",              list(x = "holdout"),                            list()),
 
-  # subsampling_10
-  list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                list()),
-
-  # subsampling_50
-  list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                list()),
+  # subsampling_10, 50 and 100
+  list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                     list()),
+  list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                     list()),
+  list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                    list()),
 
   # cv_10
-  list("bayle_10_within",    "infer_bayle",          list(x = "cv_10"),                         list(variance = "within-fold")),
-  list("bayle_10_all_pairs", "infer_bayle",          list(x = "cv_10"),                         list(variance = "all-pairs")),
+  list("bayle_10_within",    "infer_bayle",          list(x = "cv_10"),                              list(variance = "within-fold")),
+  list("bayle_10_all_pairs", "infer_bayle",          list(x = "cv_10"),                              list(variance = "all-pairs")),
+
+  # rep_cv_5_10 only used for Austern & Zhou
 
   # diettrich
-  list("diettrich",          "infer_52cv",           list(x = "diettrich"),                     list()),
+  list("diettrich",          "infer_52cv",           list(x = "diettrich"),                          list()),
 
-  # bootstrap_50
-  list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                  list()),
-  list("ls_bootstrap_50",    "infer_ls_boot",        list(x = "bootstrap_50", y = "insample"),  list()),
-  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_50", y = "insample"),  list()),
+  # bootstrap_10
+  # ls-bootstrap needs more than 10 repetitions, so don't calculate it here
+  list("oob_10",             "infer_oob",            list(x = "bootstrap_10"),                       list()),
+  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),       list()),
 
-  # bootstrap_100
-  list("oob_100",            "infer_oob",            list(x = "bootstrap_100"),                 list()),
-  list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"), list()),
-  list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"), list()),
+  # bootstrap_50 and 100
+  list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                       list()),
+  list("ls_bootstrap_50",    "infer_ls_boot",        list(x = "bootstrap_50", y = "insample"),       list()),
+  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_50", y = "insample"),       list()),
+
+  list("oob_100",            "infer_oob",            list(x = "bootstrap_100"),                      list()),
+  list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"),      list()),
+  list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"),      list()),
 
   # insample
-  # also used for other resam"pling methods
+  # also used for other resampling methods
 
   ## small
 
   # nested cv
-  list("nested_cv",          "infer_bates",          list(x = "nested_cv"),                     list()),
+  list("nested_cv",          "infer_bates",          list(x = "nested_cv"),                          list()),
 
   # conservative_z
-  list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                list()),
+  list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                     list()),
 
   # nested_bootstrap
-  list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage"),                     list()),
+  list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage"),                          list()),
 
   # loo
-  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                           list(variance = "all-pairs")),
+  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                list(variance = "all-pairs")),
 
   # austern_zhou
-  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou"),                  list()),
+  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_10"),          list()),
 
-  list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep"),              list()),
+  list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"), list()),
 
   # bccv
-  list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),      list())
+  list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                      list()),
+  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),           list())
 )
 
 tbl1 = rbindlist(map(EVAL_CONFIG, function(cfg) {
@@ -96,12 +102,12 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   inference = cfg[[1]]
   # primary resampling name
   rn1 = resampling_names[[1]]
-  keep_cols = c("data_id", "size", "repl", "learner_id", "resampling_name", "job.id", "task_name")
+  keep_cols = c("data_id", "size", "repl", "learner_name", "resampling_name", "job.id", "task_name")
   tbl = EXPERIMENT_TBL[list(rn1), ..keep_cols,  on = "resampling_name"]
 
   if (length(resampling_names) == 2) {
     rn2 = resampling_names[[2]]
-    tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_id", "task_name"))
+    tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
     setnames(tbl, c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y"), c("x", "y", "resampling_name_x", "resampling_name_y"))
   } else {
     setnames(tbl, c("job.id", "resampling_name"), c("x", "resampling_name_x"))
@@ -134,7 +140,7 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
   x = tbl2[i, "x"][[1]]
   y = tbl2[i, "y"][[1]]
   args = tbl2[i, "args"][[1]][[1]]
-  learner_id = tbl2[i, "learner_id"][[1]]
+  learner_name = tbl2[i, "learner_name"][[1]]
   task_name = tbl2[i, "task_name"][[1]]
   size = tbl2[i, "size"][[1]]
   repl = tbl2[i, "repl"][[1]]
@@ -145,7 +151,7 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
     x = x,
     y = y,
     args = args,
-    learner_id = learner_id,
+    learner_name = learner_name,
     task_name = task_name,
     size = size,
     repl = repl

@@ -64,11 +64,15 @@ N_REP = if (TEST) { # nolint
 # FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
 RESAMPLINGS = if (TEST) {
   list(other = list(
-    holdout            = list(id = "holdout",          params = list(ratio = 2 / 3)),
+    holdout_66         = list(id = "holdout",          params = list(ratio = 2 / 3)),
+    holdout_90         = list(id = "holdout",          params = list(ratio = 0.9)),
     subsampling_10     = list(id = "subsampling",      params = list(repeats = 10, ratio = 0.9)),
     subsampling_50     = list(id = "subsampling",      params = list(repeats = 50, ratio = 0.9)),
+    subsampling_100    = list(id = "subsampling",      params = list(repeats = 100, ratio = 0.9)),
     cv_10              = list(id = "cv",               params = list(folds = 10)),
+    rep_cv_5_5        = list(id = "repeated_cv",       params = list(folds = 5, repeats = 5)),
     diettrich          = list(id = "repeated_cv",      params = list(repeats = 5, folds = 2)),
+    bootstrap_10       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 10)),
     bootstrap_50       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 50)),
     bootstrap_100      = list(id = "bootstrap",        params = list(ratio = 1, repeats = 100)),
     insample           = list(id = "insample",         params = list())

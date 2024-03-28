@@ -34,8 +34,10 @@ expect_ci_method = function(inference, rr, ..., .symmetric = TRUE) {
   }
 
 
-  # loss is taken into account
-  r05_other_loss = inference(rr, alpha = 0.05, loss = other_loss, ...)
+  dots = list(...)
+  dots$loss_fn = other_loss
+
+  r05_other_loss = invoke(inference, x = rr, alpha = 0.05, .args = dots)
   expect_true(r05$estimate != r05_other_loss$estimate)
 
 }

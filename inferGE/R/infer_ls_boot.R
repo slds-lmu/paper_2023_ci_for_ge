@@ -44,13 +44,17 @@ infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
 }
 
 est_gamma = function(pred, loss) {
-  prob = if ("prob" %in% pred$predict_types) {
-    pred$prob
+  n = length(pred$truth)
+  prob_rep = if ("prob" %in% pred$predict_types) {
+    matrix(rep(t(pred$prob), n), ncol = ncol(pred$prob), byrow = TRUE)
   }
+  colnames(prob_rep) = colnames(pred$prob)
 
-  mean(map_dbl(seq_along(pred$truth), function(i) {
-    mean(loss(truth = rep(pred$truth[i], length(pred$response)), response = pred$response, prob = prob))
-  }))
+  mean(loss(
+    truth = rep(pred$truth, each = n),
+    response = rep(pred$response, times = n),
+    prob = prob_rep
+  ))
 }
 
 est_632plus = function(err_oob, err_in, gamma) {

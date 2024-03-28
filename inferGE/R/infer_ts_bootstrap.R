@@ -14,14 +14,16 @@ infer_ts_boot.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #noli
   reps_outer = x$resampling$param_set$values$reps_outer
   reps_inner = x$resampling$param_set$values$reps_inner
 
+  test_predictions = x$predictions("test")
+
   estimates = map_dbl(seq_len(reps_outer), function(rep) {
     start = reps_outer + (rep - 1) * reps_inner + 1
     bootstrap_iters = seq(start, start + reps_inner - 1)
-    insample_pred = x$predictions("test")[rep]
+    insample_pred = test_predictions[rep]
     loss_table_insample = calculate_loss(insample_pred, loss_fn)
     err_in = mean(loss_table_insample[[loss]])
 
-    loss_table_bootstrap = calculate_loss(x$predictions("test")[bootstrap_iters], loss_fn)
+    loss_table_bootstrap = calculate_loss(test_predictions[bootstrap_iters], loss_fn)
     err_oob = mean(loss_table_bootstrap[, list(oob = mean(get(loss))), by = "row_id"]$oob)
 
     gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])
