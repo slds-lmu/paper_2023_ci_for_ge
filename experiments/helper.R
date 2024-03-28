@@ -147,7 +147,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     measures[[1]]$id = "se"
     measures[[2]]$id = "ae"
     measures[[3]]$id = "standardized_se"
-    measures[[4]]$id = "percentual_mse"
+    measures[[4]]$id = "percentual_se"
 
   } else if (task$task_type == "classif") {
     measures = msrs(paste0("classif.", c("acc", "bbrier", "logloss")))

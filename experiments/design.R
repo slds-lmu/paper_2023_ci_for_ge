@@ -39,7 +39,7 @@ data_names = list(
 SEED = 42
 N_REP = 1L
 
-REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big9"
+REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big11"
 
 if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
@@ -57,7 +57,7 @@ RESAMPLINGS = list(other = list(
     subsampling_50     = list(id = "subsampling",      params = list(repeats = 50, ratio = 0.9)),
     subsampling_100    = list(id = "subsampling",      params = list(repeats = 100, ratio = 0.9)),
     cv_10              = list(id = "cv",               params = list(folds = 10)),
-    rep_cv_5_5        = list(id = "repeated_cv",       params = list(folds = 5, repeats = 5)),
+    rep_cv_5_5         = list(id = "repeated_cv",      params = list(folds = 5, repeats = 5)),
     diettrich          = list(id = "repeated_cv",      params = list(repeats = 5, folds = 2)),
     bootstrap_10       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 10)),
     bootstrap_50       = list(id = "bootstrap",        params = list(ratio = 1, repeats = 50)),
@@ -72,11 +72,11 @@ RESAMPLINGS = list(other = list(
     austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5))
   ), tiny = list(
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
-  ))
-}
+  )
+)
 
 SIZES = list(
-  tiny = 100L
+  tiny = 100L,
   small = 500L,
   other = c(1000L, 5000L, 10000L)
 )
@@ -167,7 +167,7 @@ make_algo_design = function(type) {
   )
 }
 
-algo_design_small = make_algo_design("tiny")
+algo_design_tiny = make_algo_design("tiny")
 algo_design_small = make_algo_design("small")
 algo_design_other = make_algo_design("other")
 
