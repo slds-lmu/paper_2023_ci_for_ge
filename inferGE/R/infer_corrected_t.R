@@ -1,5 +1,5 @@
 #' @export
-infer_corrected_t = function(x, alpha = 0.05, loss, ...) {
+infer_corrected_t = function(x, alpha = 0.05, ...) {
   assert_alpha(alpha)
   UseMethod("infer_corrected_t")
 }

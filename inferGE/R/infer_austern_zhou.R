@@ -1,5 +1,5 @@
 #' @export
-infer_austern_zhou = function(x, y, alpha = 0.05, loss, ...) {
+infer_austern_zhou = function(x, y, alpha = 0.05, ...) {
   assert_alpha(alpha)
   UseMethod("infer_austern_zhou")
 }
