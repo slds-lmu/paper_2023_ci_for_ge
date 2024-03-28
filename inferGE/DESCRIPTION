@@ -29,7 +29,6 @@ Sugests:
     future,
     lgr
 Collate:
-    'BenchmarkLoss.R'
     'PipeOpMetaRobustify.R'
     'zzz.R'
     'ResamplingAusternZhou.R'
@@ -38,6 +37,7 @@ Collate:
     'ResamplingNestedBootstrap.R'
     'ResamplingNestedCV.R'
     'bibentries.R'
+    'calculate_loss.R'
     'infer_52cv.R'
     'infer_ls_boot.R'
     'infer_ts_bootstrap.R'
@@ -51,5 +51,4 @@ Collate:
     'infer_holdout.R'
     'infer_oob.R'
     'losses.R'
-    'params_tabnet.R'
     'utils.R'

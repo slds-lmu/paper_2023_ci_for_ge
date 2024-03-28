@@ -238,10 +238,3 @@ ids = jt$job.id
 chunks = data.table(
   job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 100, shuffle = FALSE)
 )
-
-if (FALSE) {
-  testJob(1)
-  testJob(10794) # tabnet and classif
-  # test bootstrap
-}
-#submitJobs(chunks)

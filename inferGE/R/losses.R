@@ -14,9 +14,9 @@ percentual_se = function(truth, response, ...) {
 }
 
 #' @export
-standardized_se = function(truth, response, ...) {
+standardized_se = function(truth, response, task, ...) {
   assert_regr(truth, response = response)
-  mlr3measures::se(truth, response) / (sd(truth) + EPS)
+  mlr3measures::se(truth, response) / (sd(task$truth()) + EPS)
 }
 
 #' @export
@@ -47,6 +47,7 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
         minimize = TRUE,
         predict_type = "response",
         packages = "inferGE",
+        properties = "requires_task",
         label = "Standardized MSE"
       )
     }

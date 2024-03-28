@@ -1,10 +1,10 @@
 test_that("percentual_se", {
   task = tsk("mtcars")
   p = lrn("regr.rpart")$train(task)$predict(task)
-  expect_numeric(percentual_se(p$truth, p$response))
-  expect_equal(length(percentual_se(p$truth, p$response)), 32)
-  expect_numeric(standardized_se(p$truth, p$response))
-  expect_equal(length(standardized_se(p$truth, p$response)), 32)
+  expect_numeric(percentual_se(p$truth, p$response, task = task))
+  expect_equal(length(percentual_se(p$truth, p$response, task = task)), 32)
+  expect_numeric(standardized_se(p$truth, p$response, task = task))
+  expect_equal(length(standardized_se(p$truth, p$response, task = task)), 32)
 })
 
 test_that("standardized_se", {
@@ -12,8 +12,8 @@ test_that("standardized_se", {
   p = lrn("regr.rpart")$train(task)$predict(task)
   expect_numeric(percentual_se(p$truth, p$response))
   expect_equal(length(percentual_se(p$truth, p$response)), 32)
-  expect_numeric(standardized_se(p$truth, p$response))
-  expect_equal(length(standardized_se(p$truth, p$response)), 32)
+  expect_numeric(standardized_se(p$truth, p$response, task = task))
+  expect_equal(length(standardized_se(p$truth, p$response, task = task)), 32)
 
 })
 
@@ -43,6 +43,6 @@ test_that("measures", {
   task = tsk("mtcars")
   pred = lrn("regr.rpart")$train(task)$predict(task)
 
-  expect_numeric(pred$score(std_se), len = 1L)
-  expect_numeric(pred$score(percentual_se), len = 1L)
+  expect_numeric(pred$score(std_se, task = task), len = 1L)
+  expect_numeric(pred$score(percentual_se, task = task), len = 1L)
 })
