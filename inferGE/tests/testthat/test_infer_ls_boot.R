@@ -18,7 +18,7 @@ test_that("location shifted bootstrap", {
   rr_boot = resample(task, learner, boot)
   rr_insample = resample(task, learner, insample)
 
-  expect_ci_method(infer_ls_boot, rr_boot, y = rr_insample)
+  expect_ci_method(infer_ls_boot, rr_boot, y = rr_insample, .symmetric = FALSE)
 })
 
 test_that("prob", {

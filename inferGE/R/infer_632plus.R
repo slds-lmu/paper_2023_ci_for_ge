@@ -12,6 +12,7 @@ infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
   ci = infer_oob(x = x, alpha = alpha, loss_fn = loss_fn)
 
+  SE_del = ci$info[[1L]]$SE_del
   lower = ci$lower
   upper = ci$upper
   err_oob = ci$estimate
@@ -25,12 +26,12 @@ infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
 
   estimate = est_632plus(err_oob, err_in, gamma)
 
-  lower = lower * estimate / err_oob
-  upper = upper * estimate / err_oob
+  se_new = SE_del * estimate / err_oob
 
+  z = qnorm(1 - alpha / 2)
   data.table(
     estimate = estimate,
-    lower = lower * estimate / err_oob,
-    upper = upper * estimate / err_oob
+    lower = estimate - z * se_new,
+    upper = estimate + z * se_new
   )
 }

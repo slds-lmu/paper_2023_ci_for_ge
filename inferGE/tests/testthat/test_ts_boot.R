@@ -5,6 +5,6 @@ test_that("infer_ts_boot works", {
 
   rr = resample(task, learner, resampling)
 
-  expect_ci_method(infer_ts_boot, rr)
+  expect_ci_method(infer_ts_boot, rr, .symmetric = FALSE)
 })
 

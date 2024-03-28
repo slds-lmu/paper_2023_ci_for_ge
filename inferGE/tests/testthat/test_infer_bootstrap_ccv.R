@@ -18,6 +18,6 @@ test_that("infer_botstrap_cv works", {
   ci = infer_bootstrap_ccv(rr)
 
 
-  expect_ci_method(infer_bootstrap_ccv, rr)
-  expect_ci_method(infer_bootstrap_ccv, rr, y = rr1)
+  expect_ci_method(infer_bootstrap_ccv, rr, .symmetric = FALSE)
+  expect_ci_method(infer_bootstrap_ccv, rr, y = rr1, .symmetric = FALSE)
 })

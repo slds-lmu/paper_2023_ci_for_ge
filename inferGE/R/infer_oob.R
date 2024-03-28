@@ -49,7 +49,8 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   data.table(
     estimate = Err1,
     lower = Err1 - z * SE_del,
-    upper = Err1 + z * SE_del
+    upper = Err1 + z * SE_del,
+    info = list(list(SE_del = SE_del))
   )
 }
 
