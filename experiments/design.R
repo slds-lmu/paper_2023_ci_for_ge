@@ -37,13 +37,9 @@ data_names = list(
 )
 
 SEED = 42
-TEST = TRUE
+N_REP = 1L
 
-REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big9"
-} else {
-  "/gscratch/sfische6/benchmarks/ci_for_ge/final"
-}
+REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big9"
 
 if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
@@ -52,18 +48,9 @@ if (!file.exists(REGISTRY_PATH)) {
     packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr"),
     work.dir = here::here()
   )
-} else {
-  reg = loadRegistry(REGISTRY_PATH, writeable = TEST)
 }
 
-N_REP = if (TEST) { # nolint
-  1L
-} else {
-  500L
-}
-# FIXME: Also include parameters where we use the default (infer_xxx needs the parameter values)
-RESAMPLINGS = if (TEST) {
-  list(other = list(
+RESAMPLINGS = list(other = list(
     holdout_66         = list(id = "holdout",          params = list(ratio = 2 / 3)),
     holdout_90         = list(id = "holdout",          params = list(ratio = 0.9)),
     subsampling_10     = list(id = "subsampling",      params = list(repeats = 10, ratio = 0.9)),
@@ -86,61 +73,36 @@ RESAMPLINGS = if (TEST) {
   ), tiny = list(
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
   ))
-} else {
-  stop("not done yet")
 }
 
-SIZES = if (TEST) {
-  list(
-    tiny = 100L
-    small = 500L,
-    other = c(1000L, 5000L, 10000L)
-  )
-} else {
-  stop("not done yet")
-}
+SIZES = list(
+  tiny = 100L
+  small = 500L,
+  other = c(1000L, 5000L, 10000L)
+)
 
 
-TASKS = if (TEST) {
-  data_ids
-} else {
-  stop("not done yet")
-}
+TASKS = data_ids
 
-
-LEARNERS = if (TEST) {
-  make_learner_list = function(task_type) {
-    f = function(x) {
-      paste0(task_type, ".", x)
-    }
-    learners = list(
-      ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 3L)),
-      rpart  = list(id = f("rpart"),     params = list()),
-      ranger = list(id = f("ranger"),    params = list(num.trees = 50))
-    )
-
-    imap(learners, function(learner, name) {
-      insert_named(learner, list(name = name))
-    })
+make_learner_list = function(task_type) {
+  f = function(x) {
+    paste0(task_type, ".", x)
   }
-
-  LEARNERS = list(
-    regr = make_learner_list("regr"),
-    classif =  make_learner_list("classif")
+  learners = list(
+    ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 3L)),
+    rpart  = list(id = f("rpart"),     params = list()),
+    ranger = list(id = f("ranger"),    params = list(num.trees = 50))
   )
-} else {
-  stop("not done yet")
+
+  imap(learners, function(learner, name) {
+    insert_named(learner, list(name = name))
+  })
 }
 
-
-# here we have two sublists:
-# * other: resamplings are applies to both the small and large setting
-# * small: resamplings that are only applied in the small setting
-#
-# TODO: We need to check that all methods are covered by that:
-# There are more methods than entries here (multiple methods for CV e.g.)
-# For every resampling we do not only make predictions on the test set, bu also on the holdout set
-
+LEARNERS = list(
+  regr = make_learner_list("regr"),
+  classif =  make_learner_list("classif")
+)
 
 batchExport(list(
   make_task = make_task,
@@ -166,7 +128,6 @@ addProblem(
   }
 )
 
-
 make_prob_designs = function(type) {
   prob_designs_other = map(c("regr", "classif"), function(task_type) {
     dt = CJ(
@@ -190,7 +151,7 @@ make_prob_designs = function(type) {
   }) |> rbindlist()
 }
 
-prob_design_small = make_prob_designs("tiny")
+prob_design_tiny = make_prob_designs("tiny")
 prob_design_small = make_prob_designs("small")
 prob_design_other = make_prob_designs("other")
 
@@ -206,40 +167,46 @@ make_algo_design = function(type) {
   )
 }
 
-# resampling methods LOO, BCCV, Austern & Zhoy
+algo_design_small = make_algo_design("tiny")
 algo_design_small = make_algo_design("small")
-# All other resampling methods
 algo_design_other = make_algo_design("other")
 
 
 # Applying all tiny resampling methods to tiny problems
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_small),
-  prob.designs = list(ci_estimation = prob_design_small),
+  algo.designs = list(run_resampling = algo_design_tiny),
+  prob.designs = list(ci_estimation = prob_design_tiny),
   repls = N_REP
 )
 
-# Applying all small resampling methods to small problems
+# Applying all small algos to tiny and small problems
+addExperiments(
+  algo.designs = list(run_resampling = algo_design_small),
+  prob.designs = list(ci_estimation = prob_design_tiny),
+  repls = N_REP
+)
 addExperiments(
   algo.designs = list(run_resampling = algo_design_small),
   prob.designs = list(ci_estimation = prob_design_small),
   repls = N_REP
 )
-# Applying all other resampling methods to small problems
+
+# Applying all other resampling methods to tiny, small and other prbolems
+addExperiments(
+  algo.designs = list(run_resampling = algo_design_other),
+  prob.designs = list(ci_estimation = prob_design_tiny),
+  repls = N_REP
+)
 addExperiments(
   algo.designs = list(run_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_small),
   repls = N_REP
 )
-
-# Apply other resampling methods to other problems
-
 addExperiments(
   algo.designs = list(run_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_other),
   repls = N_REP
 )
-
 
 jt = getJobTable() |> unwrap()
 
