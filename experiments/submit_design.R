@@ -2,14 +2,7 @@
 library(batchtools)
 library(mlr3)
 
-TEST = TRUE
-
-if (TEST) {
-  # BEWARE THE CORRECT NUMBER AT THE END
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big4"
-} else {
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final"
-}
+REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big5"
 
 reg = loadRegistry(REGISTRY_PATH, writeable = TRUE)
 
@@ -20,6 +13,4 @@ chunks = data.table(
   job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 10, shuffle = FALSE)
 )
 
-submitJobs(chunks)
-
-reg = batchtools::loadRegistry(REGISTRY_PATH)
+#submitJobs(chunks)

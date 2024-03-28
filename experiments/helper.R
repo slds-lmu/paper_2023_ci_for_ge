@@ -9,7 +9,7 @@ make_task = function(data_id, size, repl, resampling) {
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
 
   holdout_preds = inherits(resampling, "ResamplingInsample") || inherits(resampling, "ResamplingCV") ||
-    inherits(resampling, "ResamplingRepeatedCV")
+    (inherits(resampling, "ResamplingRepeatedCV") && resampling$param_set$values$folds != 2) || inherits(resampling, "ResamplingHoldout")
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
   use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
@@ -157,7 +157,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   }
 
   if ("holdout" %in% learner$predict_sets) {
-    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
+    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures, task = task))))
   }
 
   return(result)

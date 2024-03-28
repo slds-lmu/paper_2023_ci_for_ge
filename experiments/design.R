@@ -40,7 +40,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big4"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big9"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
@@ -82,7 +82,8 @@ RESAMPLINGS = if (TEST) {
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
     loo                = list(id = "loo",              params = list()),
     austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5, repeats = 1)),
-    austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5)),
+    austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5))
+  ), tiny = list(
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
   ))
 } else {
@@ -91,7 +92,8 @@ RESAMPLINGS = if (TEST) {
 
 SIZES = if (TEST) {
   list(
-    small = c(100L, 500L),
+    tiny = 100L
+    small = 500L,
     other = c(1000L, 5000L, 10000L)
   )
 } else {
@@ -165,7 +167,6 @@ addProblem(
 )
 
 
-# type is either "other" or "small"
 make_prob_designs = function(type) {
   prob_designs_other = map(c("regr", "classif"), function(task_type) {
     dt = CJ(
@@ -189,6 +190,7 @@ make_prob_designs = function(type) {
   }) |> rbindlist()
 }
 
+prob_design_small = make_prob_designs("tiny")
 prob_design_small = make_prob_designs("small")
 prob_design_other = make_prob_designs("other")
 
@@ -209,6 +211,13 @@ algo_design_small = make_algo_design("small")
 # All other resampling methods
 algo_design_other = make_algo_design("other")
 
+
+# Applying all tiny resampling methods to tiny problems
+addExperiments(
+  algo.designs = list(run_resampling = algo_design_small),
+  prob.designs = list(ci_estimation = prob_design_small),
+  repls = N_REP
+)
 
 # Applying all small resampling methods to small problems
 addExperiments(
