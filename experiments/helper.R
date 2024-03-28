@@ -9,11 +9,11 @@ make_task = function(data_id, size, repl, resampling) {
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
 
   holdout_preds = inherits(resampling, "ResamplingInsample") | inherits(resampling, "ResamplingCV")
+  DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
+  use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
   if (holdout_preds) {
     holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
-    DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
-    use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
     ids = c(use_ids, holdout_ids)
   } else {
     ids = use_ids
@@ -79,7 +79,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   } else {
     fallback = lrn("regr.featureless")
   }
-  learner$predict_sets = i"test"
+  learner$predict_sets = "test"
   learner$encapsulate = c(train = "try", predict = "try")
   learner$fallback = fallback
   learner$id = learner_name
@@ -139,14 +139,15 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   if ("train" %in% learner$predict_sets) {
     result$train_predictions = map(rr$predictions("train"), convert_predictions)
   }
-  if ("holdout" %in% learner$predict_sets) {
-    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
-  }
 
   if (task$task_type == "regr") {
     measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
   } else if (task$task_type == "classif") {
     measures = msrs(paste0("classif.", c("acc", "bbrier", "logloss")))
+  }
+
+  if ("holdout" %in% learner$predict_sets) {
+    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures))))
   }
 
   return(result)
@@ -169,7 +170,7 @@ make_resample_result = function(i, jt, reg) {
   resampling_seed = result$resampling_seed
 
   resampling = make_resampling(resampling_id, list(resampling_params))
-  task = make_task(data_id, size, repl)
+  task = make_task(data_id, size, repl, resampling = resampling)
   learner = make_learner(learner_id, learner_params, learner_name, task, resampling)
   withr::with_seed(resampling_seed, {
     resampling$instantiate(task)

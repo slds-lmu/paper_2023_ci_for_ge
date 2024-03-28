@@ -6,7 +6,7 @@ TEST = TRUE
 
 if (TEST) {
   # BEWARE THE CORRECT NUMBER AT THE END
-  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big"
+  REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big4"
 } else {
   REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }

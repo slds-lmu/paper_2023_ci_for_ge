@@ -40,7 +40,7 @@ SEED = 42
 TEST = TRUE
 
 REGISTRY_PATH = if (TEST) { # nolint
-  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/run_big4"
 } else {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
