@@ -14,9 +14,9 @@ infer_ls_boot.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) { #n
   # train predictions are present
   assert_false(isTRUE(all.equal(length(x$predictions("train")[[1L]]), list())))
 
-  loss_table_test = calculate_loss(x$predictions("test"), loss_fn)
-  loss_table_train = calculate_loss(x$predictions("train"), loss_fn)
-  loss_table_insample = calculate_loss(y$predictions("test"), loss_fn)
+  loss_table_test = calculate_loss(x$predictions("test"), loss_fn, task = task)
+  loss_table_train = calculate_loss(x$predictions("train"), loss_fn, task = task)
+  loss_table_insample = calculate_loss(y$predictions("test"), loss_fn, task = task)
 
   # loss_fn is a named list
   gamma = est_gamma(y$predictions("test")[[1L]], loss_fn[[1L]])

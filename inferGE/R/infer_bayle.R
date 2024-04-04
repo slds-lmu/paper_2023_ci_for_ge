@@ -8,7 +8,7 @@ infer_bayle = function(x, alpha = 0.05, variance, ...) {
 infer_bayle.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL, variance = "all-pairs") { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
-  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn, task = task)
 
   infer_bayle(loss_table, alpha = alpha, loss = names(loss_fn), variance = variance, resampling = x$resampling)
 }

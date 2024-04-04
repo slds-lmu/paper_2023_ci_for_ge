@@ -12,7 +12,7 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
 
   n = x$task$nrow
   preds = x$predictions("test")
-  loss_table = calculate_loss(preds, loss_fn)
+  loss_table = calculate_loss(preds, loss_fn, task = task)
 
   task_ids = x$task$row_ids
   # IDs that are in at least one test set

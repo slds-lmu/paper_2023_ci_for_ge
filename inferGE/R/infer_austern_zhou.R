@@ -19,8 +19,8 @@ infer_austern_zhou.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL,
   }
   assert_true(y$resampling$param_set$values$folds == x$resampling$param_set$values$folds)
 
-  loss_table_var = calculate_loss(x$predictions("test"), loss_fn)
-  loss_table_est = calculate_loss(y$predictions("test"), loss_fn)
+  loss_table_var = calculate_loss(x$predictions("test"), loss_fn, task = task)
+  loss_table_est = calculate_loss(y$predictions("test"), loss_fn, task = task)
 
   infer_austern_zhou(x = loss_table_var, y = loss_table_est, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }

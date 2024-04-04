@@ -23,12 +23,12 @@ infer_ts_boot.ResampleResult = function(x, y, z, alpha = 0.05, loss_fn = NULL) {
   estimates = map_dbl(seq_len(reps_outer), function(rep) {
     insample_pred = test_predictions[rep]
 
-    loss_table_insample = calculate_loss(insample_pred, loss_fn)
+    loss_table_insample = calculate_loss(insample_pred, loss_fn, task = task)
     err_in = mean(loss_table_insample[[loss]])
 
     start = reps_outer + (rep - 1) * reps_inner + 1
     bootstrap_iters = seq(start, start + reps_inner - 1)
-    loss_table_bootstrap = calculate_loss(test_predictions[bootstrap_iters], loss_fn)
+    loss_table_bootstrap = calculate_loss(test_predictions[bootstrap_iters], loss_fn, task = task)
     err_oob = mean(loss_table_bootstrap[, list(oob = mean(get(loss))), by = "row_id"]$oob)
 
     gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])

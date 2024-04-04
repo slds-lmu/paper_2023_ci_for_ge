@@ -8,8 +8,7 @@
 #'  The names of the functions will be the names in the returned loss table.
 #' @return [`data.table`]
 #' @export
-calculate_loss = function(predictions, loss_fns = NULL, na_value = NaN) {
-  # FIXME: na_value currently unused
+calculate_loss = function(predictions, loss_fns = NULL, na_value = NaN, task) {
   assert_list(predictions, types = "Prediction")
   assert_list(loss_fns, types = "function", names = "unique", null.ok = TRUE)
   task_type = predictions[[1L]]$task_type
@@ -25,7 +24,9 @@ calculate_loss = function(predictions, loss_fns = NULL, na_value = NaN) {
         do.call(loss_fn, args = list(
           truth = prediction$truth,
           response = prediction$response,
-          prob = prediction$prob))
+          prob = prediction$prob,
+          task = task
+          ))
         })
       dt = as.data.table(l)
       dt$row_id = prediction$row_ids
@@ -38,7 +39,9 @@ calculate_loss = function(predictions, loss_fns = NULL, na_value = NaN) {
         do.call(loss_fn, args = list(
           truth = prediction$truth,
           response = prediction$response,
-          se = prediction$se))
+          se = prediction$se,
+          task = task
+          ))
       })
       dt = as.data.table(l)
       dt$row_id = prediction$row_ids

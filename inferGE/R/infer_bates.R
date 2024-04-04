@@ -7,7 +7,7 @@ infer_bates = function(x, alpha = 0.05, ...) {
 #' @export
 infer_bates.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
-  loss_table = calculate_loss(x$predictions("test"), loss_fn)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn, task = task)
   infer_bates(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }
 

@@ -15,6 +15,10 @@ test_that("standardized_se", {
   expect_numeric(standardized_se(p$truth, p$response, task = task))
   expect_equal(length(standardized_se(p$truth, p$response, task = task)), 32)
 
+  rr = resample(task, lrn("regr.rpart"), rsmp("holdout"))
+
+  ci = infer_holdout(rr, loss_fn = list("std_se" = standardized_se))
+
 })
 
 
