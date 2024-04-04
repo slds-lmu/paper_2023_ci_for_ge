@@ -92,13 +92,6 @@ EVAL_CONFIG = list(
   list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
 )
 
-tbl1 = rbindlist(map(EVAL_CONFIG, function(cfg) {
-  cfg[[3]] = list(cfg[[3]])
-  cfg[[4]] = list(cfg[[4]])
-  as.data.table(cfg)
-}))
-names(tbl1) = c("name", "inference_method", "rrs", "args")
-
 # now we create the table that contains the job ids
 tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   resampling_names = cfg[[3]]
@@ -109,16 +102,31 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   keep_cols = c("data_id", "size", "repl", "learner_name", "resampling_name", "job.id", "task_name")
   tbl = EXPERIMENT_TBL[list(rn1), ..keep_cols,  on = "resampling_name"]
 
-  if (length(resampling_names) == 2) {
+  if (length(resampling_names) == 3)) {
+    browser()
+    rn2 = resampling_names[[2]]
+    rn3 = resampling_names[[3]]
+    tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
+    tbl = merge(tbl, EXPERIMENT_TBL[list(rn3), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
+
+    setnames(tbl,
+      c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y", "job.id", "resampling_name"),
+      c("x", "y", "resampling_name_x", "resampling_name_y", "z", "resampling_name_z")
+    )
+
+  } else if (length(resampling_names) == 2) {
     rn2 = resampling_names[[2]]
     tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
-    setnames(tbl, c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y"), c("x", "y", "resampling_name_x", "resampling_name_y"))
-  } else if (length(resampling_names) == 3 {
-
+    setnames(tbl,
+      c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y"),
+      c("x", "y", "resampling_name_x", "resampling_name_y")
+    )
   } else {
     setnames(tbl, c("job.id", "resampling_name"), c("x", "resampling_name_x"))
     tbl$y = NA
     tbl$resampling_name_y = NA
+    tbl$z = NA
+    tbl$resampling_name_z = NA
   }
   tbl$name = cfg[[1]]
   tbl$inference = cfg[[2]]
@@ -141,14 +149,17 @@ batchExport(list(
   ),
   reg = EVAL_REG)
 
+
 batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
   name = tbl2[i, "name"][[1]]
   inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
   x = tbl2[i, "x"][[1]]
   y = tbl2[i, "y"][[1]]
+  z = tbl2[i, "z"][[1]]
+
   args = tbl2[i, "args"][[1]][[1]]
   learner_name = tbl2[i, "learner_name"][[1]]
-  resampling_name = tbl2[i, "resampling_name1"][[1]]
+  resampling_name = tbl2[i, "resampling_name_x"][[1]]
   task_name = tbl2[i, "task_name"][[1]]
   size = tbl2[i, "size"][[1]]
   repl = tbl2[i, "repl"][[1]]
@@ -158,6 +169,7 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
     inference = inference,
     x = x,
     y = y,
+    z = z,
     args = args,
     learner_name = learner_name,
     task_name = task_name,

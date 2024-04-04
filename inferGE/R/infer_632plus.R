@@ -1,14 +1,17 @@
 #' @export
 infer_632plus = function(x, y, alpha = 0.05, ...) {
   assert_alpha(alpha)
-  assert_class(y, "ResampleResult")
-  assert_class(y$resampling, "ResamplingInsample")
   UseMethod("infer_632plus")
 }
 
 #' @include infer_ts_bootstrap.R
 #' @export
 infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
+  assert_class(x, "ResampleResult")
+  assert_class(x$resampling, "ResamplingBootstrap")
+  assert_class(y, "ResampleResult")
+  assert_class(y$resampling, "ResamplingInsample")
+
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
   ci = infer_oob(x = x, alpha = alpha, loss_fn = loss_fn)
 

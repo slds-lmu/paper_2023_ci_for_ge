@@ -46,7 +46,7 @@ experiments with these two packages, you can read the relevant section from the
     `.Rprofile`:
 
     Here, you need to adjust - the values of path used to cache the OpenML datasets, and
-    - the path where the results are saved.
+    - the path where the results are saved. Make sure that the `SAVE_PATH` folder exists.
 
     `.batchtools.conf` and `slurm_wyoming.tmpl`:
 

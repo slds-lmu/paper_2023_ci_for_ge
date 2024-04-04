@@ -16,7 +16,6 @@ options(mlr3oml.cache = "/gscratch/sfische6/mlr3oml_cache")
 #   These are the proxy quantities, e.g. for bayle, which are also used
 #   to evaluate some of the confidence interval methods.
 SAVE_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/test1234"
-if (!dir.exists(SAVE_PATH)) dir.create(SAVE_PATH)
 Sys.setenv(RESAMPLE_PATH = paste0(SAVE_PATH, sep = "_", "resample"))
 Sys.setenv(CI_PATH       = paste0(SAVE_PATH, sep = "_", "ci"))
 Sys.setenv(PROXY_PATH    = paste0(SAVE_PATH, sep = "_", "proxy"))

@@ -11,7 +11,7 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
   stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
 }
 
-data_ids = list(
+TASKS = list(
   classif = c(45570, 45689, 45704, 45654, 45665, 45668, 45669, 45672, 45693),
   regr = c(45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
 )
@@ -42,16 +42,12 @@ N_REP = 1L
 
 REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
-if (!file.exists(REGISTRY_PATH)) {
-  reg = makeExperimentRegistry(
-    file.dir = REGISTRY_PATH,
-    seed = SEED,
-    packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr"),
-    work.dir = here::here()
-  )
-} else {
-  stop("registry already exists")
-}
+reg = makeExperimentRegistry(
+  file.dir = REGISTRY_PATH,
+  seed = SEED,
+  packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr"),
+  work.dir = here::here()
+)
 
 RESAMPLINGS = list(other = list(
     holdout_66         = list(id = "holdout",          params = list(ratio = 2 / 3)),
@@ -85,27 +81,17 @@ SIZES = list(
   other = c(1000L, 5000L, 10000L)
 )
 
-
-TASKS = data_ids
-
-make_learner_list = function(task_type) {
-  f = function(x) {
-    paste0(task_type, ".", x)
-  }
-  learners = list(
-    ridge  = list(id = f("cv_glmnet"), params = list(alpha = 0, nfolds = 3L)),
-    rpart  = list(id = f("rpart"),     params = list()),
-    ranger = list(id = f("ranger"),    params = list(num.trees = 50))
-  )
-
-  imap(learners, function(learner, name) {
-    insert_named(learner, list(name = name))
-  })
-}
-
 LEARNERS = list(
-  regr = make_learner_list("regr"),
-  classif =  make_learner_list("classif")
+  regr = list(
+    ridge  = list(id = "regr.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    rpart  = list(id = "regr.rpart",     params = list()),
+    ranger = list(id = "regr.ranger",    params = list(num.trees = 50))
+  ),
+  classif = list(
+    ridge  = list(id = "classif.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    rpart  = list(id = "classif.rpart",     params = list()),
+    ranger = list(id = "classif.ranger",    params = list(num.trees = 50))
+  )
 )
 
 batchExport(list(
@@ -195,7 +181,7 @@ addExperiments(
   repls = N_REP
 )
 
-# Applying all other resampling methods to tiny, small and other prbolems
+# Applying all other resampling methods to tiny, small and other problems
 addExperiments(
   algo.designs = list(run_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_tiny),
@@ -210,11 +196,4 @@ addExperiments(
   algo.designs = list(run_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_other),
   repls = N_REP
-)
-
-jt = getJobTable() |> unwrap()
-
-ids = jt$job.id
-chunks = data.table(
-  job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 100, shuffle = FALSE)
 )

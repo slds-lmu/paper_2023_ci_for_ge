@@ -1,19 +1,19 @@
 make_task = function(data_id, size, repl, resampling) {
-  # because insample resampling is used to obtain 'true' PE, we use 100 000 holdout observation
-  # all others are only used for proxy quantities, where we aggregate over multiple such estimates
-  # only for holdout do we have one iter, so there we also use 100k
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
-  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
-  use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
 
+  # the ids for the data subset
+  use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
 
-  holdout_preds = inherits(resampling, "ResamplingInsample") || inherits(resampling, "ResamplingCV") ||
+  # for some resamplings where we also calculate the proxy quantities / the true values,
+  # we need a large holdout set to approximate them
+  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
+  need_holdout = inherits(resampling, "ResamplingInsample") || inherits(resampling, "ResamplingCV") ||
     (inherits(resampling, "ResamplingRepeatedCV") && resampling$param_set$values$folds != 2) || inherits(resampling, "ResamplingHoldout")
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
   use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
-  if (holdout_preds) {
+  if (need_holdout) {
     holdout_ids = dbGetQuery(con, paste0("SELECT row_id FROM holdout_table"))$row_id
     ids = c(use_ids, holdout_ids)
   } else {
@@ -28,15 +28,14 @@ make_task = function(data_id, size, repl, resampling) {
   backend = as_data_backend(odata)
 
   # we convert to a data.table for the experiments, because
-  # there is a bug: https://github.com/mlr-org/mlr3/issues/961
+  # there is a bug in mlr3 https://github.com/mlr-org/mlr3/issues/961
 
   tmpdata = backend$data(ids, backend$colnames)
   rm(backend)
-  # mlr3 bug in cbind ...
   names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
-
   backend = as_data_backend(tmpdata, primary_key = "..row_id")
 
+  # no stratification!
   task = if (is.factor(tmpdata[[target]])) {
     as_task_classif(backend, target = target)
   } else {
@@ -45,10 +44,8 @@ make_task = function(data_id, size, repl, resampling) {
 
   task$id = odata$name
 
-  # do not stratify here!
-
   task$row_roles$use = use_ids
-  if (holdout_preds) {
+  if (need_holdout) {
     task$row_roles$holdout = holdout_ids
   }
 
@@ -106,18 +103,15 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
 
   # for bootstrap, we also need the train predictions for the location-shifted bootstrap method
   # so we can estimate the quantiles.
-  # For two-stage bootstrap, we need it in principle on
   if (inherits(resampling, "ResamplingBootstrap")) {
     learner$predict_sets = union(learner$predict_sets, "train")
   }
 
   if (length(task$row_roles$holdout)) {
-    # use to get the "truth"
+    # use to approximate the risk / proxy quantities
     learner$predict_sets = union(learner$predict_sets, "holdout")
   }
 
-  # probably we don't need to take repl and job.pars into account, because the datasets are randomly shuffled anyway,
-  # but just to be sure.
   # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
   # which reduces variance in the comparison between learners
   resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
@@ -131,38 +125,40 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
   )
 
-  convert_predictions = function(pred) pred$data
-
+  # we need the resampling seed, so we can re-create them later to obtain the confidence intervals
+  # saving them would require too much disk space
   result = list(
     resampling_seed = resampling_seed,
-    test_predictions = map(rr$predictions("test"), convert_predictions)
+    test_predictions = map(rr$predictions("test"), function(x) x$data)
   )
 
   if ("train" %in% learner$predict_sets) {
-    result$train_predictions = map(rr$predictions("train"), convert_predictions)
+    result$train_predictions = map(rr$predictions("train"), function(x) x$data)
   }
 
-  if (task$task_type == "regr") {
-    measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
-    measures[[1]]$id = "se"
-    measures[[2]]$id = "ae"
-    measures[[3]]$id = "standardized_se"
-    measures[[4]]$id = "percentual_se"
-
-  } else if (task$task_type == "classif") {
-    measures = msrs(paste0("classif.", c("ce", "bbrier", "logloss")))
-    measures[[1]]$id = "zero_one"
-    measures[[2]]$id = "bbrier"
-    measures[[3]]$id = "logloss"
-  }
-
+  # for the proxy quantities / risk
   if ("holdout" %in% learner$predict_sets) {
+    if (task$task_type == "regr") {
+      measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
+      measures[[1]]$id = "se"
+      measures[[2]]$id = "ae"
+      measures[[3]]$id = "standardized_se"
+      measures[[4]]$id = "percentual_se"
+
+    } else if (task$task_type == "classif") {
+      measures = msrs(paste0("classif.", c("ce", "bbrier", "logloss")))
+      measures[[1]]$id = "zero_one"
+      measures[[2]]$id = "bbrier"
+      measures[[3]]$id = "logloss"
+    }
+
     result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures, task = task))))
   }
 
   return(result)
 }
 
+# jt is the job table from the resample experiments, i just an index and reg the registry from the resample experiments
 make_resample_result = function(i, jt, reg) {
   job_id = jt[i, "job.id"][[1L]]
   data_id = jt[i, "data_id"][[1L]]
@@ -182,6 +178,7 @@ make_resample_result = function(i, jt, reg) {
   resampling = make_resampling(resampling_id, list(resampling_params))
   task = make_task(data_id, size, repl, resampling = resampling)
   learner = make_learner(learner_id, learner_params, learner_name, task, resampling)
+
   withr::with_seed(resampling_seed, {
     resampling$instantiate(task)
   })
@@ -208,15 +205,19 @@ make_resample_result = function(i, jt, reg) {
 }
 
 
-calculate_ci = function(name, inference, x, y, args, learner_name, task_name, size, repl, resampling_name) {
+# x and y represent ids of resample experiments
+# Most inference methods need only one resample experiments, but some need two
+calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name, size, repl, resampling_name) {
+  ids = list(x = x, y = y, z = z)
+  if (is.na(y)) ids$y = NULL
+  if (is.na(z)) ids$z = NULL
 
-  if (is.na(y)) ids = list(x = x) else ids = list(x = x, y = y)
-  # random subset for testing
   rrs = map(ids, function(job_id) {
    jt = EXPERIMENT_TBL[list(job_id), on = "job.id"]
    make_resample_result(i = 1, jt = jt, reg = EXPERIMENT_REG)
   })
 
+  # some sanity checks
   if (length(rrs) == 2) {
     stopifnot(rrs[[1]]$task$id == rrs[[2]]$task$id)
     stopifnot(rrs[[1]]$task$nrow == rrs[[2]]$task$nrow)
@@ -243,10 +244,8 @@ calculate_ci = function(name, inference, x, y, args, learner_name, task_name, si
   params = mlr3misc::insert_named(params, args)
 
   dt = map_dtr(seq_along(loss_fns), function(i) {
-    tic()
     params = c(params, list(loss_fn = loss_fns[i]))
     ci = try(do.call(inference, args = params), silent = TRUE)
-    toc()
     if (inherits(ci, "try-error")) {
       ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci)))
     }
@@ -259,7 +258,7 @@ calculate_ci = function(name, inference, x, y, args, learner_name, task_name, si
         task = task_name,
         size = size,
         repl = repl,
-	resampling = resampling_name,
+	      resampling = resampling_name,
         iters = sum(map_int(rrs, "iters"))
       ), ci)
 
