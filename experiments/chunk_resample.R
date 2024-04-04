@@ -6,7 +6,7 @@ REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
 reg = loadRegistry(REGISTRY_PATH, writeable = TRUE)
 
-job_table = getJobTable()
+job_table = getJobTable(findNotSubmitted())
 
 ids = job_table$job.id
 chunks = data.table(

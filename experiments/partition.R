@@ -5,8 +5,7 @@ library(here)
 library(DBI)
 library(duckdb)
 options(mlr3oml.parquet = TRUE)
-#options(mlr3oml.cache = TRUE)
-n_data = 5100000L
+
 n_subsets = 500L
 sizes = c(100L, 500L, 1000L, 5000L, 10000L)
 
@@ -14,8 +13,6 @@ data_ids = unname(unlist(list(
   classif = c(45570, 45689, 45704, 45654, 45665, 45668, 45669, 45672, 45693),
   regr = c(45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
 )))
-
-#walk(data_ids, function(id) odt(id)$data)
 
 write_parquet = function(data, path) {
   con = dbConnect(duckdb::duckdb(), ":memory:")
@@ -33,19 +30,18 @@ splits = lapply(data_ids, function(data_id) {
   }
   set.seed(data_id)
   task = as_task(odt(data_id))
-  # when sampling the large subsets there is no need to stratify
+  # when sampling the large subsets there is no need to stratify as it is large enough
   holdout_ids = sample(seq_len(task$nrow), 100000L)
-  partition_ids = setdiff(task$row_roles$use, holdout_ids)
   if (inherits(task, "TaskClassif")) {
     task$col_roles$stratum = task$target_names
   }
-  write_parquet(data.frame(row_id = holdout_ids[1:50000]), here("data", "splits", data_id,  "holdout_50000"))
   write_parquet(data.frame(row_id = holdout_ids), here("data", "splits", data_id, "holdout_100000"))
 
-
-  train_splits = lapply(sizes, function(size) {
+  partition_ids = setdiff(task$row_roles$use, holdout_ids)
+  lapply(sizes, function(size) {
     set.seed(data_id + size)
     print(size)
+    # subsample enough data to be able to create exactly `n_subsets` subsets of size `size`
     task$row_roles$use = sample(partition_ids, size * n_subsets)
     resampling = rsmp("cv", folds = n_subsets)$instantiate(task)
     inst = resampling$instance
@@ -53,9 +49,9 @@ splits = lapply(data_ids, function(data_id) {
     inst = inst[, c("iter", "row_id")]
 
     write_parquet(inst, here("data", "splits", data_id, paste0(size)))
-  })
 
-  train_splits = set_names(train_splits, as.character(sizes))
+    NULL
+  })
 
   NULL
 })
