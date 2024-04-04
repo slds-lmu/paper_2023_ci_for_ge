@@ -8,6 +8,10 @@ test_that("cv", {
   tbl = infer_bayle(rr, variance = "all-pairs")
   tbl1 = infer_bayle(rr, variance = "within-fold")
 
+  expect_true(tbl1$lower != tbl$lower)
+  expect_true(tbl1$upper != tbl$upper)
+  expect_true(tbl1$estimate == tbl$estimate)
+
   expect_data_table(tbl, nrow = 1, ncol = 4)
   expect_set_equal(
     colnames(tbl),

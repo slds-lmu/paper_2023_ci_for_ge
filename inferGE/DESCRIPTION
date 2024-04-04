@@ -36,7 +36,6 @@ Collate:
     'ResamplingConservativeZ.R'
     'ResamplingNestedBootstrap.R'
     'ResamplingNestedCV.R'
-    'bibentries.R'
     'calculate_loss.R'
     'infer_52cv.R'
     'infer_ls_boot.R'

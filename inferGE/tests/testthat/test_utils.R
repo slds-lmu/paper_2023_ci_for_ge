@@ -10,7 +10,6 @@ test_that("utils works", {
 
 
   loss_fn = get_loss_fn("zero_one", rr)
-  tbl = get_loss_table(rr, loss_fn)
 
   expect_data_table(tbl, ncol = 3, nrow = 27)
   expect_set_equal(names(tbl), c("iter", "row_id", "loss"))

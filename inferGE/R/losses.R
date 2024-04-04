@@ -25,7 +25,7 @@ logloss = function(truth, prob, eps = 1e-15, ...) {
   checkmate::assert_number(eps, lower = 0, upper = 1)
   ii = match(as.character(truth), colnames(prob))
   p = prob[cbind(seq_len(nrow(prob)), ii)]
-  p = pmax(eps, pmin(1 - eps, p))
+  -pmax(eps, pmin(1 - eps, p))
 }
 
 #' @export
