@@ -539,10 +539,10 @@
     },
     "data.table": {
       "Package": "data.table",
-      "Version": "1.14.10",
+      "Version": "1.15.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "6ea17a32294d8ca00455825ab0cf71b9",
+      "Hash": "536dfe4ac4093b5d115caed7a1a7223b",
       "Requirements": []
     },
     "data.tree": {
@@ -1092,16 +1092,18 @@
       "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteUsername": "slds-lmu",
       "RemoteRef": "HEAD",
-      "RemoteSha": "611fdbb7b11c57adca90c77c97180f47e7195e03",
+      "RemoteSha": "92bc70d740d1c55b06626282e22942dae12bf86a",
       "RemoteSubdir": "inferGE",
-      "Hash": "ec8e1c408eb71b49098a309bc1f47b9a",
+      "Hash": "82996f4fd8098b1bbd9611d38db0b267",
       "Requirements": [
         "R6",
         "checkmate",
         "data.table",
         "mlr3",
+        "mlr3measures",
         "mlr3misc",
         "mlr3pipelines",
+        "paradox",
         "withr"
       ]
     },
@@ -1353,10 +1355,10 @@
     },
     "mlr3": {
       "Package": "mlr3",
-      "Version": "0.17.2",
+      "Version": "0.18.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "1925aac9b5e8d55fb4e6424fdce6d60a",
+      "Hash": "bb69c99fbc825fbf229269bff0836a35",
       "Requirements": [
         "R6",
         "RhpcBLASctl",
@@ -1567,10 +1569,10 @@
     },
     "mlr3misc": {
       "Package": "mlr3misc",
-      "Version": "0.13.0",
+      "Version": "0.14.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d6e11a7820fe331d8dfbd66762fd19c3",
+      "Hash": "864a1c580c256498bf8bb64c06c41e28",
       "Requirements": [
         "R6",
         "backports",
@@ -1585,11 +1587,11 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "mlr3oml",
       "RemoteUsername": "mlr-org",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "35b36a4dbf66547eb4443877adfb1cb68ae9d20f",
-      "Hash": "e3ccb7b2d53be6d4b6eda1231e0b2155",
+      "RemoteRepo": "mlr3oml",
+      "RemoteRef": "main",
+      "RemoteSha": "652701284cb9edbe97aa5f72fba6f4a65e81b83f",
+      "Hash": "fc839fae9b25dfebb6532d125dcc02e2",
       "Requirements": [
         "R6",
         "backports",
@@ -2483,6 +2485,14 @@
         "rlang",
         "vctrs"
       ]
+    },
+    "tictoc": {
+      "Package": "tictoc",
+      "Version": "1.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "646895a33d57984ce7534249bd9adf64",
+      "Requirements": []
     },
     "tidyr": {
       "Package": "tidyr",
