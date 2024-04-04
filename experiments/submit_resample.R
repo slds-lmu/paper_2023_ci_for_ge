@@ -2,7 +2,7 @@
 library(batchtools)
 library(mlr3)
 
-REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big11"
+REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
 reg = loadRegistry(REGISTRY_PATH, writeable = TRUE)
 

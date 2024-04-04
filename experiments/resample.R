@@ -3,6 +3,7 @@ library(mlr3misc)
 library(mlr3oml)
 library(duckdb)
 library(inferGE)
+library(data.table)
 
 source(here::here("experiments", "helper.R"))
 
@@ -48,6 +49,8 @@ if (!file.exists(REGISTRY_PATH)) {
     packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr"),
     work.dir = here::here()
   )
+} else {
+  stop("registry already exists")
 }
 
 RESAMPLINGS = list(other = list(

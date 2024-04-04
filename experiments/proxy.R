@@ -10,8 +10,8 @@ EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
-TRUTH_PATH = Sys.getenv("TRUTH_PATH")
-TRUTH_REG = makeRegistry(TRUTH_PATH,
+PROXY_PATH = Sys.getenv("PROXY_PATH")
+PROXY_REG = makeRegistry(PROXY_PATH,
   packages = c("data.table", "batchtools")
 )
 
