@@ -2,7 +2,7 @@ library(batchtools)
 library(mlr3misc)
 library(mlr3oml)
 library(duckdb)
-devtools::load_all("/pfs/tc1/home/sfische6/paper_2023_ci_for_ge/inferGE")
+library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
@@ -39,7 +39,7 @@ data_names = list(
 SEED = 42
 N_REP = 1L
 
-REGISTRY_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big11"
+REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
 if (!file.exists(REGISTRY_PATH)) {
   reg = makeExperimentRegistry(
@@ -56,6 +56,7 @@ RESAMPLINGS = list(other = list(
     subsampling_10     = list(id = "subsampling",      params = list(repeats = 10, ratio = 0.9)),
     subsampling_50     = list(id = "subsampling",      params = list(repeats = 50, ratio = 0.9)),
     subsampling_100    = list(id = "subsampling",      params = list(repeats = 100, ratio = 0.9)),
+    cv_5               = list(id = "cv",               params = list(folds = 5)),
     cv_10              = list(id = "cv",               params = list(folds = 10)),
     rep_cv_5_5         = list(id = "repeated_cv",      params = list(folds = 5, repeats = 5)),
     diettrich          = list(id = "repeated_cv",      params = list(repeats = 5, folds = 2)),

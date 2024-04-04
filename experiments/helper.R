@@ -208,7 +208,7 @@ make_resample_result = function(i, jt, reg) {
 }
 
 
-calculate_ci = function(name, inference, x, y, args, learner_name, task_name, size, repl) {
+calculate_ci = function(name, inference, x, y, args, learner_name, task_name, size, repl, resampling_name) {
 
   if (is.na(y)) ids = list(x = x) else ids = list(x = x, y = y)
   # random subset for testing
@@ -259,6 +259,7 @@ calculate_ci = function(name, inference, x, y, args, learner_name, task_name, si
         task = task_name,
         size = size,
         repl = repl,
+	resampling = resampling_name,
         iters = sum(map_int(rrs, "iters"))
       ), ci)
 

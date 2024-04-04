@@ -6,11 +6,11 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big11"
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
-TRUTH_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/truth11"
+TRUTH_PATH = Sys.getenv("TRUTH_PATH")
 TRUTH_REG = makeRegistry(TRUTH_PATH,
   packages = c("data.table", "batchtools")
 )

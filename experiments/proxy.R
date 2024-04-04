@@ -6,11 +6,11 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big11"
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
-TRUTH_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/proxy11"
+TRUTH_PATH = Sys.getenv("TRUTH_PATH")
 TRUTH_REG = makeRegistry(TRUTH_PATH,
   packages = c("data.table", "batchtools")
 )
@@ -18,7 +18,7 @@ TRUTH_REG = makeRegistry(TRUTH_PATH,
 jt = getJobTable(reg = EXPERIMENT_REG) |>
   unwrap()
 
-jt = jt[map_lgl(jt$resampling_name, function(n) n %in% c("holdout_66", "holdout_90", "cv_10", "rep_cv_5_5")), ]
+jt = jt[map_lgl(jt$resampling_name, function(n) n %in% c("holdout_66", "holdout_90", "cv_5", "cv_10", "rep_cv_5_5")), ]
 
 batchExport(list(jt = jt, EXPERIMENT_REG = EXPERIMENT_REG))
 

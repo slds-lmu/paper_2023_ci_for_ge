@@ -6,8 +6,8 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/run_big4"
-EVAL_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/eval_big4"
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
+EVAL_PATH = Sys.getenv("CI_PATH")
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
@@ -30,13 +30,17 @@ EVAL_CONFIG = list(
   ## other
 
   # holdout_66 and holdout_90
-  list("holdout_66",   "infer_holdout",              list(x = "holdout"),                            list()),
-  list("holdout_90",   "infer_holdout",              list(x = "holdout"),                            list()),
+  list("holdout_66",   "infer_holdout",              list(x = "holdout_66"),                         list()),
+  list("holdout_90",   "infer_holdout",              list(x = "holdout_90"),                         list()),
 
   # subsampling_10, 50 and 100
   list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                     list()),
   list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                     list()),
   list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                    list()),
+
+  # cv_5
+  list("bayle_5_within",    "infer_bayle",           list(x = "cv_5"),                               list(variance = "within-fold")),
+  list("bayle_5_all_pairs", "infer_bayle",           list(x = "cv_5"),                               list(variance = "all-pairs")),
 
   # cv_10
   list("bayle_10_within",    "infer_bayle",          list(x = "cv_10"),                              list(variance = "within-fold")),
@@ -79,7 +83,7 @@ EVAL_CONFIG = list(
   list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                list(variance = "all-pairs")),
 
   # austern_zhou
-  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_10"),          list()),
+  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),           list()),
 
   list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"), list()),
 
@@ -117,6 +121,7 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   tbl$name = cfg[[1]]
   tbl$inference = cfg[[2]]
   tbl$args = rep(list(cfg[[4]]), times = nrow(tbl))
+  tbl$resampling_name1 = rn1
 
   tbl
 })
@@ -141,6 +146,7 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
   y = tbl2[i, "y"][[1]]
   args = tbl2[i, "args"][[1]][[1]]
   learner_name = tbl2[i, "learner_name"][[1]]
+  resampling_name = tbl2[i, "resampling_name1"][[1]]
   task_name = tbl2[i, "task_name"][[1]]
   size = tbl2[i, "size"][[1]]
   repl = tbl2[i, "repl"][[1]]
@@ -153,6 +159,7 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
     args = args,
     learner_name = learner_name,
     task_name = task_name,
+    resampling_name = resampling_name,
     size = size,
     repl = repl
   )
