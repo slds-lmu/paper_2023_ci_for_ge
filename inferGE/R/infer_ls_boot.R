@@ -33,7 +33,7 @@ infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
   err_in = mean(z[[loss]])
   est = est_632plus(err_oob, err_in, gamma)
 
-  bias = err_in - err_oob
+  bias = err_in - est
 
   qs = unname(quantile(errs_in, c(alpha / 2, 1 - alpha / 2)))
   data.table(
@@ -51,7 +51,7 @@ est_gamma = function(pred, loss, task, train_set) {
     prob_rep
   }
 
-  # train set is the same one, for each permutation so it is sufficient to pass it once
+  # train set is the same one for each permutation so it is sufficient to pass it once
   mean(loss(
     truth = rep(pred$truth, each = n),
     response = rep(pred$response, times = n),
