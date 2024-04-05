@@ -45,8 +45,23 @@ splits = lapply(data_ids, function(data_id) {
     task$row_roles$use = sample(partition_ids, size * n_subsets)
     resampling = rsmp("cv", folds = n_subsets)$instantiate(task)
     inst = resampling$instance
+
     names(inst) = c("row_id", "iter")
     inst = inst[, c("iter", "row_id")]
+
+    # test sets don't have the same size when stratifying, so we correct this here
+    if (inherits(task, "TaskClassif")) {
+      # all tests sets have at least (size -1) obs,
+      # so we keep those and then evenly split the remaining observations to all folds
+      first = inst[, .SD[1:(size - 1), ], by = "fold"]
+      rest = inst[!list(first$row_id), on = "row_id"]
+      stopifnot(nrow(rest) == 500)
+      rest$fold = 1:500
+
+      inst = rbind(first, rest)
+    }
+
+
 
     write_parquet(inst, here("data", "splits", data_id, paste0(size)))
 
