@@ -152,7 +152,10 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
       measures[[3]]$id = "logloss"
     }
 
-    result$holdout_scores = map_dtr(rr$predictions("holdout"), function(x) as.data.table(as.list(x$score(measures, task = task))))
+    holdout_predictions = rr$predictions("holdout")
+    result$holdout_scores = map_dtr(seq_along(holdout_predictions), function(i) {
+      as.data.table(as.list(holdout_predictions[[i]]$score(measures, task = task, train_set = resampling$train_set(i))))
+    })
   }
 
   return(result)
