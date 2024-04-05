@@ -14,9 +14,9 @@ percentual_se = function(truth, response, ...) {
 }
 
 #' @export
-standardized_se = function(truth, response, task, ...) {
+standardized_se = function(truth, response, task, train_set = NULL, ...) {
   assert_regr(truth, response = response)
-  mlr3measures::se(truth, response) / (sd(task$truth()) + EPS)
+  mlr3measures::se(truth, response) / (sd(task$truth(train_set)) + EPS)
 }
 
 #' @export
@@ -53,7 +53,7 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
     }
   ),
   private = list(
-    .score = function(prediction, ...) {
+    .score = function(prediction, train_set, ...) {
       mean(standardized_se(truth = prediction$truth, response = prediction$response, ...))
     }
   )

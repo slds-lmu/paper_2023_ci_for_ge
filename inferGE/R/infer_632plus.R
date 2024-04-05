@@ -22,7 +22,7 @@ infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
   loss = names(loss_fn)
 
   insample_pred = y$predictions("test")
-  loss_table_insample = calculate_loss(insample_pred, loss_fn, task = task)
+  loss_table_insample = calculate_loss(insample_pred, loss_fn, task = y$task, resampling = y$resampling)
   err_in = mean(loss_table_insample[[loss]])
 
   gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])

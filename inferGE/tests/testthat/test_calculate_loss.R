@@ -1,8 +1,9 @@
 test_that("calculate_loss works", {
+  resampling = rsmp("cv")
   rr = resample(
     task = tsk("iris"),
     learner = lrn("classif.rpart"),
-    resampling = rsmp("cv")
+    resampling = resampling
   )
 
   loss_table = calculate_loss(rr$predictions(), list(zero_one = mlr3measures::zero_one), task = tsk("iris"))

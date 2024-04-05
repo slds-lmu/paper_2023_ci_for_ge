@@ -18,7 +18,7 @@ infer_bootstrap_ccv.ResampleResult = function(x, y = NULL, alpha = 0.05, loss_fn
   }
 
 
-  loss_table = calculate_loss(x$predictions("test"), loss_fn, task = task)
+  loss_table = calculate_loss(x$predictions("test"), loss_fn, task = x$task, resampling = x$resampling)
   est = if (!is.null(y)) {
     mean(loss_table[[names(loss_fn)[1L]]])
   }
