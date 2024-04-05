@@ -16,6 +16,7 @@ infer_conservative_z = function(x, alpha = 0.05, loss, ...) {
 infer_conservative_z.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) { # nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
   loss_table = calculate_loss(x$predictions("test"), loss_fn, task = x$task, resampling = x$resampling)
+  assert_class(x$resampling, "ResamplingConservativeZ")
 
   infer_conservative_z(loss_table, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
 }
@@ -28,6 +29,7 @@ infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
 
   # this inference method implementation is a bit weird, because the corresponding Resampling method
   # does both the subsampling and the repeated paired subsampling
+  # this is necessary however as they are nested
 
   J = resampling_params$J
   M = resampling_params$M
@@ -49,7 +51,7 @@ infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
 
   x = dcast(x, replication ~ partition, value.var = "V1")
 
-  sigma2 = sum((x[["1"]] - x[["2"]])^2) / 2 * M
+  sigma2 = sum((x[["1"]] - x[["2"]])^2) / (2 * M)
 
   c = qnorm(1 - alpha / 2)
 

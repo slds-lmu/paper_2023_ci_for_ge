@@ -28,14 +28,13 @@ infer_corrected_t.loss_table = function(x, alpha = 0.05, loss, resampling, ...) 
   n1 = round(ratio * n) # in the ResamplingSubsampling the same rounding is used
   n2 = n - n1
 
-  loss_table = x
-
   # the different mu in the rows are the mu_j
-  mus = loss_table[, list(estimate = mean(get(loss))), by = "iter"]
+  mus = x[, list(estimate = mean(get(loss))), by = "iter"]$estimate
   # the global estimator
-  estimate = mean(mus$estimate)
+  estimate = mean(mus)
   # The naive SD estimate (does not take correlation between folds into account)
-  estimate_sd = sd(mus$estimate)
+  # (9)
+  estimate_sd = sd(mus)
 
   # The corrected SD estimate
   sd_corrected = estimate_sd * sqrt(1 / J + n2 / n1)
