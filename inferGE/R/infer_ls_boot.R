@@ -19,7 +19,7 @@ infer_ls_boot.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) { #n
   loss_table_insample = calculate_loss(y$predictions("test"), loss_fn, task = y$task, resampling = y$resampling)
 
   # loss_fn is a named list
-  gamma = est_gamma(y$predictions("test")[[1L]], loss_fn[[1L]])
+  gamma = est_gamma(y$predictions("test")[[1L]], loss_fn[[1L]], task = y$task, train_set = y$resampling$train_set(1))
 
   infer_ls_boot(x = loss_table_test, y = loss_table_train, z = loss_table_insample, gamma = gamma,
     alpha = alpha, loss = names(loss_fn))
@@ -43,16 +43,20 @@ infer_ls_boot.loss_table = function(x, y, z, gamma, alpha = 0.05, loss) {
   )
 }
 
-est_gamma = function(pred, loss) {
+est_gamma = function(pred, loss, task, train_set) {
   n = length(pred$truth)
   prob_rep = if ("prob" %in% pred$predict_types) {
-    matrix(rep(t(pred$prob), n), ncol = ncol(pred$prob), byrow = TRUE)
+    prob_rep = matrix(rep(t(pred$prob), n), ncol = ncol(pred$prob), byrow = TRUE)
+    colnames(prob_rep) = colnames(pred$prob)
+    prob_rep
   }
-  colnames(prob_rep) = colnames(pred$prob)
 
+  # train set is the same one, for each permutation so it is sufficient to pass it once
   mean(loss(
     truth = rep(pred$truth, each = n),
     response = rep(pred$response, times = n),
+    task = task,
+    train_set = train_set,
     prob = prob_rep
   ))
 }

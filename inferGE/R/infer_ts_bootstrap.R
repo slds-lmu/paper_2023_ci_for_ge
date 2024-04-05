@@ -31,7 +31,7 @@ infer_ts_boot.ResampleResult = function(x, y, z, alpha = 0.05, loss_fn = NULL) {
     loss_table_bootstrap = calculate_loss(test_predictions[bootstrap_iters], loss_fn, task = x$task, resampling = x$resampling, iters = bootstrap_iters)
     err_oob = mean(loss_table_bootstrap[, list(oob = mean(get(loss))), by = "row_id"]$oob)
 
-    gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]])
+    gamma = est_gamma(insample_pred[[1L]], loss_fn[[1L]], task = x$task, train_set = x$resampling$train_set(rep))
 
     est_632plus(err_oob, err_in, gamma)
   })

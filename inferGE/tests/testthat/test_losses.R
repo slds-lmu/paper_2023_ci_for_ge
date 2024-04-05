@@ -50,3 +50,9 @@ test_that("measures", {
   expect_numeric(pred$score(std_se, task = task), len = 1L)
   expect_numeric(pred$score(percentual_se, task = task), len = 1L)
 })
+
+test_that("est_gamma with standardized_se", {
+  task = tsk("mtcars")
+  p = lrn("regr.rpart")$train(task)$predict(task)
+  expect_numeric(est_gamma(p, standardized_se, task = task, train_set = task$row_ids))
+})
