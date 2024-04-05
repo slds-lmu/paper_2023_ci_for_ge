@@ -43,12 +43,12 @@ batchMap(i = seq_len(nrow(jt)), fun = function(i) {
     c("zero_one", "logloss", "bbrier")
   } else {
 	  # FIXME rename to percentual_mse after next run
-    c("se", "ae", "standardized_se", "percentual_mse")
+    c("se", "ae", "standardized_se", "percentual_se")
   }
 
   melt(tbl, id.vars = c("task", "size", "repl", "learner", "resampling"), measure.vars = measure_vars,
     variable.name = "measure", value.name = "PQ")
-}, reg = TRUTH_REG)
+}, reg = PROXY_REG)
 
 jt_proxy = getJobTable(reg = TRUTH_REG)
 chunks = data.table(

@@ -102,8 +102,7 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   keep_cols = c("data_id", "size", "repl", "learner_name", "resampling_name", "job.id", "task_name")
   tbl = EXPERIMENT_TBL[list(rn1), ..keep_cols,  on = "resampling_name"]
 
-  if (length(resampling_names) == 3)) {
-    browser()
+  if (length(resampling_names) == 3) {
     rn2 = resampling_names[[2]]
     rn3 = resampling_names[[3]]
     tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
@@ -121,6 +120,8 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
       c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y"),
       c("x", "y", "resampling_name_x", "resampling_name_y")
     )
+    tbl$z = NA
+    tbl$resampling_name_z = NA
   } else {
     setnames(tbl, c("job.id", "resampling_name"), c("x", "resampling_name_x"))
     tbl$y = NA
@@ -131,7 +132,6 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
   tbl$name = cfg[[1]]
   tbl$inference = cfg[[2]]
   tbl$args = rep(list(cfg[[4]]), times = nrow(tbl))
-  tbl$resampling_name1 = rn1
 
   tbl
 })
