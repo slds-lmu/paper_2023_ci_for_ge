@@ -16,8 +16,6 @@ infer_632plus.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL) {
   ci = infer_oob(x = x, alpha = alpha, loss_fn = loss_fn)
 
   SE_del = ci$info[[1L]]$SE_del
-  lower = ci$lower
-  upper = ci$upper
   err_oob = ci$estimate
   loss = names(loss_fn)
 

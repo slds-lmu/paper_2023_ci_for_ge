@@ -14,12 +14,10 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   preds = x$predictions("test")
   loss_table = calculate_loss(preds, loss_fn, task = x$task, resampling = x$resampling)
 
-  task_ids = x$task$row_ids
-  # IDs that are in at least one test set
-  test_ids = unique(unlist(map(seq_len(x$resampling$iters), function(iter) x$resampling$test_set(iter))))
-
   # useable ids are those that are in the test set at least once
-  useable_ids = task_ids[task_ids %in% test_ids]
+  useable_ids = unique(unlist(map(seq_len(x$resampling$iters), function(iter) x$resampling$test_set(iter))))
+
+  # first over repetition, then over ids
   Es = loss_table[, list(loss = mean(get(loss))), by = "row_id"]$loss
 
   # this disregards those that are not useable
@@ -37,6 +35,8 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
     (1 / n) * loss_table[list(b), sum(get(loss)), on = "iter"] # (36)
   })
 
+
+  # (40)
   Ds = map_dbl(seq_along(useable_ids), function(i) {
     (2 + 1 / (n - 1)) * (Es[i] - Err1) / n + sum((N[i, ] - mean(N[i, ])) * qs) / sum(I[i, ])
   })
