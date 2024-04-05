@@ -36,10 +36,10 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
   x_outer = x[is.na(get("inner"))]
   x_inner = x[!is.na(get("inner"))]
 
-  b_list = x_outer[, list(x = var(get(loss)) / get(".N")), by = c("rep", "outer")][["x"]]
+  b_list = x_outer[, list(b = var(get(loss)) / get(".N")), by = c("rep", "outer")][["b"]]
 
-  tmp1 = x_outer[, list(avg_inner = mean(get(loss))), by = c("rep", "outer")]
-  tmp2 = x_inner[, list(avg_outer = mean(get(loss))), by = c("rep", "outer")]
+  tmp1 = x_outer[, list(avg_outer = mean(get(loss))), by = c("rep", "outer")]
+  tmp2 = x_inner[, list(avg_inner = mean(get(loss))), by = c("rep", "outer")]
   tmp_join = merge(tmp1, tmp2, by = c("rep", "outer"))
 
   a_list = tmp_join[, list(a = (get("avg_inner") - get("avg_outer"))^2)][["a"]]
@@ -49,25 +49,24 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
 
   err_cv = x_outer[, mean(get(loss))]
 
-  # left term going from (k -1) / k * n to k / n
+  # left term going from (k - 1) / k * n to k / n
   # right from going from (k - 2) / k * n to (k - 1) / l * n
   # different than in ntestedcv implementation but authors did not respond to my email
   bias = (1 + (folds - 2) / folds) * (err_ncv - err_cv)
 
-  # We do the max(mse, 0) because the mse estimate can sometimes be negative.
-  # The ensure_within ensures that it is within the range of assumig that all the estimates from the outer folds
-  # are 100% dependent vs. assuming that they are 100% independent
 
   # we recommend re-scaling to obtain an estimate for a sample of size n by instead taking:
   mse = (folds - 1) / folds * mse
+
+  # We do the max(mse, 0) because the mse estimate can sometimes be negative.
+  # The ensure_within ensures that it is within the range of assumig that all the estimates from the outer folds
+  # are 100% dependent vs. assuming that they are 100% independent
 
   sigma_in = sd(x_inner[[loss]])
   se_low = sigma_in / sqrt(n)
   se_up = se_low * sqrt(folds)
 
   se = max(se_low, min(sqrt(max(0, mse)), se_up))
-
-  se_cv = sd(x_outer[[loss]]) / sqrt(n)
 
   s = qnorm(1 - alpha / 2) * se
   data.table(
@@ -78,9 +77,9 @@ infer_bates.loss_table = function(x, alpha = 0.05, loss, resampling) { # nolint
       bias = bias, # bias estimate ()
       mse_sqrt = suppressWarnings(sqrt(mse)), # estimate without correction, mse can be negative so suppress warnings
       se = se,
+      sigma_in = sigma_in,
       err_ncv = err_ncv,
       err_cv = err_cv,
-      se_cv = se_cv,
       adjusted = se != sqrt(max(mse, 0))
     ))
   )

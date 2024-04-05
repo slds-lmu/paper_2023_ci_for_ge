@@ -10,13 +10,8 @@ infer_bootstrap_ccv.ResampleResult = function(x, y = NULL, alpha = 0.05, loss_fn
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
   if (!is.null(y)) {
     assert_class(y, "ResampleResult")
-    assert(
-      check_class(y$resampling, "ResamplingCV"),
-      check_class(y$resampling, "ResamplingRepeatedCV"),
-      check_class(y$resampling, "ResamplingLOO"),
-    )
+    assert_class(y$resampling, "ResamplingLOO")
   }
-
 
   loss_table = calculate_loss(x$predictions("test"), loss_fn, task = x$task, resampling = x$resampling)
   est = if (!is.null(y)) {
@@ -36,7 +31,7 @@ infer_bootstrap_ccv.loss_table = function(x, est = NULL, alpha = 0.05, loss = NU
   M = instance$M
 
   # loss_weights indicates how often a sample is in the bootstrap sample.
-  # Because we avoid making the same predictin multiple times during resample(), we here multiply the loss
+  # Because we avoid making the same prediction multiple times during resample(), we here multiply the loss
   # with the respective weight (see formula at bottom of page 5)
   loss_weights = as.vector(M)
   loss_weights = loss_weights[loss_weights != 0]
