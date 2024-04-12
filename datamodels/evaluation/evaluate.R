@@ -11,6 +11,8 @@ library(stringr)
 library(mlr3misc)
 library(mlr3oml)
 
+future::plan("multicore", workers = 20)
+
 #' @title Evaluate a simulated dataset
 #' @description
 #' This function evaluates a simulated dataset using multiple methods.
@@ -54,13 +56,12 @@ evaluate = function(simulated_id, task_type, seed = 42) {
     test_ids = test_ids + 1
   }
 
-  # Here we use random forest because of installation trouble of ranger on the GPU server
-  base_learner = lrn(paste0(task_type, ".rfsrc"))
+  base_learner = lrn(paste0(task_type, ".ranger"))
   learner = as_learner(
     ppl("robustify") %>>% po("learner", base_learner)
   )
   
-  learner$id = "rfsrc"
+  learner$id = "ranger"
   learner$fallback = lrn(paste0(task_type, ".featureless"))
 
   crosswise_comparison = compare_crosswise(

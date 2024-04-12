@@ -5,49 +5,13 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 import numpy as np
-from peft import (
-    LoraConfig,
-    TaskType,
-    get_peft_model
-)
 import json
 
 def sample(name, n, seed, k, max_length):
     np.random.seed(42)
     torch.manual_seed(42)
-    if name == "higgs":
-        great = GReaT('distilgpt2')
-
-        # Define LoRA Config
-        lora_config = LoraConfig(
-            r=16,  # only training 0.16% of the parameters of the model
-            lora_alpha=32,
-            target_modules=[
-                "c_attn"
-            ],  # this is specific for gpt2 model, to be adapted
-            lora_dropout=0.05,
-            bias="none",
-            task_type=TaskType.CAUSAL_LM,  # this is specific for gpt2 model, to be adapted
-        )
-        # add LoRA adaptor
-        great.model = get_peft_model(great.model, lora_config)
-        great.model.print_trainable_parameters()
-
-        path = str(here("datamodels/models")) + '/' + name
-        great.model.load_state_dict(torch.load(path + '/model.pt'))
-
-        # Load attributes
-        with open(path + '/config.json', "r") as f:
-            attributes = json.load(f)
-
-        # Set all attributes
-        for key, v in attributes.items():
-            setattr(great, key, v)
-            
-        model = great
-    else:
-        path = str(here('datamodels/models/' + name))
-        model = GReaT.load_from_dir(path)
+    path = str(here('datamodels/models/' + name))
+    model = GReaT.load_from_dir(path)
 
     cnt = 0
     
@@ -72,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, help='The name of the model.')
     parser.add_argument('--n', type=int, help='The number of samples to generate.')
     parser.add_argument('--seed', type=int, help='The seed for the random number generator.', default=42)
-    parser.add_argument('--k', type=int, help='The seed for the random number generator.', default=512)
+    parser.add_argument('--k', type=int, help='The maximum number of samples to generate at once.', default=512)
     parser.add_argument('--max_length', type=int, help='Maximum number of tokens to generate', default=200)
     args = parser.parse_args()
     

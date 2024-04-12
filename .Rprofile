@@ -1,8 +1,14 @@
 source("renv/activate.R")
 
 # This is where the datasets will be cached
-options(mlr3oml.cache = "/gscratch/sfische6/mlr3oml_cache")
 
+if (dir.exists("/gscratch/sfische/mlr3oml_cache")) {
+  options(mlr3oml.cache = "/gscratch/sfische6/mlr3oml_cache")
+} else {
+  options(mlr3oml.cache = TRUE)
+}
+
+options(mlr3oml.parquet = TRUE)
 
 # This is the path where the experiments results will be saved:
 # - RESAMPLE_PATH contains the results of ./experiments/resample.R

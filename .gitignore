@@ -41,12 +41,14 @@ vignettes/*.pdf
 datamodels/evaluation/results
 datamodels/models/
 
-data/original
-data/simulated
-data/artificial
-data/simulated_final
-data/subset
-data/splits
+data/original/*.parquet
+data/original/*.csv
+data/original/*.json
+data/simulated/*.parquet
+data/simulated/*.pq
+data/artificial/*.parquet
+data/artificial/*.pq
+data/splits/*.parquet
 
 *.pyc
 figures

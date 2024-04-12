@@ -8,7 +8,7 @@ import pandas as pd
 import json
 
 
-def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5000, efficient_finetuning = ""): 
+def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5000): 
 
     # set numpy seed
     np.random.seed(42)
@@ -38,8 +38,7 @@ def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5
         epochs=epochs,
         save_steps = save_steps,
         experiment_dir = experiment_dir,
-        logging_steps = logging_steps,
-        efficient_finetuning = efficient_finetuning
+        logging_steps = logging_steps
     )
 
     trainer = model.fit(data_train, resume_from_checkpoint = os.path.exists(experiment_dir))
@@ -59,11 +58,10 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, help='Number of training epochs.')
     parser.add_argument('--save_steps', type=int, help='After how many steps the model is saved.')
     parser.add_argument('--logging_steps', type=int, help='How often the logs are saved.')
-    parser.add_argument('--efficient_finetuning', type=str, help='Whether to use e.g. lora.')
     args = parser.parse_args()
     
     if args.logging_steps is None: 
         args.logging_steps = args.save_steps
 
     # Call the main function with the parsed arguments
-    main(args.id, args.batch_size, args.epochs, args.save_steps, args.logging_steps, args.efficient_finetuning)
+    main(args.id, args.batch_size, args.epochs, args.save_steps, args.logging_steps)
