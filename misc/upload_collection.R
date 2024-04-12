@@ -24,7 +24,9 @@ data_ids = c(
 )
 task_types = ifelse(is.na(list_oml_data(data_id = data_ids)$MajorityClassSize), "regr", "classif")
 
-task_types[data_ids %in% c(45691, 45690)] = "classif"
+dt = read.csv("~/gh/paper_2023_ci_for_ge/misc/data_ids.csv")
+data_ids = dt$data_id
+task_types =  dt$task_type
 
 task_ids = c()
 
@@ -45,7 +47,7 @@ for (i in seq_along(data_ids)) {
     type = task_types[i],
     estimation_procedure = estimation_procedure,
     target = odata$target_names
-    
+
   )
 
   task_ids = append(task_ids, task_id)
