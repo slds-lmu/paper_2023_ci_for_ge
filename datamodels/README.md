@@ -31,7 +31,7 @@ The other datasets that were generated for the experiments first estimated densi
 The steps to reproduce this are:
 
 1. Restore the conda environment stored in `environment.yml` by running:
-    'higgs' : 45570,
+
    ```bash
    conda env create -f environment.yml
    ```
@@ -47,8 +47,8 @@ The steps to reproduce this are:
 
 1. Estimate the densities from the real-world datasets by fine-tuning GPT-2:
    For all datasets, a batch size of 32 was unused.
-   For the *covertype* data, 20 epochs were used and for the *sgemm_gpu_kernel* data, 40 epochs were used, as these
-   datasets were much larger than the other datasets. For all other, 200 epochs were used.
+   For the *covertype* data, 20 epochs were used and for the *sgemm_gpu_kernel* data 40 epochs were used as these
+   datasets were much larger than the other datasets. 200 epochs were used for all other datasets.
 
    To e.g. train the model for *covertype*, run
 
@@ -68,7 +68,7 @@ The steps to reproduce this are:
    This ensures that the simulated data has no new categorical levels and correctly
    encodes the covertype target as a categorical.
    The resulting datasets are stored as parquet files in `./data/simulated/`.
-   
+
    ```bash
    python postprocess.py
    ```
@@ -77,13 +77,13 @@ The steps to reproduce this are:
 
 The entrypoint for the evaluation of the realistically simulated data are the datasets uploaded to OpenML.
 It is therefore possible to reproduce this step without estimating the densities and sampling from them.
-You do need to run `fetch_data.py` (as described above) to have access to the original datasets.
+You do, however, need to run `fetch_data.py` (as described above) to have access to the original datasets.
 
 
 1. If you haven't, restore the reproducible R environment defined in `./renv.lock`:
-  
+
    For that, run the following commands from the root directory of this repository:
- 
+
    ```R
    # install renv if you don't have it installed yet
    install.packages("renv")
