@@ -62,11 +62,26 @@ def main(simulated_name):
     
     print('Number of rows before: ' + str(simulated.shape[0]))
     processed = fix_categories(simulated, unique_values)
+    processed.dropna(inplace = True)
+    
+    print(processed.isna().sum())
 
-    processed.dropna()
+    if original_name == 'bank_marketing':
+        # encode Class column as categorical
+        processed['Class'] = processed['Class'].astype(int).astype(str).astype('category')
+    
+    if original_name == 'covertype':
+        # encode Class column as categorical
+        processed['Y'] = processed['Y'].astype(int).astype(str).astype('category')
+
 
     # subset dataframe to first 5 100 000 rows
     processed = processed.iloc[:5100000, :]    
+
+    print(processed.dtypes)
+
+    print(original_name)
+    response = input("Enter something to continue: ")
 
     processed.to_parquet(str(here('data/simulated/' + 'simulated_' + original_name + '.parquet')), index = False)
     
@@ -79,15 +94,16 @@ def main(simulated_name):
 if __name__ == "__main__":
 
     dataset_names = [
-        "adult_6000000_42",
+        #"adult_6000000_42",
         "bank_marketing_6000000_42",
         "covertype_6000000_42",
-        "diamonds_6000000_42",
-        "electricity_6000000_42",
-        "physiochemical_protein_6000000_42",
-        "sgemm_gpu_kernel_performance_6000000_42",
-        "video_transcoding_6000000_42"
+        #"diamonds_6000000_42",
+        #"electricity_6000000_42",
+        #"physiochemical_protein_6000000_42",
+        #"sgemm_gpu_kernel_performance_6000000_42",
+        #"video_transcoding_6000000_42"
     ]
+
 
     for dataset_name in dataset_names: 
         main(dataset_name)
@@ -102,6 +118,5 @@ if __name__ == "__main__":
         # that the data is not sorted -> permute and subset here
         higgs_subset = higgs_data.sample(n=5100000, replace=False)
 
-    higgs_subset.to_parquet(str(here('data/subset/subset_higgs.parquet')), index=False)
-
+        higgs_subset.to_parquet(str(here('data/subset/subset_higgs.parquet')), index=False)
 

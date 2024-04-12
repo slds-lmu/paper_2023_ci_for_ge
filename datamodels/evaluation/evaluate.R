@@ -18,7 +18,7 @@ library(mlr3oml)
 #' b) Distribution of the generalization error
 #' @param simulated_id (`integer(1)`) The OpenML data id of the simulated dataset.
 #' @param seed The seed
-evaluate = function(simulated_id, seed = 42) {
+evaluate = function(simulated_id, task_type, seed = 42) {
   withr::local_seed(seed)
   odata = odt(simulated_id, parquet = TRUE)
   backend = as_data_backend(odata)
@@ -54,11 +54,6 @@ evaluate = function(simulated_id, seed = 42) {
     test_ids = test_ids + 1
   }
 
-  if (is.numeric(original[[target]])) {
-    task_type = "regr"
-  } else {
-    task_type = "classif"
-  }
   # Here we use random forest because of installation trouble of ranger on the GPU server
   base_learner = lrn(paste0(task_type, ".rfsrc"))
   learner = as_learner(
@@ -196,8 +191,12 @@ compare_crosswise = function(simulated, original, train_ids, test_ids, target, l
   )
 
   bmr = benchmark(design, store_backends = FALSE, store_models = FALSE)
+  
+  measure = if (task_type == "regr") msr("regr.rmse") else msr("classif.ce")
 
-  bmr$score()
+  tbl = as.data.table(bmr$score(measure))
+
+  tbl[, c(4, 6, 8 , 9, 10, 11)]
 }
 
 # Compares the distribution of the generalization error for the original and simulated dataset.
@@ -239,5 +238,8 @@ compare_ge_distr = function(simulated, original, train_ids, test_ids, target, le
   
   bmr = benchmark(design, store_models = FALSE, store_backends = TRUE)
 
-  bmr$score()
+  measure = if (task_type == "regr") msr("regr.rmse") else msr("classif.ce")
+
+  tbl =  as.data.table(bmr$score(measure))
+  tbl[, c(4, 6, 8 , 9, 10, 11)]
 }

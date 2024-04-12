@@ -1,10 +1,32 @@
-devtools::load_all("~/mlr/mlr3oml")
+library(mlr3oml)
 
-dt = read.csv("~/gh/paper_2023_ci_for_ge/data_ids.csv")
-data_ids = dt$data_id
-task_types =  dt$task_type
+#dt = read.csv("~/gh/paper_2023_ci_for_ge/data_ids.csv")
+data_ids = c(
+  45704,
+  45703,
+  45654,
+  45655,
+  45664,
+  45665,
+  45666,
+  45667,
+  45668,
+  45669,
+  45670,
+  45671,
+  45672,
+  45689,
+  45692,
+  45693,
+  45694,
+  45695,
+  45696
+)
+task_types = ifelse(is.na(list_oml_data(data_id = data_ids)$MajorityClassSize), "regr", "classif")
 
-task_ids = list()
+task_types[data_ids %in% c(45691, 45690)] = "classif"
+
+task_ids = c()
 
 for (i in seq_along(data_ids)) {
 
@@ -29,7 +51,7 @@ for (i in seq_along(data_ids)) {
   task_ids = append(task_ids, task_id)
 }
 
-publish_collection(
+id = publish_collection(
   unlist(task_ids),
   name = "CI for GE benchmark",
   desc = paste0(
