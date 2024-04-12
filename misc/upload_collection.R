@@ -1,6 +1,6 @@
 devtools::load_all("~/mlr/mlr3oml")
 
-dt = read.csv("~/gh/paper_2023_ci_for_ge/data_ids.csv")
+dt = read.csv("~/gh/paper_2023_ci_for_ge/misc/data_ids.csv")
 data_ids = dt$data_id
 task_types =  dt$task_type
 
@@ -23,7 +23,7 @@ for (i in seq_along(data_ids)) {
     type = task_types[i],
     estimation_procedure = estimation_procedure,
     target = odata$target_names
-    
+
   )
 
   task_ids = append(task_ids, task_id)
