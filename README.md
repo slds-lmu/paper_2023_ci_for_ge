@@ -1,16 +1,21 @@
 # Confidence Intervals for the Generalization Error
 
+This is the code accompanying the Paper <TODO></TODO>
 
-* `./data/` contains the data
-* `./datamodels/` contains the code related to the generation of the datasets
-* `./experiments` contains the code for the main experiments to evaluate the CI methods
-* `./inferGE` contains the R package that implements the CI methods that are being compared
+The content of this repository is:
+
+* `./data/` contains some input data and is the folder where datasets that are generated will be stored.
+* `./datamodels/` contains the code related to the generation of the datasets.
+* `./experiments` contains the code for the main experiments comparing the different confidence interval methods.
+* `./inferGE/` is the R package that implements confidence interval methods that are being compared
 * `./misc/` contains some miscellaneous helper functions
 * `./renv/` and `renv.lock` are for the reproducible R environment
 * `./results/` contains the final results (such as figures, tables) included in the paper
 
-For instructions on how to reproduce
+
+## Reproducibility
+
+The instructions to reproduce the experiments are separated into:
 1. the dataset generation, see `./datamodels/README.md`. Note that the resulting datasets are also made available on
    [OpenML](https://openml.org), so the main experiments can be reproduced without this step.
 1. the main experiments, see `./experiments/README.md`.
-
