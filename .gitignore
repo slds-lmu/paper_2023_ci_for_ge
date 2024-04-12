@@ -48,7 +48,7 @@ data/simulated/*.parquet
 data/simulated/*.pq
 data/artificial/*.parquet
 data/artificial/*.pq
-data/splits/*.parquet
+data/splits/**/*.parquet
 
 *.pyc
 figures
