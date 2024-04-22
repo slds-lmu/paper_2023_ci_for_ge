@@ -18,7 +18,7 @@ PROXY_REG = makeRegistry(PROXY_PATH,
 jt = getJobTable(reg = EXPERIMENT_REG) |>
   unwrap()
 
-jt = jt[map_lgl(jt$resampling_name, function(n) n %in% c("holdout_66", "holdout_90", "cv_5", "cv_10", "rep_cv_5_5")), ]
+jt = jt[map_lgl(jt$resampling_name, function(n) n %in% c("holdout_66", "holdout_90", "cv_5", "cv_10", "rep_cv_5_5", "loo")), ]
 
 batchExport(list(jt = jt, EXPERIMENT_REG = EXPERIMENT_REG))
 
@@ -50,7 +50,7 @@ batchMap(i = seq_len(nrow(jt)), fun = function(i) {
     variable.name = "measure", value.name = "PQ")
 }, reg = PROXY_REG)
 
-jt_proxy = getJobTable(reg = TRUTH_REG)
+jt_proxy = getJobTable(reg = PROXY_REG)
 chunks = data.table(
   job.id = jt_proxy$job.id,
   chunk = batchtools::chunk(x = jt_proxy$job.id, chunk.size = 100)

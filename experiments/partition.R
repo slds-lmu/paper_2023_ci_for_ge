@@ -31,7 +31,7 @@ splits = lapply(data_ids, function(data_id) {
   set.seed(data_id)
   task = as_task(odt(data_id))
   # when sampling the large subsets there is no need to stratify as it is large enough
-  holdout_ids = sample(seq_len(task$nrow), 100000L)
+  holdout_ids = sample(task$row_ids, 100000L)
   if (inherits(task, "TaskClassif")) {
     task$col_roles$stratum = task$target_names
   }
@@ -53,10 +53,10 @@ splits = lapply(data_ids, function(data_id) {
     if (inherits(task, "TaskClassif")) {
       # all tests sets have at least (size -1) obs,
       # so we keep those and then evenly split the remaining observations to all folds
-      first = inst[, .SD[1:(size - 1), ], by = "fold"]
+      first = inst[, .SD[1:(size - 1), ], by = "iter"]
       rest = inst[!list(first$row_id), on = "row_id"]
       stopifnot(nrow(rest) == 500)
-      rest$fold = 1:500
+      rest$iter = 1:500
 
       inst = rbind(first, rest)
     }

@@ -6,11 +6,9 @@ REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
 reg = loadRegistry(REGISTRY_PATH, writeable = TRUE)
 
-job_table = getJobTable(findNotSubmitted())
-
-ids = job_table$job.id
+ids = sample(setdiff(findNotStarted()[[1]], findQueued()[[1]]), 200000L)
 chunks = data.table(
-  job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 10, shuffle = FALSE)
+  job.id = ids, chunk = batchtools::chunk(ids, chunk.size = 100, shuffle = FALSE)
 )
 
 #submitJobs(chunks)

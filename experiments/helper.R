@@ -3,13 +3,16 @@ make_task = function(data_id, size, repl, resampling) {
 
   # the ids for the data subset
   use_ids_path = here::here("data", "splits", data_id, paste0(size, ".parquet"))
+
+  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW holdout_table AS SELECT * FROM read_parquet('", holdout_ids_path, "')"))
 
   # for some resamplings where we also calculate the proxy quantities / the true values,
   # we need a large holdout set to approximate them
-  holdout_ids_path = here::here("data", "splits", data_id, "holdout_100000.parquet")
   need_holdout = inherits(resampling, "ResamplingInsample") || inherits(resampling, "ResamplingCV") ||
-    (inherits(resampling, "ResamplingRepeatedCV") && resampling$param_set$values$folds != 2) || inherits(resampling, "ResamplingHoldout")
+    (inherits(resampling, "ResamplingRepeatedCV") && resampling$param_set$values$folds != 2) || inherits(resampling, "ResamplingHoldout") ||
+    inherits(resampling, "ResamplingLOO")
+
   DBI::dbExecute(con, paste0("CREATE OR REPLACE VIEW use_table AS SELECT * FROM read_parquet('", use_ids_path, "')"))
   use_ids = dbGetQuery(con, sprintf("SELECT row_id FROM use_table WHERE iter = %i", repl))$row_id
 
@@ -248,7 +251,7 @@ calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name,
 
   dt = map_dtr(seq_along(loss_fns), function(i) {
     params = c(params, list(loss_fn = loss_fns[i]))
-    ci = try(do.call(inference, args = params), silent = TRUE)
+    ci = do.call(inference, args = params)
     if (inherits(ci, "try-error")) {
       ci = data.table(estimate = NA, lower = NA, upper = NA, info = list(list(error = ci)))
     }
@@ -261,7 +264,7 @@ calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name,
         task = task_name,
         size = size,
         repl = repl,
-	      resampling = resampling_name,
+	resampling = resampling_name,
         iters = sum(map_int(rrs, "iters"))
       ), ci)
 

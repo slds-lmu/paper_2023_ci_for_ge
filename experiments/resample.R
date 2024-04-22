@@ -38,7 +38,7 @@ data_names = list(
 )
 
 SEED = 42
-N_REP = 1L
+N_REP = 500L
 
 REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH")
 
@@ -83,14 +83,14 @@ SIZES = list(
 
 LEARNERS = list(
   regr = list(
-    ridge  = list(id = "regr.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
-    rpart  = list(id = "regr.rpart",     params = list()),
-    ranger = list(id = "regr.ranger",    params = list(num.trees = 50))
+    list(name = "ridge",  id = "regr.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    list(name = "rpart",  id = "regr.rpart",     params = list()),
+    list(name = "ranger", id = "regr.ranger",    params = list(num.trees = 50))
   ),
   classif = list(
-    ridge  = list(id = "classif.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
-    rpart  = list(id = "classif.rpart",     params = list()),
-    ranger = list(id = "classif.ranger",    params = list(num.trees = 50))
+    list(name = "ridge",  id = "classif.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    list(name = "rpart",  id = "classif.rpart",     params = list()),
+    list(name = "ranger", id = "classif.ranger",    params = list(num.trees = 50))
   )
 )
 
@@ -117,6 +117,7 @@ addProblem(
     )
   }
 )
+
 
 make_prob_designs = function(type) {
   prob_designs_other = map(c("regr", "classif"), function(task_type) {
