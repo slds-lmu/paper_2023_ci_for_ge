@@ -1092,9 +1092,9 @@
       "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteUsername": "slds-lmu",
       "RemoteRef": "HEAD",
-      "RemoteSha": "1705810be972792ee9c74554bef46923e6991d6f",
+      "RemoteSha": "69b3e44c09489b32683a1b898f4107894ad44dbb",
       "RemoteSubdir": "inferGE",
-      "Hash": "148ac358c4bfcf3546ae9e26a2b76be1",
+      "Hash": "6ae7dbd03d6e4177ace5d8f337b9f7a2",
       "Requirements": [
         "R6",
         "checkmate",

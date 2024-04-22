@@ -36,8 +36,9 @@ infer_ts_boot.ResampleResult = function(x, y, z, alpha = 0.05, loss_fn = NULL) {
     est_632plus(err_oob, err_in, gamma)
   })
 
+  # in some very rare cases the estimate contained a few (or one) NA
   n_na = sum(is.na(estimates))
-  qs = unname(quantile(estimates, c(alpha / 2, 1 - alpha / 2)), na.rm = TRUE)
+  qs = unname(quantile(estimates, c(alpha / 2, 1 - alpha / 2), na.rm = TRUE))
 
   # now use y and z to get the point estimate
   estimate = infer_632plus(x = y, y = z, loss_fn = loss_fn)$estimate
@@ -46,11 +47,8 @@ infer_ts_boot.ResampleResult = function(x, y, z, alpha = 0.05, loss_fn = NULL) {
     estimate = estimate,
     lower = qs[1],
     upper = qs[2],
+    info = list(list(n_na = n_na))
   )
-
-  if (n_na > 0) {
-    res$info = list(list(n_na = n_na))
-  }
 
   return(res)
 }
