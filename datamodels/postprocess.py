@@ -31,28 +31,8 @@ def replace_value(val, choices):
 def fix_categories(df, allowed_values):
     for colname, allowed_values in allowed_values.items():
         df[colname] = df[colname].apply(lambda x: replace_value(x, allowed_values))
-
-        # Calculate frequency
-        #value_counts = df[colname].value_counts(normalize=True)
-        #rare_values = value_counts[value_counts < 0.02].index
-
-        ## Replace rare values with "rare_values"
-        #unique_vals = df[colname].unique().tolist()
-        #def make_unique(l, c):
-        #    original_c = c
-        #    counter = 1
-        #    while c in l:
-        #        c = original_c + "_" + str(counter)
-        #        counter += 1
-        #    return c
-
-        #new_name = make_unique(unique_vals, 'rare_values')
-        #df[colname] = df[colname].replace(rare_values, 'rare_values')
-
         
     return df
-    
-
 
 def main(simulated_name):
     original_name = get_original(simulated_name)
@@ -62,11 +42,19 @@ def main(simulated_name):
     
     print('Number of rows before: ' + str(simulated.shape[0]))
     processed = fix_categories(simulated, unique_values)
+    processed.dropna(inplace = True)
+    
+    print(processed.isna().sum())
 
-    processed.dropna()
+    if original_name == 'covertype':
+        # encode Class column as categorical
+        processed['Y'] = processed['Y'].astype(int).astype(str).astype('category')
+
 
     # subset dataframe to first 5 100 000 rows
     processed = processed.iloc[:5100000, :]    
+
+    print(processed.dtypes)
 
     processed.to_parquet(str(here('data/simulated/' + 'simulated_' + original_name + '.parquet')), index = False)
     
@@ -80,7 +68,6 @@ if __name__ == "__main__":
 
     dataset_names = [
         "adult_6000000_42",
-        "bank_marketing_6000000_42",
         "covertype_6000000_42",
         "diamonds_6000000_42",
         "electricity_6000000_42",
@@ -89,19 +76,6 @@ if __name__ == "__main__":
         "video_transcoding_6000000_42"
     ]
 
+
     for dataset_name in dataset_names: 
         main(dataset_name)
-
-    # higgs
-    if False:
-        np.random.seed(42)
-        higgs_data = pd.read_csv(str(here('data/original/higgs.csv')))
-        # sample 5100000 rows randomly without replacement
-        
-        # because we always use the last 100 000 as holdout we need to ensure
-        # that the data is not sorted -> permute and subset here
-        higgs_subset = higgs_data.sample(n=5100000, replace=False)
-
-    higgs_subset.to_parquet(str(here('data/subset/subset_higgs.parquet')), index=False)
-
-

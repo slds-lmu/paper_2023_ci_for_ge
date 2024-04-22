@@ -1,0 +1,25 @@
+---
+title: "runtime-restimation"
+format: html
+editor: visual
+---
+
+## Runtime Estimation
+
+```{r}
+library(here)
+library(ggplot2)
+library(data.table)
+dat = readRDS(here("../job_table.rds"))
+head(dat)
+```
+
+```{r}
+dat_resampling = dat[, list(total_runtime = sum(time.running)), by = resampling_name]
+
+ggplot(data = dat_resampling, aes(x = resampling_name, y = total_runtime)) + 
+  geom_bar(stat = "identity")
+```
+
+```         
+```

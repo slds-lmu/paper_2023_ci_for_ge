@@ -16,10 +16,8 @@ datasets = {
 
     # classification
     'adult' : 1590,
-    'bank_marketing' : 1461,
     'electricity' : 151,
     'covertype' : 44121,
-    'higgs' : 45570,
 }
 
 def main():

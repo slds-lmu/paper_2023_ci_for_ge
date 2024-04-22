@@ -21,11 +21,11 @@ datasets = {
     #"friedman1" : {"target" : "y"},
     # TODO
     #"bates_regr_100" : {"target" : "y"},
-    "bates_classif_100" : {"target" : "y"},
-    "breast" : {"target" : "y"},
-    "chen_10_null" : {"target" : "y"},
-    "chen_10" : {"target" : "y"},
-    "prostate" : {"target" : "y"},
+    #"bates_classif_100" : {"target" : "y"},
+    #"breast" : {"target" : "y"},
+    #"chen_10_null" : {"target" : "y"},
+    #"chen_10" : {"target" : "y"},
+    #"prostate" : {"target" : "y"},
 }
 
 for name, info in datasets.items():
@@ -70,8 +70,8 @@ for name, info in datasets.items():
 
 simulated_datasets = [
     #"adult",
-    #"bank_marketing",
-    #"covertype",
+    "bank_marketing",
+    "covertype",
     #"diamonds",
     #"electricity",
     #"physiochemical_protein",
@@ -87,8 +87,13 @@ for name in simulated_datasets:
     simulated_name = 'simulated_' + name
     df = pd.read_parquet(str(here(f"data/simulated/{simulated_name}.parquet")))
 
+
     object_cols = df.select_dtypes(include=['object']).columns
     df[object_cols] = df[object_cols].astype('category')
+
+    print(df.dtypes)
+
+    response = input("Enter something to continue: ")
 
     print('uploading: ' + name)
     new_dataset = create_dataset(
@@ -114,9 +119,9 @@ for name in simulated_datasets:
         ignore_attribute=None,
         data=df,
         attributes="auto",
-        collection_date='8/8/2023',
+        collection_date='11/10/2023',
         language='English',
-        citation = "See https://github.com/slds-lmu/paper_2023_ci_for_ge"
+        citation = None
     )
 
     identifier = new_dataset.publish()
