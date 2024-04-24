@@ -54,7 +54,7 @@ EVAL_CONFIG = list(
   # bootstrap_10
   # ls-bootstrap needs more than 10 repetitions, so don't calculate it here
   list("oob_10",             "infer_oob",            list(x = "bootstrap_10"),                                  list()),
-  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),                  list()),
+  list("632plus_10",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),                  list()),
 
   # bootstrap_50 and 100
   list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                                  list()),
