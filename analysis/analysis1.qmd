@@ -1,0 +1,66 @@
+---
+title: "analysis.qmd"
+format: html
+editor: visual
+---
+
+# Analysing Confidence Intervals for the Generalization Error
+
+## Setup
+
+Loading packages
+
+```{r}
+library(data.table)
+library(mlr3misc)
+library(checkmate)
+library(ggplot2)
+```
+
+Loading data
+
+```{r}
+ci = readRDS("~/ci_for_ge.rds")
+```
+
+Special case: chen_10_null (no relationship between covariates and target), we analyse it separately
+
+```{r}
+ci = ci[task != "chen_10_null", ]
+```
+
+Remove some methods for simplicity for now, only consider zero_one + se loss and one size
+
+```{r}
+ci = ci[size == 500, ]
+ci = ci[method %nin% c("632plus_10", "632plus_50", "oob_10", "oob_50", "bayle_10_within", "bayle_5_within", "bayle_5_all_pairs", "bayle_loo", "bccv", "corrected_t_10", "corrected_t_50", "ls_bootstrap_50")]
+ci = ci[measure %in% c("zero_one", "se")]
+ci[, hit :=  R >= lower & R <= upper]
+```
+
+### Coverage
+
+Crude aggregation
+
+```{r}
+ci[, list(cov = mean(hit)), by = "method"][order(cov, decreasing = TRUE)]
+```
+
+### Standardize
+
+In order to be able to aggregate the widths of the CIs, we here calculate the ratio of the width of a CI to the width of the nested CV CI\
+
+```{r}
+ci[, width := upper - lower]
+ci[, width_ratio := (width / .SD[method == "nested_cv", "width"][[1]]), by = c("task", "size", "repl", "learner", "measure")]
+```
+
+## Graphics
+
+```{r}
+tmp = ci[size == 500, list(width_ratio = mean(width_ratio), risk_coverage = mean(hit)), by = "method"]
+ggplot(tmp, aes(x = width_ratio, y = risk_coverage, color = method)) +
+  geom_point() +
+  geom_text(aes(label = method), size = 3, nudge_y = 0.02, nudge_x = -0.3, angle = 45)
+
+```
