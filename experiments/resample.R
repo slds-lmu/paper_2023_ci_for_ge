@@ -8,7 +8,7 @@ library(data.table)
 source(here::here("experiments", "helper.R"))
 
 if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) {
-  stop("Pleasure configure the option mlr3oml.cache to TRUE or a specific path.")
+  stop("Please configure the option mlr3oml.cache to TRUE or a specific path.")
 }
 
 TASKS = list(
