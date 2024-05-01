@@ -1,0 +1,62 @@
+---
+title: "Proxy"
+format: html
+editor: visual
+---
+
+```{r}
+library(data.table)
+library(ggplot2)
+library(here)
+library(mlr3misc)
+```
+
+```{r}
+full = readRDS(here("results", "ci_for_ge.rds"))
+```
+
+```{r}
+ci = full[
+  task != "chen_10_null" &
+  method %in% c("bayle_10_within", "holdout_66") &
+  measure %in% c("zero_one", "se"),
+]
+
+ci[, let(
+  hit_PQ = upper >= PQ & lower <= PQ,
+  hit_R  = upper >= R  & lower <= R
+)]
+
+ci = ci[, c("task", "size", "repl", "learner", "hit_PQ", "hit_R", "method")]
+
+ci1 = ci[, list(cov_PQ = mean(hit_PQ), cov_R = mean(hit_R)), by = c("learner", "method", "size")]
+```
+
+```{r}
+ci1 = melt(ci1, measure.vars = c("cov_PQ", "cov_R"), variable.name = "target", value.name = "coverage")
+ci1$target = ifelse(ci1$target == "cov_PQ", "PQ", "R")
+```
+
+```{r}
+ggplot(ci1, aes(x = size, y = coverage, color = target)) + 
+  geom_line() + 
+  facet_grid(vars(method), vars(learner)) + 
+  scale_x_continuous()
+```
+
+Questions:
+
+a\) Why is it not 95% for the proxy quantities and why are there such big differences between the learners?
+
+Hypothesis: Some learners are just not adequate for some tasks, then the CI has horrible coverage and drags everything down.
+
+```{r}
+ci[learner == "ranger" & size == 10000, list(cov_PQ = mean(hit_PQ), cov_R = mean(hit_R)), by = c("method", "task")]
+```
+
+b\) Why does the coverage go down for ranger and rpart?
+
+For the Random Forest it is the worst, but the trend is also observable for rpart:\
+This might be because the random forest has inducer variance, while the rpart is deterministic
+
+c\) Why is there - even for the proxy quantities - such a big difference between the Learners?
