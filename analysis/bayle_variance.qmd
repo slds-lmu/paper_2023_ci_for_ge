@@ -1,0 +1,41 @@
+---
+title: "Bayle Variants"
+format: html
+editor: visual
+---
+
+Question: How do the different variance estimators from bayle compare
+
+```{r}
+library(data.table)
+library(ggplot2)
+library(here)
+library(mlr3misc)
+```
+
+```{r}
+full = readRDS(here("ci_for_ge.rds"))
+```
+
+```{r}
+ci = full[method %in% c("bayle_10_all_pairs", "bayle_10_within") & measure %in% c("zero_one", "se")]
+```
+
+```{r}
+ci$var = ifelse(endsWith(ci$method, "within"), "within", "all_pairs")
+```
+
+```{r}
+ci$variance = map_dbl(ci$info, "variance")
+ci[, let(hit = upper >= R & lower <= R)]
+ci = ci[, c("task", "size", "repl", "learner", "hit", "variance", "var")]
+```
+
+```{r}
+dt_wide <- dcast(ci, task + size + repl + learner ~ var, 
+                 value.var = c("hit", "variance"))
+dt_wide[, mean(hit_all_pairs == hit_within), ]
+dt_wide[, list(cov_all_pairs = mean(hit_all_pairs), cov_within = mean(hit_within))]
+```
+
+We can confirm Bayle's statement that it does not matter what we select here.
