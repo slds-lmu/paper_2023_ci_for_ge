@@ -1,0 +1,88 @@
+---
+title: "Understanding the AZ Results"
+format: html
+editor: visual
+---
+
+This notebook is concerned with the question why the AZ CIs are as wide as they are.
+
+To do so, we estimate the CV variance using the AZ method, both for the linear model and a simple regression tree.
+
+We use the DGP from bates and CV with 5 folds.
+
+```{r}
+library(mlr3)
+library(mlr3misc)
+library(mlr3learners)
+library(data.table)
+library(inferGE)
+
+lgr::get_logger("mlr3")$set_threshold("warn")
+
+N = 2000L
+P = 20L
+SIZES = c(500, 2000, 10000)
+
+simulate = function(n) {
+  X = matrix(rnorm(n * P), ncol = P)
+  colnames(X) = paste0("x", 1:P)
+  beta = c(rep(1L, 5L), rep(0, P - 5))
+  y = X %*% beta + rnorm(n)
+  dat = as.data.table(X)
+  dat$y = y
+  dat
+}
+```
+
+AZ from the inferGE implementation:
+
+```{r}
+az_estimates = map(SIZES, function(n) {
+  res_az = rsmp("austern_zhou", folds = 5L)
+  res_cv = rsmp("cv", folds = 5L)
+  
+  dat = simulate(n)
+  
+  task = as_task_regr(dat, target = "y")
+  rr_az_rpart = resample(task, lrn("regr.rpart"), res_az)
+  rr_cv_rpart = resample(task, lrn("regr.rpart"), res_cv)
+  
+  rr_az_lm = resample(task, lrn("regr.lm"), res_az)
+  rr_cv_lm = resample(task, lrn("regr.lm"), res_cv)
+  
+  ci_az_rpart = infer_austern_zhou(rr_az_rpart, rr_cv_rpart)
+  ci_az_lm = infer_austern_zhou(rr_az_lm, rr_cv_rpart)
+  
+  list(
+    az_rpart = sqrt(ci_az_rpart$info[[1L]]$s2_cv / n),
+    az_lm = sqrt(ci_az_lm$info[[1L]]$s2_cv / n)
+  )
+}) |> rbindlist()
+
+az_estimates$size = SIZES
+```
+
+\
+Now we approximate the true standard deviation of the CV estimate.
+
+```{r}
+
+truths = map(SIZES, function(n) {
+    map(1:100, function(i) {
+      task = simulate(n)
+      task_half = simulate(n / 2)
+      resampling = rsmp("cv", folds = 5)$instantiate(task)
+      list(
+        truth_lm = resample(task, lrn("regr.lm"), resampling)$aggregate(),
+        truth_lm_half = resample(task_half, lrn("regr.lm"), resampling)$aggregate(),
+        truth_rpart = resample(task, lrn("regr.rpart"), resampling)$aggregate(),
+        truth_rpart_half = resample(task_half, lrn("regr.rpart"), resampling)$aggregate()
+      )
+    }) |> rbindlist() |> map(sd)
+}) |> rbindlist()
+
+truth$size = SIZES 
+    
+```
+
+\

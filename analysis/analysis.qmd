@@ -1,0 +1,135 @@
+p---
+title: "analysis.qmd"
+format: html
+editor: visual
+---
+
+# Analysing Confidence Intervals for the Generalization Error
+
+## Setup
+
+Loading packages
+
+```{r}
+library(data.table)
+library(mlr3misc)
+library(checkmate)
+library(ggplot2)
+```
+
+Loading data
+
+```{r}
+ci = readRDS("~/ci_for_ge.rds")
+```
+
+Special case: chen_10_null (no relationship between covariates and target), we analyse it separately
+
+```{r}
+ci = ci[task != "chen_10_null", ]
+```
+
+Remove some methods for simplicity for now, only consider zero_one + se loss and one size
+
+```{r}
+ci = ci[size == 500, ]
+ci = ci[method %nin% c("632plus_10", "632plus_50", "oob_10", "oob_50", "bayle_10_within", "bayle_5_within", "bayle_5_all_pairs", "bayle_loo", "bccv", "corrected_t_10", "corrected_t_50", "ls_bootstrap_50")]
+ci = ci[measure %in% c("zero_one", "se")]
+ci[, hit :=  R >= lower & R <= upper]
+```
+
+### Coverage
+
+Crude aggregation
+
+```{r}
+ci[, list(cov = mean(hit)), by = "method"][order(cov, decreasing = TRUE)]
+```
+
+### Standardize
+
+In order to be able to compare the widths and sizes of the CIs, we need to standardize.\
+
+```{r}
+ci[, width := upper - lower]
+ci[, width_ratio := (width / .SD[method == "nested_cv", "width"]), by = c("task", "size", "repl", "learner", "measure")]
+```
+
+## Graphics
+
+```{r}
+tmp = ci[size == 500, list(width = mean(width), hit_R = mean(hit_R), hit_eR = mean(hit_ER)), by = "method"]
+ggplot(tmp, aes(x = width, y = hit_R)) +
+  geom_point() +
+  geom_text(aes(label = method), size = 3, nudge_y = -0.)
+
+```
+
+```{r}
+tmp[order(hit_R, decreasing = TRUE)]
+```
+
+### Expected Risk
+
+The expected risk is independent of the Resampling method, so we just aggregate over the results of the holdout method.
+
+```{r}
+ci[,
+   list(eR = mean(.SD[method == "holdout_66"]$R) ),
+   by = c("task", "size", "learner", "measure")
+   ]
+```
+
+c
+
+We are also interested in the expected Risk, i.e. we average the estimated Risks over the repetitions.
+
+```{r}
+ci[, eR := mean(R), by = c("task", "size", "learner", "measure")]
+```
+
+Relationship between proxy quantity and Risk
+
+```{r}
+ci[, cor(PQ, R)]
+```
+
+```{r}
+ggplot(ci, aes(x = eR, R)) + geom_point()
+  
+```
+
+```{r}
+ci[R > 10, .N, by = c("task", "learner", "size")]
+```
+
+```{r}
+ci[task == "diamonds" & R > 10, .N, by = c("task", "learner", "size")]
+```
+
+The outliers are either causes by:
+
+-   the chen null model (no effect, i.e. rpart and ranger overfit)
+-   the diamonds dataset
+
+```{r}
+ggplot(ci[, ], aes(x = eR, R, color = measure)) + geom_point()
+```
+
+```{r}
+ggplot(ci[, ], aes(x = eR, R, color = task)) + geom_point()
+```
+
+```{r}
+ci[R > 10, .N, by = c("task", "measure", "learner")]
+```
+
+### Linear mixed effect model
+
+### Bias vs Variability
+
+This can also take the bias and variability into account
+
+### Compare PQ and Risk coverage
+
+## Influence of parameters on methods (k in CV, reps in OOB, ...)

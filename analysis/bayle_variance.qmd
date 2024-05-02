@@ -14,7 +14,7 @@ library(mlr3misc)
 ```
 
 ```{r}
-full = readRDS(here("ci_for_ge.rds"))
+full = readRDS(here("results", "ci_for_ge.rds"))
 ```
 
 ```{r}

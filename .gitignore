@@ -50,5 +50,7 @@ data/artificial/*.parquet
 data/artificial/*.pq
 data/splits/**/*.parquet
 
+results/*.rds
+
 *.pyc
 figures

@@ -1,0 +1,101 @@
+---
+title: "Sanity Checks"
+format: html
+editor: visual
+---
+
+# Analysing Confidence Intervals for the Generalization Error
+
+## Setup
+
+Loading packages
+
+```{r}
+library(data.table)
+library(mlr3misc)
+library(checkmate)
+library(ggplot2)
+```
+
+Loading data
+
+```{r}
+ci = readRDS("~/ci_for_ge.rds")
+```
+
+## Sanity Checks
+
+All repls are conducted
+
+```{r}
+assert_permutation(unique(ci$repl), 1:500)
+```
+
+Methods are either applied to tiny, small, or all datasets:
+
+```{r}
+table(ci$method) |> unique() |> length() == 3
+```
+
+How often did we adjust the CI for the nested CV?
+
+```{r}
+ci[method == "nested_cv", mean(map_lgl(info, "adjusted"))]
+```
+
+When we removed NAs for the two-stage bootstrap, how often did this happen?
+
+```{r}
+ci[method == "ts_bootstrap" & map_lgl(info, function(i) !is.null(i)), mean(map_int(info, function(i) i$n_na))]
+
+```
+
+The only difference between the tasks is the number of measures
+
+```{r}
+table(ci$task) |> (\(x) {min(x) / max(x)})()
+```
+
+Risk is independent of method
+
+```{r}
+ci[, list(n = length(unique(R))), by = c("task", "size", "repl", "learner", "measure")]$n |> unique() == 1
+```
+
+Proxy Quantities are calculated for correct proxy_resampling
+
+```{r}
+ci[!is.na(PQ), .N, by = c("proxy_resampling", "method")][.N > 0, ]
+```
+
+Iterations are what we expect:
+
+```{r}
+ci[!startsWith(method, "bccv"), unique(iters), by = "method"]
+```
+
+No NAs
+
+```{r}
+sum(is.na(ci$lower)) + sum(is.na(ci$upper)) + sum(is.na(ci$estimate)) + sum(is.na(ci$R))
+```
+
+All methods contained
+
+```{r}
+unique(ci$method)
+```
+
+CV estimates are the same across resampling methods
+
+the two bayle estimators
+
+```{r}
+ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "bayle_10_within" & size == 500 & measure == "se", "estimate"][[1]] == ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "bayle_10_all_pairs" & size == 500 & measure == "se", "estimate"][[1]]
+```
+
+cv_5 and austen
+
+```{r}
+ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "bayle_5_within" & size == 500 & measure == "se", "estimate"][[1]] == ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "austern_zhou" & size == 500 & measure == "se", "estimate"][[1]]
+```
