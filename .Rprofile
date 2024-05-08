@@ -37,3 +37,11 @@ Sys.setenv(FINAL_PATH    = paste0(SAVE_PATH, sep = "_", "final"))
 Sys.setenv(RESAMPLE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "resample_boot"))
 Sys.setenv(CI_PATH_BOOT          = paste0(SAVE_PATH, sep = "_", "ci_boot"))
 Sys.setenv(RESAMPLE_PATH_AUSTERN = paste0(SAVE_PATH, sep = "_", "resample_austern"))
+
+Sys.setenv(RESAMPLE_PATH_LM = paste0(SAVE_PATH, sep = "_", "resample_lm"))
+Sys.setenv(CI_PATH_LM       = paste0(SAVE_PATH, sep = "_", "ci_lm"))
+Sys.setenv(ERROR_PATH_LM    = paste0(SAVE_PATH, sep = "_", "error_lm"))
+
+Sys.setenv(VAR_PATH_AZ       = paste0(SAVE_PATH, sep = "_", "var_az"))
+
+rm(SAVE_PATH)
