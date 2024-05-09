@@ -14,11 +14,11 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 f = function(i) {
   SIZES = c(500L, 1000L, 5000L, 10000L)
   REPS_AZ = 10L
-  REPS_TRUTH = 400L
+  REPS_TRUTH = 100L
   
   simulate = function(n) {
     x = rnorm(n)
-    y = x + rnorm(n)
+    y = x + 0.2 * rnorm(n)
     dat = data.table(x = x, y = y)
     as_task_regr(dat, target = "y")
   }
