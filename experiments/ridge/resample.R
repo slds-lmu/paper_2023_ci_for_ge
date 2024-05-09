@@ -40,7 +40,7 @@ data_names = list(
 SEED = 42
 N_REP = 500L
 
-REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH_LM")
+REGISTRY_PATH = Sys.getenv("RESAMPLE_PATH_RIDGE")
 
 reg = makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
@@ -85,10 +85,10 @@ SIZES = list(
 
 LEARNERS = list(
   regr = list(
-    list(name = "linear",        id = "regr.lm",            params = list())
+    list(name = "ridge2",        id = "regr.glmnet",            params = list(alpha = 0))
   ),
   classif = list(
-    list(name = "linear",        id = "classif.log_reg",    params = list())
+    list(name = "ridge2",        id = "classif.glmnet",         params = list(alpha = 0))
   )
 )
 

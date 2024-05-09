@@ -40,7 +40,12 @@ Sys.setenv(RESAMPLE_PATH_AUSTERN = paste0(SAVE_PATH, sep = "_", "resample_auster
 
 Sys.setenv(RESAMPLE_PATH_LM = paste0(SAVE_PATH, sep = "_", "resample_lm"))
 Sys.setenv(CI_PATH_LM       = paste0(SAVE_PATH, sep = "_", "ci_lm"))
+Sys.setenv(CI_PATH_LM2      = paste0(SAVE_PATH, sep = "_", "ci_lm2"))
 Sys.setenv(ERROR_PATH_LM    = paste0(SAVE_PATH, sep = "_", "error_lm"))
+
+Sys.setenv(RESAMPLE_PATH_RIDGE = paste0(SAVE_PATH, sep = "_", "resample_ridge"))
+Sys.setenv(CI_PATH_RIDGE       = paste0(SAVE_PATH, sep = "_", "ci_ridge"))
+Sys.setenv(ERROR_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "error_ridge"))
 
 Sys.setenv(VAR_PATH_AZ       = paste0(SAVE_PATH, sep = "_", "var_az"))
 

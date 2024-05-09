@@ -7,7 +7,7 @@ library(inferGE)
 source(here::here("experiments", "helper.R"))
 
 EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_LM")
-EVAL_PATH = Sys.getenv("CI_PATH_LM")
+EVAL_PATH = Sys.getenv("CI_PATH_LM2")
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
@@ -158,12 +158,10 @@ chunk_size = 200L
 
 i = seq_len(nrow(tbl2))
 
-chunks = batchtools::chunk(seq_len(nrow(tbl2)), chunk_size = 100L, shuffle = TRUE)
-setkeyv(chunks, "chunk")
+chunks = data.table(id = seq_len(nrow(tbl2)), chunk = batchtools::chunk(seq_len(nrow(tbl2)), chunk.size = chunk_size, shuffle = TRUE))
 
-chunked_args = map(unique(tbl2$chunk), function(cid) {
-  job_ids = chunks[list(cid)]
-  ids = tbl2[list(cid), "job.id", on = "id"]$job.id
+chunked_args = map(unique(chunks$chunk), function(cid) {
+  ids = chunks[list(cid), "id", on = "chunk"]$id
   map(ids, function(i) {
     list(
       x = tbl2[i, "x"][[1]],
@@ -179,15 +177,10 @@ chunked_args = map(unique(tbl2$chunk), function(cid) {
   })
 })
 
-chunked_args = list(
 
-)
-
-
-batchMap(chunked_args, function(args) {
+batchMap(args = chunked_args, fun = function(args) {
   map(args, function(arg) {
     inference = getFromNamespace(arg$name, ns = "inferGE")
-
 
     calculate_ci(
       name = arg$name,
@@ -204,33 +197,3 @@ batchMap(chunked_args, function(args) {
     )
   }) |> rbindlist(fill = TRUE)
 })
-
-batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
-  name = tbl2[i, "name"][[1]]
-  inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
-  x = tbl2[i, "x"][[1]]
-  y = tbl2[i, "y"][[1]]
-  z = tbl2[i, "z"][[1]]
-
-  args = tbl2[i, "args"][[1]][[1]]
-  learner_name = tbl2[i, "learner_name"][[1]]
-  resampling_name = tbl2[i, "resampling_name_x"][[1]]
-  task_name = tbl2[i, "task_name"][[1]]
-  size = tbl2[i, "size"][[1]]
-  repl = tbl2[i, "repl"][[1]]
-
-  calculate_ci(
-    name = name,
-    inference = inference,
-    x = x,
-    y = y,
-    z = z,
-    args = args,
-    learner_name = learner_name,
-    task_name = task_name,
-    resampling_name = resampling_name,
-    size = size,
-    repl = repl
-  )
-})
-

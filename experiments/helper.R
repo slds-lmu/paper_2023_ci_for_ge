@@ -55,11 +55,22 @@ make_task = function(data_id, size, repl, resampling) {
   return(task)
 }
 
+name_to_id = list(
+)
+
 make_resampling = function(resampling_id, resampling_params) {
   resampling = do.call(rsmp, c(list(.key = resampling_id), resampling_params[[1]]))
 }
 
 make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
+  # for untuned ridge regression we pre-computed some reasonable lambda	  
+  if (grepl("(classif|regr)\\.glmnet", learner_id)) {
+    magic_table = readRDS(here("data", "lambdas.rds"))
+    magic_lambda = magic_table[name == task$id & size == task$nrow, "lambda"]$lambda
+    if (!is.null(learner_params$lambda)) stop("don't overwrite the lambda")
+    learner_params$lambda = magic_lambda
+  }
+
   learner = do.call(lrn,
    args = c(list(.key = learner_id), learner_params)
   )

@@ -49,6 +49,7 @@ data/simulated/*.pq
 data/artificial/*.parquet
 data/artificial/*.pq
 data/splits/**/*.parquet
+data/lambdas.rds
 
 results/*.rds
 

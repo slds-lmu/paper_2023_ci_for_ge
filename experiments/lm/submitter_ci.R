@@ -8,13 +8,13 @@ while (TRUE) {
   if (n <= 10000) {
     not_started = findNotSubmitted()[[1]]
     if (nrow(findNotSubmitted()) == 0) break
-    not_started = not_started[seq_len(min(length(not_started), 50000))]
-    tbl = data.table(job.id = not_started, chunk = batchtools::chunk(not_started, chunk.size = 100))
+    not_started = not_started[seq_len(min(length(not_started), 10000))]
+    tbl = data.table(job.id = not_started, chunk = batchtools::chunk(not_started, chunk.size = 50))
     submitJobs(tbl, resources = list(memory = 512 * 8))
     print("submitted more, yeah!")
-    Sys.sleep(180 * 3)
+    Sys.sleep(1800 * 3)
   } else {
-    Sys.sleep(90 * 3)
+    Sys.sleep(900 * 3)
   }
 }       
 #
