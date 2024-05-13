@@ -6,15 +6,18 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_LM")
-EVAL_PATH = Sys.getenv("CI_PATH_LM")
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
+EVAL_PATH = Sys.getenv("CI_PATH")
 
-EVAL_REG = makeRegistry(EVAL_PATH,
-  packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml", "data.table"),
-  seed = 1L,
-)
- 
-EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE, writeable = FALSE)
+EVAL_REG = if (file.exists(EVAL_PATH)) {
+  loadRegistry(EVAL_PATH, writeable = TRUE)
+} else {
+  makeRegistry(EVAL_PATH,
+    packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml"),
+    seed = 1L,
+  )
+}
+EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
 # order is as in experiments/design.R
@@ -86,14 +89,7 @@ EVAL_CONFIG = list(
 
   # bccv
   list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list()),
-
-  # oob
-  list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
-  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
-  # 632plus
-  list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
-  list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
+  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
 )
 
 # now we create the table that contains the job ids
@@ -154,49 +150,32 @@ batchExport(list(
   reg = EVAL_REG)
 
 
-chunk_size = 200L
+batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
+  name = tbl2[i, "name"][[1]]
+  inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
+  x = tbl2[i, "x"][[1]]
+  y = tbl2[i, "y"][[1]]
+  z = tbl2[i, "z"][[1]]
 
-i = seq_len(nrow(tbl2))
+  args = tbl2[i, "args"][[1]][[1]]
+  learner_name = tbl2[i, "learner_name"][[1]]
+  resampling_name = tbl2[i, "resampling_name_x"][[1]]
+  task_name = tbl2[i, "task_name"][[1]]
+  size = tbl2[i, "size"][[1]]
+  repl = tbl2[i, "repl"][[1]]
 
-chunks = data.table(id = seq_len(nrow(tbl2)), chunk = batchtools::chunk(seq_len(nrow(tbl2)), chunk.size = chunk_size, shuffle = TRUE))
-
-chunked_args = map(unique(chunks$chunk), function(cid) {
-  ids = chunks[list(cid), "id", on = "chunk"]$id
-  map(ids, function(i) {
-    list(
-      name = tbl2[i, "name"][[1]],
-      inference = tbl2[i, "inference"][[1]],
-      x = tbl2[i, "x"][[1]],
-      y = tbl2[i, "y"][[1]],
-      z = tbl2[i, "z"][[1]],
-      args = tbl2[i, "args"][[1]][[1]],
-      learner_name = tbl2[i, "learner_name"][[1]],
-      resampling_name = tbl2[i, "resampling_name_x"][[1]],
-      task_name = tbl2[i, "task_name"][[1]],
-      size = tbl2[i, "size"][[1]],
-      repl = tbl2[i, "repl"][[1]]
-    )
-  })
-})
-
-
-batchMap(..args = chunked_args, fun = function(..args) {
-  map(..args, function(arg) {
-    inference = getFromNamespace(arg$inference, ns = "inferGE")
-
-    calculate_ci(
-      name = arg$name,
-      inference = inference,
-      x = arg$x,
-      y = arg$y,
-      z = arg$z,
-      args = arg$args,
-      learner_name = arg$learner_name,
-      task_name = arg$task_name,
-      resampling_name = arg$resampling_name,
-      size = arg$size,
-      repl = arg$repl
-    )
-  }) |> rbindlist(fill = TRUE)
+  calculate_ci(
+    name = name,
+    inference = inference,
+    x = x,
+    y = y,
+    z = z,
+    args = args,
+    learner_name = learner_name,
+    task_name = task_name,
+    resampling_name = resampling_name,
+    size = size,
+    repl = repl
+  )
 })
 

@@ -36,16 +36,22 @@ Sys.setenv(FINAL_PATH    = paste0(SAVE_PATH, sep = "_", "final"))
 
 Sys.setenv(RESAMPLE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "resample_boot"))
 Sys.setenv(CI_PATH_BOOT          = paste0(SAVE_PATH, sep = "_", "ci_boot"))
+Sys.setenv(MERGE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "merge"))
 Sys.setenv(RESAMPLE_PATH_AUSTERN = paste0(SAVE_PATH, sep = "_", "resample_austern"))
 
 Sys.setenv(RESAMPLE_PATH_LM = paste0(SAVE_PATH, sep = "_", "resample_lm"))
 Sys.setenv(CI_PATH_LM       = paste0(SAVE_PATH, sep = "_", "ci_lm"))
-Sys.setenv(CI_PATH_LM2      = paste0(SAVE_PATH, sep = "_", "ci_lm2"))
+Sys.setenv(PROXY_PATH_LM    = paste0(SAVE_PATH, sep = "_", "proxy_lm"))
+Sys.setenv(TRUTH_PATH_LM    = paste0(SAVE_PATH, sep = "_", "truth_lm"))
 Sys.setenv(ERROR_PATH_LM    = paste0(SAVE_PATH, sep = "_", "error_lm"))
+Sys.setenv(FINAL_PATH_LM    = paste0(SAVE_PATH, sep = "_", "final_lm"))
 
 Sys.setenv(RESAMPLE_PATH_RIDGE = paste0(SAVE_PATH, sep = "_", "resample_ridge"))
 Sys.setenv(CI_PATH_RIDGE       = paste0(SAVE_PATH, sep = "_", "ci_ridge"))
+Sys.setenv(PROXY_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "proxy_ridge"))
+Sys.setenv(TRUTH_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "truth_ridge"))
 Sys.setenv(ERROR_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "error_ridge"))
+Sys.setenv(FINAL_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "final_ridge"))
 
 Sys.setenv(VAR_PATH_AZ       = paste0(SAVE_PATH, sep = "_", "var_az"))
 

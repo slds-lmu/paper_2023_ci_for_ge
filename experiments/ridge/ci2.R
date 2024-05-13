@@ -7,7 +7,7 @@ library(inferGE)
 source(here::here("experiments", "helper.R"))
 
 EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_LM")
-EVAL_PATH = Sys.getenv("CI_PATH_LM")
+EVAL_PATH = Sys.getenv("CI_PATH_LM2")
 
 EVAL_REG = makeRegistry(EVAL_PATH,
   packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml", "data.table"),
@@ -90,10 +90,7 @@ EVAL_CONFIG = list(
 
   # oob
   list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
-  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
-  # 632plus
-  list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
-  list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
+  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list())
 )
 
 # now we create the table that contains the job ids

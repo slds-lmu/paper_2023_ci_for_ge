@@ -6,8 +6,8 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_LM")
-EVAL_PATH = Sys.getenv("CI_PATH_LM")
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_BOOT")
+EVAL_PATH = Sys.getenv("CI_PATH_BOOT")
 
 EVAL_REG = makeRegistry(EVAL_PATH,
   packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml", "data.table"),
@@ -24,74 +24,9 @@ EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 # 3: named identifiers for the resampling_named from the experiment's job table
 # 4: additional parameters passed to the resampling method
 EVAL_CONFIG = list(
-  ## other
-
-  # holdout_66 and holdout_90
-  list("holdout_66",   "infer_holdout",              list(x = "holdout_66"),                                    list()),
-  list("holdout_90",   "infer_holdout",              list(x = "holdout_90"),                                    list()),
-
-  # subsampling_10, 50 and 100
-  list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                                list()),
-  list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                                list()),
-  list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                               list()),
-
-  # cv_5
-  list("bayle_5_within",    "infer_bayle",           list(x = "cv_5"),                                          list(variance = "within-fold")),
-  list("bayle_5_all_pairs", "infer_bayle",           list(x = "cv_5"),                                          list(variance = "all-pairs")),
-
-  # cv_10
-  list("bayle_10_within",    "infer_bayle",          list(x = "cv_10"),                                         list(variance = "within-fold")),
-  list("bayle_10_all_pairs", "infer_bayle",          list(x = "cv_10"),                                         list(variance = "all-pairs")),
-
-  # rep_cv_5_10 only used for Austern & Zhou
-
-  # diettrich
-  list("diettrich",          "infer_52cv",           list(x = "diettrich"),                                     list()),
-
-  # bootstrap_10
-  # ls-bootstrap needs more than 10 repetitions, so don't calculate it here
-  list("oob_10",             "infer_oob",            list(x = "bootstrap_10"),                                  list()),
-  list("632plus_10",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),                  list()),
-
-  # bootstrap_50 and 100
-  list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                                  list()),
-  list("ls_bootstrap_50",    "infer_ls_boot",        list(x = "bootstrap_50", y = "insample"),                  list()),
-  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_50", y = "insample"),                  list()),
-
-  list("oob_100",            "infer_oob",            list(x = "bootstrap_100"),                                 list()),
-  list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"),                 list()),
-  list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"),                 list()),
-
-  # insample
-  # also used for other resampling methods
-
-  ## small
-
-  # nested cv
-  list("nested_cv",          "infer_bates",          list(x = "nested_cv"),                                     list()),
-
-  # conservative_z
-  list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                                list()),
-
-  # nested_bootstrap
-  list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
-
-  # loo
-  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs")),
-
-  # austern_zhou
-  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),                      list()),
-
-  list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"),            list()),
-
-  # bccv
-  list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list()),
-
   # oob
   list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
   list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
-  # 632plus
   list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
   list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
 )
@@ -154,7 +89,7 @@ batchExport(list(
   reg = EVAL_REG)
 
 
-chunk_size = 200L
+chunk_size = 1L
 
 i = seq_len(nrow(tbl2))
 
