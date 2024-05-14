@@ -13,7 +13,7 @@ EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
 } else {
   makeRegistry(EVAL_PATH,
-    packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml"),
+    packages = c("inferGE", "mlr3misc", "mlr3", "digest", "withr", "uuid", "batchtools", "tictoc", "duckdb", "mlr3pipelines", "mlr3learners", "ranger", "mlr3oml", "here", "data.table"),
     seed = 1L,
   )
 }

@@ -36,7 +36,8 @@ Sys.setenv(FINAL_PATH    = paste0(SAVE_PATH, sep = "_", "final"))
 
 Sys.setenv(RESAMPLE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "resample_boot"))
 Sys.setenv(CI_PATH_BOOT          = paste0(SAVE_PATH, sep = "_", "ci_boot"))
-Sys.setenv(MERGE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "merge"))
+Sys.setenv(MERGE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "merge_boot"))
+Sys.setenv(ERROR_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "error_boot"))
 Sys.setenv(RESAMPLE_PATH_AUSTERN = paste0(SAVE_PATH, sep = "_", "resample_austern"))
 
 Sys.setenv(RESAMPLE_PATH_LM = paste0(SAVE_PATH, sep = "_", "resample_lm"))

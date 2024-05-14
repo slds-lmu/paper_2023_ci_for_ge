@@ -89,7 +89,7 @@ batchExport(list(
   reg = EVAL_REG)
 
 
-chunk_size = 1L
+chunk_size = 100L
 
 i = seq_len(nrow(tbl2))
 
