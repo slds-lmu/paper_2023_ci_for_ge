@@ -44,12 +44,12 @@ evaluate = function(simulated_id, task_type, seed = 42) {
   colnames(simulated) = make.names(colnames(simulated), unique = TRUE)
   colnames(original) = make.names(colnames(original), unique = TRUE)
   assert_set_equal(colnames(original), colnames(simulated))
-  
+
   if (target %nin% colnames(simulated)) stop("Something went wrong")
 
   train_ids = as.integer(unlist(info$train_ids))
   test_ids = as.integer(unlist(info$test_ids))
-  
+
   # convert python indices to R indices
   if (min(c(train_ids, test_ids)) == 0) {
     train_ids = train_ids + 1
@@ -60,7 +60,7 @@ evaluate = function(simulated_id, task_type, seed = 42) {
   learner = as_learner(
     ppl("robustify") %>>% po("learner", base_learner)
   )
-  
+
   learner$id = "ranger"
   learner$fallback = lrn(paste0(task_type, ".featureless"))
 
@@ -73,7 +73,7 @@ evaluate = function(simulated_id, task_type, seed = 42) {
     learner = learner,
     task_type = task_type
   )
-  
+
   ge_distr = compare_ge_distr(
     simulated = simulated,
     original = original,
@@ -96,22 +96,22 @@ evaluate = function(simulated_id, task_type, seed = 42) {
 
 
 #' @title Crosswise comparison
-#' 
+#'
 #' @description
 #' We obtain four datasets:
 #' a) original: train
 #' b) original: test
 #' c) simulated: train (same size as original train, but sampled arbitrarily)
 #' d) simulated: test (same size as original test, but sampled arbitrarily)
-#' 
+#'
 #' Then we sample 10 disjoint datasets from the training dataset (size 3000) and train models.
 #' We evaluate these models on both the original and the simulated test dataset.
-#' 
-#' @param simulated (`data.table()`) A simulated dataset where the model was learning using 
+#'
+#' @param simulated (`data.table()`) A simulated dataset where the model was learning using
 #'   `train_ids` from the `original` data.
 #' @param original (``data.table()`) The original dataset.
 #' @param train_ids (`integer()`) The IDs of the original data used to learn the density
-#' @param test_ids Which IDs were used as 
+#' @param test_ids Which IDs were used as
 #' @param target The target variable
 #' @param learner The learner to use
 #' @param task_type The task type, either `"regr"` or `"classif"`.
@@ -138,20 +138,20 @@ compare_crosswise = function(simulated, original, train_ids, test_ids, target, l
   ii = sample(train_ids, n_needed)
 
   original_train = original[ii, ]
-  simulated_train = original[ii, ]
+  simulated_train = simulated[ii, ]
 
   original_test = original[test_ids, ]
-  simulated_test = original[test_ids, ]
-  
-  
+  simulated_test = simulated[test_ids, ]
+
+
   # Dataset to evaluate the original and simulated dataset
   data_orig_orig = rbindlist(list(original_train, original_test))
   data_orig_simul = rbindlist(list(original_train, simulated_test))
   data_simul_orig = rbindlist(list(simulated_train, original_test))
   data_simul_simul = rbindlist(list(simulated_train, simulated_test))
-  
+
   datasets = list(
-    data_orig_orig, 
+    data_orig_orig,
     data_orig_simul,
     data_simul_orig,
     data_simul_simul
@@ -181,7 +181,7 @@ compare_crosswise = function(simulated, original, train_ids, test_ids, target, l
   res_orig_simul = rsmp("custom", id = "orig_simul")$instantiate(task = task_orig_simul, train_sets = train_sets, test_sets = test_sets)
   res_simul_orig = rsmp("custom", id = "simul_orig")$instantiate(task = task_simul_orig, train_sets = train_sets, test_sets = test_sets)
   res_simul_simul = rsmp("custom", id = "simul_simul")$instantiate(task = task_simul_simul, train_sets = train_sets, test_sets = test_sets)
-  
+
   learners = list(learner, lrn(paste0(task_type, ".featureless")))
 
   design = benchmark_grid(
@@ -192,7 +192,7 @@ compare_crosswise = function(simulated, original, train_ids, test_ids, target, l
   )
 
   bmr = benchmark(design, store_backends = FALSE, store_models = FALSE)
-  
+
   measure = if (task_type == "regr") msr("regr.rmse") else msr("classif.ce")
 
   tbl = as.data.table(bmr$score(measure))
@@ -201,7 +201,7 @@ compare_crosswise = function(simulated, original, train_ids, test_ids, target, l
 }
 
 # Compares the distribution of the generalization error for the original and simulated dataset.
-# We use 
+# We use
 # This works by sampling 100 times 200 training points (disjunct)
 
 compare_ge_distr = function(simulated, original, train_ids, test_ids, target, learner, task_type) {
@@ -212,31 +212,31 @@ compare_ge_distr = function(simulated, original, train_ids, test_ids, target, le
   } else {
     stop("Unsupported task type.")
   }
-  
+
   n_use = min(nrow(original), nrow(simulated))
-  
+
   data_eval_orig = original[sample(nrow(original), n_use), ]
   data_eval_simul = simulated[sample(nrow(simulated), n_use), ]
-  
+
   if (!nrow(data_eval_orig) == nrow(data_eval_simul)) {
     stop("Something went wrong.")
   }
 
   task_simulated = task_converter(data_eval_orig, target = target, id = "original")
   task_original = task_converter(data_eval_simul, target = target, id = "simulated")
-  
+
   train_sets = lapply(1:100, function(i) seq((i - 1) * 200 + 1, i * 200))
   test_sets = lapply(1:100, function(i) seq(20000, n_use))
 
   resamling_original = rsmp("custom")$instantiate(train_sets = train_sets, test_sets = test_sets, task = task_original)
   resamling_simulated = rsmp("custom")$instantiate(train_sets = train_sets, test_sets = test_sets, task = task_simulated)
-  
+
   design = data.table(
     learner = list(learner, learner),
     task = list(task_original, task_simulated),
     resampling = list(resamling_original, resamling_simulated)
   )
-  
+
   bmr = benchmark(design, store_models = FALSE, store_backends = TRUE)
 
   measure = if (task_type == "regr") msr("regr.rmse") else msr("classif.ce")
