@@ -4,7 +4,7 @@ library(data.table)
 library(mlr3misc)
 library(inferGE)
 
-source(here::here("experiments", "helper.R"))
+source(here::here("experiments", "helper_tmp.R"))
 
 EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_BOOT")
 EVAL_PATH = Sys.getenv("CI_PATH_BOOT")
@@ -17,6 +17,10 @@ EVAL_REG = makeRegistry(EVAL_PATH,
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE, writeable = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
+EXPERIMENT_REG_ORIG = loadRegistry(Sys.getenv("RESAMPLE_PATH"), writeable = FALSE, make.default = FALSE)
+EXPERIMENT_TBL_ORIG = getJobTable(reg = EXPERIMENT_REG_ORIG) |> unwrap()
+
+
 # order is as in experiments/design.R
 # we use the default alpha = 0.05 everywhere
 # 1: name (unique)
@@ -25,8 +29,8 @@ EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 # 4: additional parameters passed to the resampling method
 EVAL_CONFIG = list(
   # oob
-  list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
-  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
+  #list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
+  #list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
   list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
   list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
 )
@@ -54,7 +58,7 @@ tbl2 = map_dtr(EVAL_CONFIG, function(cfg) {
 
   } else if (length(resampling_names) == 2) {
     rn2 = resampling_names[[2]]
-    tbl = merge(tbl, EXPERIMENT_TBL[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
+    tbl = merge(tbl, EXPERIMENT_TBL_ORIG[list(rn2), ..keep_cols, on = "resampling_name"], by = c("data_id", "size", "repl", "learner_name", "task_name"))
     setnames(tbl,
       c("job.id.x", "job.id.y", "resampling_name.x", "resampling_name.y"),
       c("x", "y", "resampling_name_x", "resampling_name_y")
@@ -79,6 +83,8 @@ batchExport(list(
   EXPERIMENT_PATH = EXPERIMENT_PATH,
   EXPERIMENT_REG = EXPERIMENT_REG,
   EXPERIMENT_TBL = EXPERIMENT_TBL,
+  EXPERIMENT_REG_ORIG = EXPERIMENT_REG_ORIG,
+  EXPERIMENT_TBL_ORIG = EXPERIMENT_TBL_ORIG,
   make_resample_result = make_resample_result,
   make_task = make_task,
   make_learner = make_learner,

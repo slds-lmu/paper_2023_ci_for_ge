@@ -28,7 +28,9 @@ EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 # 4: additional parameters passed to the resampling method
 EVAL_CONFIG = list(
   list("oob_500",             "infer_oob",            list(x = "bootstrap_500"),                                  list()),
-  list("oob_1000",            "infer_oob",            list(x = "bootstrap_1000"),                                 list())
+  list("oob_1000",            "infer_oob",            list(x = "bootstrap_1000"),                                 list()),
+  list("632plus_500",         "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                  list()),
+  list("632plus_1000",        "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                 list())
 )
 
 # now we create the table that contains the job ids
