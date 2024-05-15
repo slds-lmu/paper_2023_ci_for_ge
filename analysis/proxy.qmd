@@ -51,7 +51,9 @@ a\) Why is it not 95% for the proxy quantities and why are there such big differ
 Hypothesis: Some learners are just not adequate for some tasks, then the CI has horrible coverage and drags everything down.
 
 ```{r}
-ci[learner == "ranger" & size == 10000, list(cov_PQ = mean(hit_PQ), cov_R = mean(hit_R)), by = c("method", "task")]
+ci2 = ci[list(cov_PQ = mean(hit_PQ), cov_R = mean(hit_R)), by = c("method", "task", "learner", "size")]
+
+ggplot(ci2[method == "bayle_10_within", ], aes(x = task, y = cov_))
 ```
 
 b\) Why does the coverage go down for ranger and rpart?

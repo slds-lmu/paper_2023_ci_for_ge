@@ -155,6 +155,65 @@ batchExport(list(
 
 
 chunk_size = 200L
+<<<<<<< Updated upstream
+=======
+
+i = seq_len(nrow(tbl2))
+
+chunks = batchtools::chunk(seq_len(nrow(tbl2)), chunk_size = 100L, shuffle = TRUE)
+setkeyv(chunks, "chunk")
+
+chunked_args = map(unique(tbl2$chunk), function(cid) {
+  job_ids = chunks[list(cid)]
+  ids = tbl2[list(cid), "job.id", on = "id"]$job.id
+  map(ids, function(i) {
+    list(
+      x = tbl2[i, "x"][[1]],
+      y = tbl2[i, "y"][[1]],
+      z = tbl2[i, "z"][[1]],
+      args = tbl2[i, "args"][[1]][[1]],
+      learner_name = tbl2[i, "learner_name"][[1]],
+      resampling_name = tbl2[i, "resampling_name_x"][[1]],
+      task_name = tbl2[i, "task_name"][[1]],
+      size = tbl2[i, "size"][[1]],
+      repl = tbl2[i, "repl"][[1]]
+    )
+  })
+})
+
+chunked_args = list(
+
+)
+
+
+batchMap(chunked_args, function(args) {
+  map(args, function(arg) {
+    inference = getFromNamespace(arg$name, ns = "inferGE")
+
+
+    calculate_ci(
+      name = arg$name,
+      inference = inference,
+      x = arg$x,
+      y = arg$y,
+      z = arg$z,
+      args = arg$args,
+      learner_name = arrg$learner_name,
+      task_name = arg$task_name,
+      resampling_name = arg$resampling_name,
+      size = arg$size,
+      repl = arg$repl
+    )
+  }) |> rbindlist(fill = TRUE)
+})
+
+batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
+  name = tbl2[i, "name"][[1]]
+  inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
+  x = tbl2[i, "x"][[1]]
+  y = tbl2[i, "y"][[1]]
+  z = tbl2[i, "z"][[1]]
+>>>>>>> Stashed changes
 
 i = seq_len(nrow(tbl2))
 

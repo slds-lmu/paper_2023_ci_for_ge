@@ -17,11 +17,13 @@ library(mlr3learners)
 library(data.table)
 library(inferGE)
 
+future::plan("multicore")
+
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 N = 2000L
 P = 20L
-SIZES = c(500, 2000, 10000)
+SIZES = c(500, 5000L)
 
 simulate = function(n) {
   X = matrix(rnorm(n * P), ncol = P)

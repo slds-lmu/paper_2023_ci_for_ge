@@ -1,0 +1,53 @@
+---
+title: "Liner Model"
+format: html
+editor: visual
+---
+
+```{r}
+library(data.table)
+library(here)
+library(ggplot2)
+```
+
+```{r}
+ci = readRDS(here("results", "lm.rds"))
+```
+
+```{r}
+any(is.na(ci$estimate))
+any(is.na(ci$lower))
+any(is.na(ci$upper))
+```
+
+```{r}
+table(ci$size)
+```
+
+```{r}
+identical(unique(ci$learner), "linear")
+```
+
+```{r}
+ci[!is.na(PQ), "method"] |> table()
+```
+
+```{r}
+ci[, hit := lower <= R & upper >= R]
+```
+
+```{r}
+ci[size = , mean(hit), by = method]
+```
+
+```{r}
+table(ci$repl) |> unique()
+```
+
+```{r}
+rest = readRDS(here("results", "ci_for_ge.rds"))
+```
+
+```{r}
+
+```
