@@ -1,5 +1,5 @@
 library(mlr3oml)
-source(here::here("datamodels", "evaluation", "evaluate.R"))
+source(here::here("datamodels", "density-estimate", "evaluation", "evaluate.R"))
 
 if (is.null(getOption("mlr3oml.parquet")) || isFALSE(getOption("mlr3oml.parquet"))) {
   stopf("Please configure mlr3oml to use the parquet data format")
@@ -19,7 +19,7 @@ data_ids = c(
 
 task_types = c(rep("classif", 4), rep("regr", 3))
 
-pth = file.path(here("datamodels", "evaluation", "results"))
+pth = file.path(here("results", "density-estimate"))
 
 if (!file.exists(pth)) {
   dir.create(pth, recursive = TRUE)

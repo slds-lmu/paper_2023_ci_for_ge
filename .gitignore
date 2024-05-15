@@ -38,10 +38,12 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-datamodels/evaluation/results
+datamodels/density-estimate/evaluation/results/*.rds
 datamodels/models/
 
 data/original/*.parquet
+data/density-estimate/*.parquet
+data/cov-estimate/*.parquet
 data/original/*.csv
 data/original/*.json
 data/simulated/*.parquet
@@ -55,3 +57,5 @@ results/*.rds
 
 *.pyc
 figures
+
+results/**/*.rds

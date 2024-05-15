@@ -14,7 +14,7 @@ dataset_names = [
 
 for dataset_name in dataset_names:
     print(dataset_name)
-    ds = pd.read_parquet(str(here('data/simulated_final/' + dataset_name + '.parquet')))
+    ds = pd.read_parquet(str(here('data/density-estimate/' + dataset_name + '.parquet')))
 
     print(ds.isna().sum())
     print(ds.dtypes)

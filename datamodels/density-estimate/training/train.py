@@ -8,7 +8,7 @@ import pandas as pd
 import json
 
 
-def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5000): 
+def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5000):
 
     # set numpy seed
     np.random.seed(42)
@@ -16,24 +16,21 @@ def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5
     name = str(id)
 
     data = pd.read_csv(here('data/original/' + str(id) + '.csv'), index_col=False)
-    
+
     with open(here('data/original/' + str(id) + '.json'), 'rb') as file:
         info = json.load(file)
-        
+
     train_ids = info['train_ids']
-    # test_ids = info['test_ids']
-    
-    n = len(data)
-    
+
     data_train = data.iloc[train_ids]
 
-    if not os.path.exists(here('datamodels/models')): 
-        os.makedirs(here('datamodels/models'))
-    
-    experiment_dir = str(here('datamodels/models/' + name))
+    if not os.path.exists(here('data/models')):
+        os.makedirs(here('data/models'))
+
+    experiment_dir = str(here('data/models/' + name))
 
     model = GReaT(
-        llm='distilgpt2', 
+        llm='distilgpt2',
         batch_size=batch_size,
         epochs=epochs,
         save_steps = save_steps,
@@ -49,7 +46,7 @@ def main(id, batch_size = 32, epochs = 200, save_steps = 5000, logging_steps = 5
     return trainer
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     # Parse the command-line arguments
     import argparse
     parser = argparse.ArgumentParser(description='Train a GReaT model.')
@@ -59,8 +56,8 @@ if __name__ == '__main__':
     parser.add_argument('--save_steps', type=int, help='After how many steps the model is saved.')
     parser.add_argument('--logging_steps', type=int, help='How often the logs are saved.')
     args = parser.parse_args()
-    
-    if args.logging_steps is None: 
+
+    if args.logging_steps is None:
         args.logging_steps = args.save_steps
 
     # Call the main function with the parsed arguments

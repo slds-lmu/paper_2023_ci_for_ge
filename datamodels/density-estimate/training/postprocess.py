@@ -21,7 +21,7 @@ def get_unique_categorical_values(df):
 def replace_value(val, choices):
     """Replace a value based on 'starts with' condition."""
     matches = [choice for choice in choices if choice.startswith(val)]
-    
+
     # Return the matching value if only one match is found, otherwise None
     return matches[0] if len(matches) == 1 else None
 
@@ -31,19 +31,19 @@ def replace_value(val, choices):
 def fix_categories(df, allowed_values):
     for colname, allowed_values in allowed_values.items():
         df[colname] = df[colname].apply(lambda x: replace_value(x, allowed_values))
-        
+
     return df
 
 def main(simulated_name):
     original_name = get_original(simulated_name)
     original = pd.read_csv(str(here('data/original/' + original_name + '.csv')))
-    simulated = pd.read_parquet(str(here('data/simulated/' + simulated_name + '.parquet')))
+    simulated = pd.read_parquet(str(here('data/density-estimate/' + simulated_name + '.parquet')))
     unique_values = get_unique_categorical_values(original)
-    
+
     print('Number of rows before: ' + str(simulated.shape[0]))
     processed = fix_categories(simulated, unique_values)
     processed.dropna(inplace = True)
-    
+
     print(processed.isna().sum())
 
     if original_name == 'covertype':
@@ -52,17 +52,14 @@ def main(simulated_name):
 
 
     # subset dataframe to first 5 100 000 rows
-    processed = processed.iloc[:5100000, :]    
+    processed = processed.iloc[:5100000, :]
 
     print(processed.dtypes)
 
-    processed.to_parquet(str(here('data/simulated/' + 'simulated_' + original_name + '.parquet')), index = False)
-    
+    processed.to_parquet(str(here('data/density-estimate/' + 'simulated_' + original_name + '.parquet')), index = False)
+
     print('Number of rows afterwards: ' + str(processed.shape[0]))
-
     None
-
-
 
 if __name__ == "__main__":
 
@@ -76,6 +73,5 @@ if __name__ == "__main__":
         "video_transcoding_6000000_42"
     ]
 
-
-    for dataset_name in dataset_names: 
+    for dataset_name in dataset_names:
         main(dataset_name)
