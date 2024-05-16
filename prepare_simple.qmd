@@ -16,14 +16,16 @@ ci = readRDS(here("results", "ci.rds"))
 ```
 
 ```{r}
-ci = ci[measure %in% c("zero_one", "se")]
+ci = ci[
+  measure %in% c("zero_one", "se") & 
+  method %nin% c(paste0(c("oob_", "632plus_"), c("10", "50", "100", "500")))
+  ]
 ci[let(
   task = as.factor(task),
   learner = as.factor(learner),
   measure = as.factor(measure),
   method = as.factor(method),
   iters = NULL,
-  measure = NULL,
-  
+  measure = NULL
 )]
 ```

@@ -69,7 +69,9 @@ RESAMPLINGS = list(other = list(
     two_stage          = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
     loo                = list(id = "loo",              params = list()),
     austern_zhou       = list(id = "austern_zhou",     params = list(folds = 5, repeats = 1)),
-    austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5))
+    austern_zhou_rep   = list(id = "austern_zhou",     params = list(folds = 5, repeats = 5)),
+    bootstrap_500       = list(id = "bootstrap",       params = list(ratio = 1, repeats = 500)),
+    bootstrap_1000      = list(id = "bootstrap",       params = list(ratio = 1, repeats = 1000))
   ), tiny = list(
     bootstrap_ccv      = list(id = "bootstrap_ccv",    params = list(ratio = 1, repeats = 100))
   )
@@ -83,14 +85,18 @@ SIZES = list(
 
 LEARNERS = list(
   regr = list(
-    list(name = "ridge",  id = "regr.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
-    list(name = "rpart",  id = "regr.rpart",     params = list()),
-    list(name = "ranger", id = "regr.ranger",    params = list(num.trees = 50))
+    list(name = "ridge_tuned",  id = "regr.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    list(name = "ridge",        id = "regr.glmnet", params = list(alpha = 0)),
+    list(name = "rpart",        id = "regr.rpart",     params = list()),
+    list(name = "ranger",       id = "regr.ranger",    params = list(num.trees = 50)),
+    list(name = "linear",        id = "regr.lm",            params = list())
   ),
   classif = list(
-    list(name = "ridge",  id = "classif.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
-    list(name = "rpart",  id = "classif.rpart",     params = list()),
-    list(name = "ranger", id = "classif.ranger",    params = list(num.trees = 50))
+    list(name = "ridge_tuned",  id = "classif.cv_glmnet", params = list(alpha = 0, nfolds = 3L)),
+    list(name = "ridge",        id = "classif.glmnet",       params = list(alpha = 0)),
+    list(name = "rpart",        id = "classif.rpart",     params = list()),
+    list(name = "ranger",       id = "classif.ranger",    params = list(num.trees = 50)),
+    list(name = "linear",        id = "classif.log_reg",    params = list())
   )
 )
 

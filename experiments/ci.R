@@ -89,7 +89,15 @@ EVAL_CONFIG = list(
 
   # bccv
   list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
+  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list()),
+
+  # oob
+  list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
+  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
+
+  # 632plus
+  list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
+  list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
 )
 
 # now we create the table that contains the job ids
