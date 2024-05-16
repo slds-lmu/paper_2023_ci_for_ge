@@ -15,12 +15,13 @@ library(data.table)
 library(mlr3misc)
 library(checkmate)
 library(ggplot2)
+library(here)
 ```
 
 Loading data
 
 ```{r}
-ci = readRDS("~/ci_for_ge.rds")
+ci = readRDS(here("results", "ci.rds"))
 ```
 
 ## Sanity Checks
