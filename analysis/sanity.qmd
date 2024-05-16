@@ -100,3 +100,10 @@ cv_5 and austen
 ```{r}
 ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "bayle_5_within" & size == 500 & measure == "se", "estimate"][[1]] == ci[task == "diamonds" & repl == 1 & learner == "ranger" & method == "austern_zhou" & size == 500 & measure == "se", "estimate"][[1]]
 ```
+
+All 632 and oob risks are the same
+
+```{r}
+ci[method %in% c(paste0(c("oob_", "632plus_"), c("10", "50", "500", "1000"))), uniqueN(R), by = c("learner", "task", "size", "measure", "repl")]$V1 |> unique()
+
+```

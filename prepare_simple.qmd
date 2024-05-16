@@ -1,26 +1,29 @@
 ---
-title: "Chen 10 Null"
+title: "Reduce the gigantic size"
 format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+library(data.table)
+library(ggplot2)
+library(here)
+library(mlr3misc)
 ```
 
-You can add options to executable code like this
-
 ```{r}
-#| echo: false
-2 * 2
+ci = readRDS(here("results", "ci.rds"))
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+ci = ci[measure %in% c("zero_one", "se")]
+ci[let(
+  task = as.factor(task),
+  learner = as.factor(learner),
+  measure = as.factor(measure),
+  method = as.factor(method),
+  iters = NULL,
+  measure = NULL,
+  
+)]
+```

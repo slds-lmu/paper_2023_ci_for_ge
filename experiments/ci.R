@@ -49,7 +49,7 @@ EVAL_CONFIG = list(
   # rep_cv_5_10 only used for Austern & Zhou
 
   # diettrich
-  list("diettrich",          "infer_52cv",           list(x = "diettrich"),                                     list()),
+  list("dietterich",          "infer_52cv",           list(x = "diettrich"),                                     list()),
 
   # bootstrap_10
   # ls-bootstrap needs more than 10 repetitions, so don't calculate it here
