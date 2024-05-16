@@ -1,0 +1,75 @@
+---
+title: "Reduce the gigantic size"
+format: html
+editor: visual
+---
+
+```{r}
+library(data.table)
+library(ggplot2)
+library(here)
+library(mlr3misc)
+```
+
+```{r}
+ci = readRDS(here("results", "final.rds"))
+```
+
+For now, only look at a subset:
+
+```{r}
+ci = ci[measure %in% c("zero_one", "se")]
+
+ci[, let(
+  task = as.factor(task),
+  learner = as.factor(learner),
+  measure = NULL,
+  method = as.factor(method),
+  iters = NULL
+)]
+
+
+```
+
+```{r}
+ci[, let(
+  ER = mean(R)
+), by = c("task", "learner", "size", "method")]
+
+ci_aggr = ci[, .(
+  cov_R = mean(lower <= R & upper >= R),
+  cov_ER = mean(lower <= ER & upper >= ER),
+  cov_PQ = mean(lower <= PQ & upper >= PQ),
+  under_R = mean(upper < R),
+  under_ER = mean(upper < ER),
+  under_PQ = mean(upper < PQ),
+  
+  cov_R_se = sd(lower <= R & upper >= R) / sqrt(500),
+  cov_ER_se = sd(lower <= ER & upper >= ER) / sqrt(500),
+  cov_PQ_se = sd(lower <= PQ & upper >= PQ) / sqrt(500),
+  width = mean(upper - lower),
+  width_sd = sd(upper - lower),
+  bias = mean(estimate - R),
+  ER = if (uniqueN(ER) == 1) unique(ER) else stop(),
+  R_sd = sd(R),
+  estimate_sd = sd(estimate)
+), by = c("task", "learner", "size", "method")]
+```
+
+```{r}
+removed_methods = c(
+    paste0("oob_", c(10, 50, 100, 500)),
+    paste0("632plus_", c(10, 50, 100, 500)),
+    "bayle_5_within",
+    "bayle_5_all_pairs",
+    "bayle_10_within",
+    "ls_bootstrap_50",
+    "corrected_t_50"
+)
+ci_aggr_small = ci_aggr[method %nin% removed_methods]
+ci_small = ci[method %nin% removed_methods]
+saveRDS(ci_aggr_small, here("results", "ci_aggr_small.rds"))
+saveRDS(ci_aggr, here("results", "ci_aggr.rds"))
+saveRDS(ci_small, here("results", "ci_small.rds"))
+saveRDS(ci, here("results", "ci.rds"))
+```
