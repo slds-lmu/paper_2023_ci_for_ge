@@ -26,11 +26,13 @@ plot = function(method_) {
 
 aggrs = readRDS(here("results", "ci_aggr_small.rds"))
 
-aggrs = aggrs[as.character(aggrs$learner) %in% c("linear", "ridge", "rpart"), ]
+aggrs_base = aggrs[as.character(aggrs$learner) %in% c("linear", "ridge", "rpart"), ]
 
 
-aggrs = aggrs[, list(
-  avg_cov_R = mean(cov_R)
+aggrs = aggrs_base[, list(
+  avg_cov_R = mean(cov_R),
+  avg_cov_ER = mean(cov_ER),
+  avg_cov_PQ = mean(cov_PQ)
 ), by = c("task", "method", "size")]
 
 
@@ -40,9 +42,24 @@ output <- ggplot(data, aes_string(x = x, y = y, color = colorval)) +
   geom_hline(yintercept = 0.95, color = "red") +
   geom_line() +
   xlim(50, 10500) +
-  ylim(0, 1)
+  ylim(0, 1) + theme_bw()
 return(output)
 }
 
-#data=aggrs,x = size,y = avg_cov_R,color = task,method=method
+
+#data=aggrs,x = size,y = avg_cov_R,colorval = task,method=method
 #ggplotly(p)
+
+#aggrs_base
+method_plot <- function(data,x,y,colorval){
+output <- ggplot(method_dat, aes_string(x = x, y = y, color = colorval)) +
+  facet_wrap(vars(learner), scales = "free_x") +
+  geom_hline(yintercept = 0.95, color = "red") +
+  geom_line() +
+  xlim(50, 10500) +
+  ylim(0, 1) + theme_bw()
+return(output)
+}
+
+
+

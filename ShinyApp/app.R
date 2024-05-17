@@ -6,23 +6,32 @@ library(here)
 library(DT)
 
 source("PlotSpecifications.R")
-source("plotting.R")
+source("plotting_fallback.R")
 # Sample data frame
 data <- readRDS("../results/ci_aggr.rds")
 
 # UI for the main page
 ui <- fluidPage(
-  titlePanel("Interactive Plot"),
+  titlePanel("CIs for the GE empirical results"),
   fluidRow(
     column(12,
-      helpText("Explanation of the context goes here..."),
-      actionButton("viewPlot", "View Plot"),
+      helpText("Quick description of what's happening...."),
+      actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
+      actionButton("viewExplanation", "View explanation again"),
     br(),
       uiOutput("pageContent")
     ))
   )
 
+# UI for the explanation page
+explanationPage <- fluidPage(titlePanel(""),
+                      mainPanel(width = 12,
+                                hr(""),
+                                HTML("<div style='text-align:center;'><p>
+                                     Method x Learner x DGP x size
+                                     </p><p>&nbsp;</p><hr><p>&nbsp;</p></div>")
+                                ))
 
 # UI for the data page
 dataPage <- fluidPage(titlePanel("Data"),
@@ -36,6 +45,7 @@ plotPage <- fluidPage(
     sidebarPanel(
       tabsetPanel(
       specifications_ui("fallback"),
+      specifications_methodplot("fallback"),
       specifications_download("fallback")
     )
     ),
@@ -49,6 +59,16 @@ plotPage <- fluidPage(
 # Server logic
 server <- function(input, output, session) {
   # Switch between pages
+  output$pageContent <- renderUI({
+    explanationPage
+  })
+  
+  observeEvent(input$viewExplanation, {
+    output$pageContent <- renderUI({
+      explanationPage
+    })
+  })
+  
   observeEvent(input$viewData, {
     output$pageContent <- renderUI({
       dataPage
@@ -65,11 +85,28 @@ server <- function(input, output, session) {
   output$mytable <- DT::renderDataTable(data,
                                         options = list(scrollX = TRUE),
                                         rownames = FALSE)
+#Plotions
+  button_clicked <- reactiveVal(NULL)
+  observeEvent(input$viewPlot_fallback, {
+    button_clicked("FALLBACK")
+  })
+  observeEvent(input$viewPlot_method, {
+    button_clicked("METHOD")
+  })
   
   # Render Plotly plot
   callModule(function(input, output, session) {
   output$plot <- renderPlotly({
-    fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color,method=input$method)
+    clicker <- button_clicked()
+    if(is.null(clicker)){ggplot()+theme_minimal()}else{
+    if(clicker=="FALLBACK"){
+    fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color_fallback,method=input$method)
+    }else{
+      if(clicker=="METHOD"){
+        method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
+        method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
+      }}  
+    }
   })
   
   # Download plot
@@ -78,7 +115,16 @@ server <- function(input, output, session) {
       "plot.png"
     },
     content = function(file) {
+      clicker <- button_clicked()
+      if(is.null(clicker)){ggplot()+theme_minimal()}else{
+        if(clicker=="FALLBACK"){
       p <- fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color,method=input$method)
+        }else{
+          if(clicker=="METHOD"){
+            method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
+       p <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
+          }}  
+        }
       ggsave(file, plot = p, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
     }
   )  }, "fallback")

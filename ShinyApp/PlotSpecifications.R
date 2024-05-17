@@ -3,13 +3,31 @@ specifications_ui <- function(id){
     tabPanel("Fallback",
              fluidRow(
                column(6,
-                      helpText("Select variables for plotting:"),
+                      #helpText("Select variables for plotting:"),
                       selectInput(ns("x"), "X-Axis Variable:", choices = c("size")),
-                      selectInput(ns("y"), "Y-Axis Variable:", choices = c("avg_cov_R")),
-                      selectInput(ns("color"), "...:", choices = c("task")),
-                      selectInput(ns("method"), "...:", choices = c("method"))))
-             )
+                      selectInput(ns("y"), "Y-Axis Variable:", choices = c("avg_cov_R","avg_cov_ER","avg_cov_PQ")),
+                      selectInput(ns("color_fallback"), "...:", choices = c("task")),
+                      selectInput(ns("method"), "...:", choices = c("method")),
+                      br(),
+                      actionButton("viewPlot_fallback", "View Plot"))
+             ))
 }
+
+specifications_methodplot <- function(id){
+  ns <- NS(id)
+  tabPanel("Methods",
+           fluidRow(
+             column(6,
+                    #helpText("Select variables for plotting:"),
+                    selectInput(ns("x1"), "X-Axis Variable:", choices = c("size")),
+                    selectInput(ns("y1"), "Y-Axis Variable:", choices = c("cov_R","cov_ER","cov_PQ")),
+                    selectInput(ns("color_method"), "...:", choices = c("task")),
+                    selectInput(ns("methodOI"), "...:", choices = levels(as.factor(as.data.frame(aggrs_base)$method))),
+             br(),
+             actionButton("viewPlot_method", "View Plot"))
+           ))
+}
+
 specifications_download <- function(id){
       ns <- NS(id)
     tabPanel("Download",
