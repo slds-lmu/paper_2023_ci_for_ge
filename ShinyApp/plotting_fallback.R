@@ -24,7 +24,7 @@ plot = function(method_) {
   ggplotly(p)
 }
 
-aggrs = readRDS(here("results", "ci_aggr_small.rds"))
+aggrs = readRDS(here("results", "ci_aggr.rds"))
 
 aggrs_base = aggrs[as.character(aggrs$learner) %in% c("linear", "ridge", "rpart"), ]
 
@@ -52,7 +52,7 @@ return(output)
 
 #aggrs_base
 method_plot <- function(data,x,y,colorval){
-output <- ggplot(method_dat, aes_string(x = x, y = y, color = colorval)) +
+output <- ggplot(data, aes_string(x = x, y = y, color = colorval)) +
   facet_wrap(vars(learner), scales = "free_x") +
   geom_hline(yintercept = 0.95, color = "red") +
   geom_line() +

@@ -137,7 +137,8 @@ server <- function(input, output, session) {
     })
     output$methodplot <- renderPlotly({
       clicker <- button_clicked()
-      method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
+      meth<-input$methodOI
+      method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==meth),])
       g <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
       makeplot(clicker,"METHOD",g)
     })
@@ -172,6 +173,7 @@ server <- function(input, output, session) {
       "plot.png"
     },
     content = function(file) {
+      method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
       g <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
       if(!is.null(addon_applied)){
         code <- input$code
