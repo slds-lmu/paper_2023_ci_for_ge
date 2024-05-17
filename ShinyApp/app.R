@@ -5,32 +5,67 @@ library(data.table)
 library(here)
 library(DT)
 
+source("explanation.R")
 source("PlotSpecifications.R")
 source("plotting_fallback.R")
+#source("0_plot_blueprint.R")   #INSERT FOR NEW PLOTS
+
+
 # Sample data frame
 data <- readRDS("../results/ci_aggr.rds")
 
-# UI for the main page
+
 ui <- fluidPage(
-  titlePanel("CIs for the GE empirical results"),
+  # Add a custom CSS for the banner
+  tags$head(
+    tags$style(HTML("
+      .header-banner {
+        background: url('pattern.svg');
+        color: gray;
+        padding: 20px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        border-radius: 5px;
+      }
+      .header-banner .title {
+        margin: 0;
+      }
+      .header-banner .subtitle {
+        font-size: 16px;
+        margin-top: 10px;
+      }
+      .header-banner .buttons {
+        margin-top: 20px;
+      }
+      .header-banner .buttons .btn {
+        margin: 0 10px;
+      }
+    "))
+  ),
+  div(class = "header-banner",
+      h1(class = "title", "CIs for the GE Empirical Results"),
+      div(class = "subtitle", "Quick description of what's happening..."),
+      div(class = "buttons",
+          actionButton("viewPlot", "Plots"),
+          actionButton("viewData", "View Data"),
+          actionButton("viewExplanation", "View explanation again")
+      )
+  ),
   fluidRow(
     column(12,
-      helpText("Quick description of what's happening...."),
-      actionButton("viewPlot", "Plots"),
-      actionButton("viewData", "View Data"),
-      actionButton("viewExplanation", "View explanation again"),
-    br(),
-      uiOutput("pageContent")
-    ))
+           br(),
+           uiOutput("pageContent")
+    )
   )
+)
+
 
 # UI for the explanation page
 explanationPage <- fluidPage(titlePanel(""),
                       mainPanel(width = 12,
                                 hr(""),
-                                HTML("<div style='text-align:center;'><p>
-                                     Method x Learner x DGP x size
-                                     </p><p>&nbsp;</p><hr><p>&nbsp;</p></div>")
+                                HTML(html_explanation)
                                 ))
 
 # UI for the data page
@@ -41,18 +76,13 @@ dataPage <- fluidPage(titlePanel("Data"),
 # UI for the plot page
 plotPage <- fluidPage(
   titlePanel("Plot View"),
-  sidebarLayout(
-    sidebarPanel(
-      tabsetPanel(
+  fluidPage(
+    tabsetPanel(
       specifications_ui("fallback"),
       specifications_methodplot("fallback"),
+      #specifications_blueprint("fallback"),    #INSERT FOR NEW PLOTS
       specifications_download("fallback")
-    )
-    ),
-    mainPanel(
-      #column(12,
-      plotting_ui("fallback")
-    )#)
+  )
   )
 )
 
@@ -93,41 +123,78 @@ server <- function(input, output, session) {
   observeEvent(input$viewPlot_method, {
     button_clicked("METHOD")
   })
+  #observeEvent(input$viewPlot_blueprint, {   #INSERT FOR NEW PLOTS
+  #  button_clicked("BLUEPRINT")
+  #})
   
   # Render Plotly plot
-  callModule(function(input, output, session) {
-  output$plot <- renderPlotly({
-    clicker <- button_clicked()
-    if(is.null(clicker)){ggplot()+theme_minimal()}else{
-    if(clicker=="FALLBACK"){
-    fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color_fallback,method=input$method)
-    }else{
-      if(clicker=="METHOD"){
-        method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
-        method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
-      }}  
-    }
-  })
   
-  # Download plot
-  output$downloadPlot <- downloadHandler(
+  callModule(function(input, output, session) {
+    output$fallbackplot <- renderPlotly({
+          clicker <- button_clicked()
+          g <- fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color_fallback,method=input$method)
+      makeplot(clicker,"FALLBACK",g)
+    })
+    output$methodplot <- renderPlotly({
+      clicker <- button_clicked()
+      method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
+      g <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
+      makeplot(clicker,"METHOD",g)
+    })
+    #output$blueprintplot <- renderPlotly({    #INSERT FOR NEW PLOTS
+    #  clicker <- button_clicked()
+    #  g <- blueprint_plot(specify inputs from specifications_blueprint...)  
+    #  makeplot(clicker,"BLUEPRINT",g)
+    #})
+    }, "fallback")
+  
+  callModule(function(input, output, session) {
+  addon_applied <- reactiveVal(NULL)
+  observeEvent(input$apply,
+               addon_applied(TRUE)
+               )
+  # Download plots
+  output$downloadPlot_fallback <- downloadHandler(
     filename = function() {
       "plot.png"
     },
     content = function(file) {
-      clicker <- button_clicked()
-      if(is.null(clicker)){ggplot()+theme_minimal()}else{
-        if(clicker=="FALLBACK"){
-      p <- fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color,method=input$method)
-        }else{
-          if(clicker=="METHOD"){
-            method_dat <- as.data.frame(aggrs_base[which(aggrs_base$method==input$methodOI)])
-       p <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
-          }}  
-        }
-      ggsave(file, plot = p, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
+    g <- fallback_plot(data=aggrs,x = input$x,y = input$y,colorval = input$color_fallback,method=input$method)  
+    if(!is.null(addon_applied)){
+      code <- input$code
+      g <- g + eval(parse(text=code))
     }
-  )  }, "fallback")
+    ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
+    }
+  )  
+  output$downloadPlot_method <- downloadHandler(
+    filename = function() {
+      "plot.png"
+    },
+    content = function(file) {
+      g <- method_plot(data=method_dat,x = input$x1,y = input$y1,colorval = input$color_method)  
+      if(!is.null(addon_applied)){
+        code <- input$code
+        g <- g + eval(parse(text=code))
+      }
+      ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
+    }
+  )
+  
+  #output$downloadPlot_blueprint <- downloadHandler(
+  #  filename = function() {
+  #    "plot.png"
+  #  },
+  #  content = function(file) {
+  #    g <- blueprint_plot(specify inputs from specifications_blueprint...)
+  #   if(!is.null(addon_applied)){
+  #   code <- input$code
+  #     g <- g + eval(parse(text=code))
+  #   }
+  #     ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
+  #  }
+  #)
+  }, "fallback")
 }
 
 # Run the application
