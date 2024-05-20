@@ -15,7 +15,14 @@ specifications_ui <- function(id){
                       downloadButton(ns("downloadPlot_fallback"), "Download Plot")
                       )
              )),
-             mainPanel(plotlyOutput(ns("fallbackplot"))))
+             mainPanel(
+               div(class = "plot-container",
+               plotlyOutput(ns("fallbackplot"),
+                            height = "800px") ## we can define this + width as needed!
+                                              # also as a function of inputs!
+               )
+             )
+             )
              )
 }
 
@@ -36,24 +43,40 @@ specifications_methodplot <- function(id){
              downloadButton(ns("downloadPlot_method"), "Download Plot")
              )
              )),
-           mainPanel(plotlyOutput(ns("methodplot"))))
+           mainPanel(
+             div(class = "plot-container",
+             plotlyOutput(ns("methodplot"))## we can define height + width as needed!
+             # also as a function of inputs!
+             )
+             ))
   )
 }
 
 specifications_download <- function(id){
       ns <- NS(id)
     tabPanel("Download specifications",
-             sidebarLayout(
-               sidebarPanel(
-                            fluidRow(
-                              column(6,selectInput(ns("units"), "Units:", choices = c("in", "cm", "mm", "px")),
-                                     textInput(ns("width"), "Width:", value = 4),
-                                     textInput(ns("height"), "Height:", value = 4)
-                                     ))),
-               mainPanel(
-                 textAreaInput(ns("code"), "Enter code to modify ggplot:", rows = 5),
-                 actionButton(ns("apply"), "Apply Code")
-               ))
+             fluidRow(
+               column(6,
+                      fluidRow(
+                        selectInput(ns("units"), "Units:", choices = c("in", "cm", "mm", "px")),
+                        textInput(ns("width"), "Width:", value = 4),
+                        textInput(ns("height"), "Height:", value = 4)
+                      )
+               ),
+               column(6,
+                      fluidRow(
+                        selectInput(ns("tbd1"), "TBD1:", choices = c("in", "cm", "mm", "px")),
+                        textInput(ns("tbd2"), "TBD2:", value = 4),
+                        textInput(ns("tbd3"), "TBD3:", value = 4)
+                      )
+               )
+             ),
+             mainPanel(
+               div(class = "content",
+               textAreaInput(ns("code"), "Enter code to modify ggplot:", rows = 5),
+               actionButton(ns("apply"), "Apply Code")
+             )
+             )
              )
 
     

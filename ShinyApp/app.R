@@ -4,6 +4,8 @@ library(plotly)
 library(data.table)
 library(here)
 library(DT)
+#library(shinyjs)
+#library(shinyWidgets)
 
 source("explanation.R")
 source("PlotSpecifications.R")
@@ -41,6 +43,36 @@ ui <- fluidPage(
       .header-banner .buttons .btn {
         margin: 0 10px;
       }
+      .footer {
+        background-color: #d3d3d3;
+        padding: 20px 0;
+        text-align: center;
+        border-top: 1px solid #a9a9a9;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1000;
+      }
+      .footer .logos {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .footer .logos img {
+        margin: 0 10px;
+        height: 40px;
+      }
+      .content {
+        padding-bottom: 100px;  /* Adjust this value if needed */
+      }
+      .plot-container {
+        margin-bottom: 100px;  /* Ensure there's enough space for the footer */
+      }
     "))
   ),
   div(class = "header-banner",
@@ -57,6 +89,13 @@ ui <- fluidPage(
            br(),
            uiOutput("pageContent")
     )
+  ),
+  div(class = "footer",
+      div(class = "logos",
+          span("A joint project of"),
+          img(src = "LMU.png", alt = "Logo 1"),
+          img(src = "DESTATIS.png", alt = "Logo 2")
+      )
   )
 )
 
@@ -165,6 +204,7 @@ server <- function(input, output, session) {
       code <- input$code
       g <- g + eval(parse(text=code))
     }
+    print(input$units)
     ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
     }
   )  

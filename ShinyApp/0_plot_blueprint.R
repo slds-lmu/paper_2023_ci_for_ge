@@ -14,7 +14,12 @@ specifications_blueprint <- function(id){
                         downloadButton(ns("downloadPlot_blueprint"), "Download Plot")
                  )
                )),
-             mainPanel(plotlyOutput(ns("blueprintplot"))))
+             mainPanel(
+             div(class = "plot-container",  
+               plotlyOutput(ns("blueprintplot"))## we can define height + width as needed!
+                       # also as a function of inputs!
+             )
+                       ))
   )
 }
 
