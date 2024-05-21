@@ -7,12 +7,11 @@ library(DT)
 # library(shinyjs)
 # library(shinyWidgets)
 
+browser()
 source("setup.R")
 source("explanation.R")
-source("make_data.R")
 source("plot_specifications.R")
-source("Size_x_Coverage.R")
-#source("plotting_fallback.R")
+source("plotting_fallback.R")
 # source("0_plot_blueprint.R")   #INSERT FOR NEW PLOTS
 
 ui = fluidPage(
@@ -127,123 +126,149 @@ plotPage = fluidPage(
   titlePanel("Plot View"),
   fluidPage(
     tabsetPanel(
-      #specifications_ui("fallback"),
-      #specifications_methodplot("fallback"),
+      specifications_ui("fallback"),
+      specifications_methodplot("fallback"),
       # specifications_blueprint("fallback"),    #INSERT FOR NEW PLOTS
-      tabPanel("Size x Coverage Plots", fluidPage(
-        tabsetPanel(
-      specifications_learnerplot("SxC_learner"),
-      specifications_taskplot("SxC_task"))
-      )
-    ),
-    specifications_download("downloadNS"))
+      specifications_download("fallback"),
+      specifications_learnerplot("fallback"),
+      specifications_taskplot("fallback")
+    )
   )
 )
 
+# Server logic
 server = function(input, output, session) {
   # Switch between pages
   output$pageContent = renderUI({
     explanationPage
   })
-  
+
   observeEvent(input$viewExplanation, {
     output$pageContent = renderUI({
       explanationPage
     })
   })
-  
+
   observeEvent(input$viewData, {
     output$pageContent = renderUI({
       dataPage
     })
   })
-  
+
   observeEvent(input$viewPlot, {
     output$pageContent = renderUI({
       plotPage
     })
   })
-  
-  
-  addon_applied = reactiveVal(NULL)
-  observeEvent(input$apply,{
-    addon_applied(TRUE)
-    }
+
+  # Render data table
+  output$mytable = DT::renderDataTable(ci_aggr,
+    options = list(scrollX = TRUE),
+    rownames = FALSE
   )
-  
-  setNULL(download_vals)
-  callModule(function(input, output, session) {
-    observe({
-    global_units <<- input$units
-    global_width <<- input$width
-    global_height <<- input$height
-    global_code <<- input$code
-    })
-  },"downloadNS")
-  
-  
+  # Plotions
   button_clicked = reactiveVal(NULL)
-  
-  observeEvent(input$Vlearner, {
-    button_clicked("VIEW_learner")
+  observeEvent(input$viewPlot_fallback, {
+    button_clicked("FALLBACK")
   })
-  
-  observeEvent(input$Vtask, {
-    button_clicked("VIEW_task")
+  observeEvent(input$viewPlot_method, {
+    button_clicked("METHOD")
   })
-  
-  
-  
+  observeEvent(input$viewPlot_learner, {
+    button_clicked("LEARNER")
+  })
+  observeEvent(input$viewPlot_task, {
+    button_clicked("TASK")
+  })
+  # observeEvent(input$viewPlot_blueprint, {   #INSERT FOR NEW PLOTS
+  #  button_clicked("BLUEPRINT")
+  # })
+
+  # Render Plotly plot
+
   callModule(function(input, output, session) {
-    output$Plearner = renderPlotly({
+    output$fallbackplot = renderPlotly({
+      clicker = button_clicked()
+      g = fallback_plot(data = aggrs, x = input$x, y = input$y, colorval = input$color_fallback, method = input$method)
+      makeplot(clicker, "FALLBACK", g)
+    })
+    output$methodplot = renderPlotly({
+      clicker = button_clicked()
+      g = make_methodplot(ci_aggr, input)
+      makeplot(clicker, "METHOD", g)
+    })
+    output$learnerplot = renderPlotly({
       clicker = button_clicked()
       g = make_learnerplot(ci_aggr, input)
-      makeplot(clicker, "VIEW_learner", g)
+      makeplot(clicker, "LEARNER", g)
     })
-    
-    output$Dlearner = downloadHandler(
-      filename = function() {
-        "plot.png"
-      },
-      content = function(file) {
-        g = make_learnerplot(ci_aggr, input)
-        print("Cheking...")
-        print(addon_applied)
-        print(global_units)
-        if (!is.null(addon_applied)) {
-          code = input$code
-          g = g + eval(parse(text = global_code))
-        }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric( global_height), device = "png", units = global_units)
-      }
-    )
-    
-  }, "SxC_learner")
-  
-  
-  callModule(function(input, output, session) {
-    output$Ptask = renderPlotly({
+    output$taskplot = renderPlotly({
       clicker = button_clicked()
       g = make_taskplot(ci_aggr, input)
-      makeplot(clicker, "VIEW_task", g)
-      
+      makeplot(clicker, "TASK", g)
     })
-    
-    output$Dtask = downloadHandler(
+    # output$taskplot = renderPlotly({
+    #   clicker = button_clicked()
+    #   g = make_taskplot(ci_aggr, input)
+    #   makeplot(clicker, "TASK", g)
+    # })
+    # output$blueprintplot = renderPlotly({    #INSERT FOR NEW PLOTS
+    #  clicker = button_clicked()
+    #  g = blueprint_plot(specify inputs from specifications_blueprint...)
+    #  makeplot(clicker,"BLUEPRINT",g)
+    # })
+  }, "fallback")
+
+  callModule(function(input, output, session) {
+    addon_applied = reactiveVal(NULL)
+    observeEvent(
+      input$apply,
+      addon_applied(TRUE)
+    )
+    # Download plots
+    output$downloadPlot_fallback = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g = make_taskplot(ci_aggr, input)
+        g = fallback_plot(data = aggrs, x = input$x, y = input$y, colorval = input$color_fallback, method = input$method)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          code = input$code
+          g = g + eval(parse(text = code))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric( global_height), device = "png", units = global_units)
+        print(input$units)
+        ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png", units = input$units)
       }
     )
-    
-  }, "SxC_task")
-  
+    output$downloadPlot_method = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        method_dat = as.data.frame(aggrs_base[which(aggrs_base$method == input$methodOI)])
+        g = method_plot(data = method_dat, x = input$x1, y = input$y1, colorval = input$color_method)
+        if (!is.null(addon_applied)) {
+          code = input$code
+          g = g + eval(parse(text = code))
+        }
+        ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png", units = input$units)
+      }
+    )
+
+    # output$downloadPlot_blueprint = downloadHandler(
+    #  filename = function() {
+    #    "plot.png"
+    #  },
+    #  content = function(file) {
+    #    g = blueprint_plot(specify inputs from specifications_blueprint...)
+    #   if(!is.null(addon_applied)){
+    #   code = input$code
+    #     g = g + eval(parse(text=code))
+    #   }
+    #     ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
+    #  }
+    # )
+  }, "fallback")
 }
 
 # Run the application

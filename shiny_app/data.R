@@ -1,3 +1,6 @@
+ci_aggr <- readRDS(here("results", "ci_aggr.rds"))
+
+
 ATOM_CHOICES = list(
   learner = c("linear", "ridge", "ridge_tuned", "ranger", "rpart"),
   task = c(
