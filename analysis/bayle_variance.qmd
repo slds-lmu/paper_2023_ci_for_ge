@@ -32,7 +32,7 @@ ci = ci[, c("task", "size", "repl", "learner", "hit", "variance", "var")]
 ```
 
 ```{r}
-dt_wide <- dcast(ci, task + size + repl + learner ~ var, 
+dt_wide = dcast(ci, task + size + repl + learner ~ var,
                  value.var = c("hit", "variance"))
 dt_wide[, mean(hit_all_pairs == hit_within), ]
 dt_wide[, list(cov_all_pairs = mean(hit_all_pairs), cov_within = mean(hit_within))]

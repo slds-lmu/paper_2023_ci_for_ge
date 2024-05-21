@@ -7,15 +7,11 @@ library(DT)
 # library(shinyjs)
 # library(shinyWidgets)
 
+source("setup.R")
 source("explanation.R")
-source("PlotSpecifications.R")
+source("plot_specifications.R")
 source("plotting_fallback.R")
 # source("0_plot_blueprint.R")   #INSERT FOR NEW PLOTS
-
-
-# Sample data frame
-data = readRDS("../results/ci_aggr.rds")
-
 
 ui = fluidPage(
   # Add a custom CSS for the banner
@@ -75,23 +71,28 @@ ui = fluidPage(
       }
     "))
   ),
-  div(class = "header-banner",
+  div(
+    class = "header-banner",
     h1(class = "title", "CIs for the GE Empirical Results"),
     div(class = "subtitle", "Quick description of what's happening..."),
-    div(class = "buttons",
+    div(
+      class = "buttons",
       actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
   fluidRow(
-    column(12,
+    column(
+      12,
       br(),
       uiOutput("pageContent")
     )
   ),
-  div(class = "footer",
-    div(class = "logos",
+  div(
+    class = "footer",
+    div(
+      class = "logos",
       span("A joint project of"),
       img(src = "LMU.png", alt = "Logo 1"),
       img(src = "DESTATIS.png", alt = "Logo 2")
@@ -101,16 +102,23 @@ ui = fluidPage(
 
 
 # UI for the explanation page
-explanationPage = fluidPage(titlePanel(""),
-  mainPanel(width = 12,
+explanationPage = fluidPage(
+  titlePanel(""),
+  mainPanel(
+    width = 12,
     hr(""),
     HTML(html_explanation)
-))
+  )
+)
 
 # UI for the data page
-dataPage = fluidPage(titlePanel("Data"),
-  mainPanel(width = 12,
-    DT::dataTableOutput("mytable")))
+dataPage = fluidPage(
+  titlePanel("Data"),
+  mainPanel(
+    width = 12,
+    DT::dataTableOutput("mytable")
+  )
+)
 
 # UI for the plot page
 plotPage = fluidPage(
@@ -153,7 +161,8 @@ server = function(input, output, session) {
   # Render data table
   output$mytable = DT::renderDataTable(data,
     options = list(scrollX = TRUE),
-    rownames = FALSE)
+    rownames = FALSE
+  )
   # Plotions
   button_clicked = reactiveVal(NULL)
   observeEvent(input$viewPlot_fallback, {
@@ -181,16 +190,17 @@ server = function(input, output, session) {
       g = method_plot(data = method_dat, x = input$x1, y = input$y1, colorval = input$color_method)
       makeplot(clicker, "METHOD", g)
     })
-    # output$blueprintplot <- renderPlotly({    #INSERT FOR NEW PLOTS
-    #  clicker <- button_clicked()
-    #  g <- blueprint_plot(specify inputs from specifications_blueprint...)
+    # output$blueprintplot = renderPlotly({    #INSERT FOR NEW PLOTS
+    #  clicker = button_clicked()
+    #  g = blueprint_plot(specify inputs from specifications_blueprint...)
     #  makeplot(clicker,"BLUEPRINT",g)
     # })
   }, "fallback")
 
   callModule(function(input, output, session) {
     addon_applied = reactiveVal(NULL)
-    observeEvent(input$apply,
+    observeEvent(
+      input$apply,
       addon_applied(TRUE)
     )
     # Download plots
@@ -223,15 +233,15 @@ server = function(input, output, session) {
       }
     )
 
-    # output$downloadPlot_blueprint <- downloadHandler(
+    # output$downloadPlot_blueprint = downloadHandler(
     #  filename = function() {
     #    "plot.png"
     #  },
     #  content = function(file) {
-    #    g <- blueprint_plot(specify inputs from specifications_blueprint...)
+    #    g = blueprint_plot(specify inputs from specifications_blueprint...)
     #   if(!is.null(addon_applied)){
-    #   code <- input$code
-    #     g <- g + eval(parse(text=code))
+    #   code = input$code
+    #     g = g + eval(parse(text=code))
     #   }
     #     ggsave(file, plot = g, width = as.numeric(input$width), height = as.numeric(input$height), device = "png",units=input$units)
     #  }

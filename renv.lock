@@ -25,6 +25,11 @@
       "Hash": "50c37a30c2c3f3b1e75741631cdae0c7",
       "Requirements": []
     },
+    "DT": {
+      "Package": "DT",
+      "Version": "0.33",
+      "Source": "Repository"
+    },
     "DiagrammeR": {
       "Package": "DiagrammeR",
       "Version": "1.0.10",
@@ -1880,6 +1885,11 @@
         "withr"
       ]
     },
+    "plotly": {
+      "Package": "plotly",
+      "Version": "4.10.4",
+      "Source": "Repository"
+    },
     "prabclus": {
       "Package": "prabclus",
       "Version": "2.3-2",
@@ -2281,32 +2291,8 @@
     },
     "shiny": {
       "Package": "shiny",
-      "Version": "1.7.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "438b99792adbe82a8329ad8697d45afe",
-      "Requirements": [
-        "R6",
-        "bslib",
-        "cachem",
-        "commonmark",
-        "crayon",
-        "ellipsis",
-        "fastmap",
-        "fontawesome",
-        "glue",
-        "htmltools",
-        "httpuv",
-        "jsonlite",
-        "later",
-        "lifecycle",
-        "mime",
-        "promises",
-        "rlang",
-        "sourcetools",
-        "withr",
-        "xtable"
-      ]
+      "Version": "1.8.1.1",
+      "Source": "Repository"
     },
     "sourcetools": {
       "Package": "sourcetools",
