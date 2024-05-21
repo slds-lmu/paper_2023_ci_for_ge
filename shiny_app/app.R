@@ -79,6 +79,7 @@ ui = fluidPage(
       class = "buttons",
       actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
+      actionButton("viewDataSheet", "View Parameter Data"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
@@ -118,6 +119,14 @@ dataPage = fluidPage(
     class = "content",
     width = 12,
     DT::dataTableOutput("mytable"))
+  )
+)
+dataPage2 = fluidPage(
+  titlePanel("Parameter data"),
+  mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("data_sheet"))
   )
 )
 
@@ -160,6 +169,12 @@ server = function(input, output, session) {
     })
   })
   
+  observeEvent(input$viewDataSheet, {
+    output$pageContent = renderUI({
+      dataPage2
+    })
+  })
+  
   observeEvent(input$viewPlot, {
     output$pageContent = renderUI({
       plotPage
@@ -168,6 +183,11 @@ server = function(input, output, session) {
   
   
   output$mytable = DT::renderDataTable(ci_aggr,
+                                       options = list(scrollX = TRUE),
+                                       rownames = FALSE
+  )
+  
+  output$data_sheet = DT::renderDataTable(ci_aggr,
                                        options = list(scrollX = TRUE),
                                        rownames = FALSE
   )
