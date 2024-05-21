@@ -130,8 +130,8 @@ plotPage = fluidPage(
       specifications_methodplot("fallback"),
       # specifications_blueprint("fallback"),    #INSERT FOR NEW PLOTS
       specifications_download("fallback"),
-      specifications_learnerplot("fallback")
-      # specifications_taskplot("fallback")
+      specifications_learnerplot("fallback"),
+      specifications_taskplot("fallback")
     )
   )
 )
@@ -177,6 +177,9 @@ server = function(input, output, session) {
   observeEvent(input$viewPlot_learner, {
     button_clicked("LEARNER")
   })
+  observeEvent(input$viewPlot_task, {
+    button_clicked("TASK")
+  })
   # observeEvent(input$viewPlot_blueprint, {   #INSERT FOR NEW PLOTS
   #  button_clicked("BLUEPRINT")
   # })
@@ -191,15 +194,18 @@ server = function(input, output, session) {
     })
     output$methodplot = renderPlotly({
       clicker = button_clicked()
-      meth = input$methodOI
-      method_dat = as.data.frame(aggrs_base[which(aggrs_base$method == meth), ])
-      g = method_plot(data = method_dat, x = input$x1, y = input$y1, colorval = input$color_method)
+      g = make_methodplot(ci_aggr, input)
       makeplot(clicker, "METHOD", g)
     })
     output$learnerplot = renderPlotly({
       clicker = button_clicked()
       g = make_learnerplot(ci_aggr, input)
       makeplot(clicker, "LEARNER", g)
+    })
+    output$taskplot = renderPlotly({
+      clicker = button_clicked()
+      g = make_taskplot(ci_aggr, input)
+      makeplot(clicker, "TASK", g)
     })
     # output$taskplot = renderPlotly({
     #   clicker = button_clicked()
