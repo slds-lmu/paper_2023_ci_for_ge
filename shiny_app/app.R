@@ -7,6 +7,7 @@ library(DT)
 # library(shinyjs)
 # library(shinyWidgets)
 
+browser()
 source("setup.R")
 source("explanation.R")
 source("plot_specifications.R")
@@ -128,7 +129,9 @@ plotPage = fluidPage(
       specifications_ui("fallback"),
       specifications_methodplot("fallback"),
       # specifications_blueprint("fallback"),    #INSERT FOR NEW PLOTS
-      specifications_download("fallback")
+      specifications_download("fallback"),
+      specifications_learnerplot("fallback")
+      # specifications_taskplot("fallback")
     )
   )
 )
@@ -171,6 +174,9 @@ server = function(input, output, session) {
   observeEvent(input$viewPlot_method, {
     button_clicked("METHOD")
   })
+  observeEvent(input$viewPlot_learner, {
+    button_clicked("LEARNER")
+  })
   # observeEvent(input$viewPlot_blueprint, {   #INSERT FOR NEW PLOTS
   #  button_clicked("BLUEPRINT")
   # })
@@ -190,6 +196,16 @@ server = function(input, output, session) {
       g = method_plot(data = method_dat, x = input$x1, y = input$y1, colorval = input$color_method)
       makeplot(clicker, "METHOD", g)
     })
+    output$learnerplot = renderPlotly({
+      clicker = button_clicked()
+      g = make_learnerplot(ci_aggr, input)
+      makeplot(clicker, "LEARNER", g)
+    })
+    # output$taskplot = renderPlotly({
+    #   clicker = button_clicked()
+    #   g = make_taskplot(ci_aggr, input)
+    #   makeplot(clicker, "TASK", g)
+    # })
     # output$blueprintplot = renderPlotly({    #INSERT FOR NEW PLOTS
     #  clicker = button_clicked()
     #  g = blueprint_plot(specify inputs from specifications_blueprint...)

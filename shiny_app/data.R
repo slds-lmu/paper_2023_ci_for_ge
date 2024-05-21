@@ -20,7 +20,7 @@ ATOM_CHOICES = list(
     "sgemm_gpu",
     "video_transcoding"
   ),
-  method = c(
+  methods = c(
     "holdout_66",
     "holdout_90",
     "corrected_t_10",
@@ -53,17 +53,3 @@ ATOM_CHOICES = list(
     "632plus_1000"
   )
 )
-
-
-capitalize = function(x) {
-  paste0(toupper(substring(x, 1, 1)), substring(x, 2))
-}
-
-translate_target = function(target) {
-  switch(target,
-    "Risk" = "R",
-    "Expected Risk" = "ER",
-    "Proxy Quantity" = "PQ",
-    stop("not available")
-  )
-}
