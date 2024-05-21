@@ -34,7 +34,7 @@ specifications_ui <- function(id) {
 specifications_methodplot <- function(id) {
   ns <- NS(id)
   tabPanel(
-    "Methods",
+    "Method",
     sidebarLayout(
       sidebarPanel(
         fluidRow(

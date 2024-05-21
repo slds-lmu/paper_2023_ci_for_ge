@@ -20,7 +20,7 @@ ATOM_CHOICES = list(
     "sgemm_gpu",
     "video_transcoding"
   ),
-  methods = c(
+  method = c(
     "holdout_66",
     "holdout_90",
     "corrected_t_10",
