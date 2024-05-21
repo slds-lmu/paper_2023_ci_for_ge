@@ -1,0 +1,3 @@
+html_explanation = "<div style='text-align:center;'><p>
+Method x Learner x DGP x size
+</p><p>&nbsp;</p><hr><p>&nbsp;</p></div>"
