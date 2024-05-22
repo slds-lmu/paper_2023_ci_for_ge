@@ -6,6 +6,8 @@ aggregated_Sx_Cplot_ui <- function(id) {
     "Method, aggregated",
     div(
       class = "content",
+    fluidRow(column(12,
+                    HTML(paste(readLines("HTMLS/SxC_method_aggregated.html"),collapse="")))),
     sidebarLayout(
       sidebarPanel(
         fluidRow(

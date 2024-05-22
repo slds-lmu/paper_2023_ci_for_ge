@@ -9,7 +9,6 @@ library(shinyWidgets)
 
 source("setup.R")
 source("datasheet.R")
-source("explanation.R")
 source("plot_specifications.R")
 source("Size_x_Coverage.R")
 source("target_comparison.R")
@@ -111,7 +110,7 @@ explanationPage <- fluidPage(
   mainPanel(
     width = 12,
     hr(""),
-    HTML(html_explanation)
+    HTML(paste(readLines("explanation.html"),collapse=""))
   )
 )
 
