@@ -44,7 +44,6 @@ make_cis_for_cis_plot <- function(data, input) {
       size == input$size &
       method %in% input$methods,
   ]
-  saveRDS(data, "~/scratch/dat.rds")
   data[, let(method = droplevels(method))]
   cov_var <- if (identical(input$target, "Risk")) "cov_R" else "cov_ER"
   data[, let(
@@ -52,7 +51,6 @@ make_cis_for_cis_plot <- function(data, input) {
     upper = get(cov_var) + 1.96 * get(paste0(cov_var, "_se")),
     lower = get(cov_var) - 1.96 * get(paste0(cov_var, "_se"))
   )]
-  head(data)
 
   ggplot(data) +
     geom_point(aes(y = method, x = cov, color = method)) +
