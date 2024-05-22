@@ -18,60 +18,7 @@ source("cis_for_cis.R")
 ui <- fluidPage(
   # Add a custom CSS for the banner
   tags$head(
-    tags$style(HTML("
-      .header-banner {
-        background: url('pattern.svg');
-        color: gray;
-        padding: 20px;
-        text-align: center;
-        font-size: 24px;
-        font-weight: bold;
-        border-radius: 5px;
-      }
-      .header-banner .title {
-        margin: 0;
-      }
-      .header-banner .subtitle {
-        font-size: 16px;
-        margin-top: 10px;
-      }
-      .header-banner .buttons {
-        margin-top: 20px;
-      }
-      .header-banner .buttons .btn {
-        margin: 0 10px;
-      }
-      .footer {
-        background-color: #d3d3d3;
-        padding: 20px 0;
-        text-align: center;
-        border-top: 1px solid #a9a9a9;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 1000;
-      }
-      .footer .logos {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 10px;
-      }
-      .footer .logos img {
-        margin: 0 10px;
-        height: 40px;
-      }
-      .content {
-        padding-bottom: 100px;  /* Adjust this value if needed */
-      }
-      .plot-container {
-        margin-bottom: 100px;  /* Ensure there's enough space for the footer */
-      }
-    "))
+    tags$style(HTML(paste(readLines("HTMLS/style.html"),collapse="")))
   ),
   div(
     class = "header-banner",
@@ -252,6 +199,17 @@ server <- function(input, output, session) {
 
 
   callModule(function(input, output, session) {
+    observeEvent(input$slider1, {
+      if(input$slider1 >= input$slider2){
+        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
+      }
+    })
+    
+    observeEvent(input$slider2, {
+      if(input$slider2 <= input$slider1){
+        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
+      }
+    })
     observe({
       if (is.null(input$method) || length(input$method) == 0) {
         updatePickerInput(session, "method", selected = levels(as.factor(as.data.frame(ci_aggr)$method))[1])
@@ -264,6 +222,7 @@ server <- function(input, output, session) {
       g <- fallback_plot(ci_aggr, y = y, input)
       makeplot(clicker, "VIEW_fallback", g)
     })
+  
 
     output$downloadPlot_fallback <- downloadHandler(
       filename = function() {

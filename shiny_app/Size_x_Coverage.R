@@ -13,6 +13,8 @@ aggregated_Sx_Cplot_ui <- function(id) {
         fluidRow(
           column(6,
             # helpText("Select variables for plotting:"),
+            sliderInput(ns("slider1"), "y Min", min = 0, max = 1, value = 0),
+            sliderInput(ns("slider2"), "y Max", min = 0, max = 1, value = 1),
             selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
             selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
             selectInput(ns("y"), "Y-Axis Variable:", choices = c("avg_cov_R", "avg_cov_ER", "avg_cov_PQ","all")),
@@ -31,6 +33,7 @@ aggregated_Sx_Cplot_ui <- function(id) {
       mainPanel(
         div(
           class = "plot-container",
+          #uiOutput(ns("dynamicPlotContainer"))
           plotlyOutput(ns("fallbackplot")) 
         )
       )
@@ -50,6 +53,9 @@ if(input$sep_group!="none"){
 
 min_size <- as.integer(input$min_size)
 max_size <- as.integer(input$max_size)  
+
+min_y <- as.integer(input$slider1)
+max_y <- as.integer(input$slider2) 
 
   vec <- c("learner","task", "method", "size")
 if(!is.null(aggregate)){
@@ -75,8 +81,8 @@ if(!is.null(aggregate)){
   add <- list(facet_wrap(vars(method), scales = 'free_x'),
     geom_hline(yintercept = 0.95, color = 'red'),
     geom_line(),
-    xlim(50, 10500),
-    ylim(0, 1))
+    xlim(min_size, max_size),
+    ylim(min_y, max_y))
   
   if(!is.null(colorval)&is.null(line)){
   output <- ggplot(newdat, aes_string(x = "size", y = y, color = colorval)) + add
