@@ -52,8 +52,8 @@ make_cis_for_cis_plot = function(data, input) {
   head(data)
 
   ggplot(data) +
-    geom_point(aes(y = method, x = cov)) + 
-    geom_errorbar(aes(y = method, xmin = lower, xmax = upper))
+    geom_point(aes(y = method, x = cov, color = method)) + 
+    geom_errorbar(aes(y = method, xmin = lower, xmax = upper, color = method))
 }
 
 

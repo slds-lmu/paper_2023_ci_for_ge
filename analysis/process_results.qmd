@@ -15,6 +15,16 @@ library(mlr3misc)
 ci = readRDS(here("results", "final.rds"))
 ```
 
+We observed one NA, which we just remove
+
+```{r}
+stopifnot(sum(is.na(ci$lower) | is.na(ci$upper) | is.na(ci$estimate)) == 1)
+```
+
+```{r}
+ci = ci[!is.na(estimate), ]
+```
+
 For now, only look at a subset:
 
 ```{r}
@@ -44,9 +54,9 @@ ci_aggr = ci[, .(
   under_ER = mean(upper < ER),
   under_PQ = mean(upper < PQ),
   
-  cov_R_se = sd(lower <= R & upper >= R) / sqrt(500),
-  cov_ER_se = sd(lower <= ER & upper >= ER) / sqrt(500),
-  cov_PQ_se = sd(lower <= PQ & upper >= PQ) / sqrt(500),
+  cov_R_se = sd(lower <= R & upper >= R) / .N,
+  cov_ER_se = sd(lower <= ER & upper >= ER) / .N,
+  cov_PQ_se = sd(lower <= PQ & upper >= PQ) / .N,
   width = mean(upper - lower),
   width_sd = sd(upper - lower),
   bias = mean(estimate - R),

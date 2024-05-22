@@ -165,8 +165,12 @@ plotter_factory <- function(atom) {
     if (input$group != "none") {
       p <- p + facet_wrap(as.formula(paste0("~", input$group)), scales = "free_x")
     }
+    p = if (min_size == max_size) {
+      p + geom_point(aes(x = task, y = cov))
+    } else {
+      p + geom_line()
+   }
     p <- p +
-      geom_line() +
       geom_hline(yintercept = 0.95, color = "red") +
       labs(
         y = paste0("Coverage for ", input$target),

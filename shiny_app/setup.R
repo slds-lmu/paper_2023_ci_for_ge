@@ -1,4 +1,4 @@
-ATOM_CHOICES = list(
+ATOM_CHOICES <- list(
   learner = c("linear", "ridge", "ridge_tuned", "ranger", "rpart"),
   task = c(
     "higgs",
@@ -55,11 +55,11 @@ ATOM_CHOICES = list(
 )
 
 
-capitalize = function(x) {
+capitalize <- function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
 }
 
-translate_target = function(target) {
+translate_target <- function(target) {
   switch(target,
     "Risk" = "R",
     "Expected Risk" = "ER",
@@ -68,19 +68,19 @@ translate_target = function(target) {
   )
 }
 
-PQ_METHODS = c(
-    "bayle_5_within",
-    "bayle_5_all_pairs",
-    "bayle_10_within",
-    "bayle_10_all_pairs",
-    "austern_zhou",
-    "austern_zhou_rep",
-    "holdout_66",
-    "holdout_90"
+PQ_METHODS <- c(
+  "bayle_5_within",
+  "bayle_5_all_pairs",
+  "bayle_10_within",
+  "bayle_10_all_pairs",
+  "austern_zhou",
+  "austern_zhou_rep",
+  "holdout_66",
+  "holdout_90"
 )
 
 
-TASKS = c(
+TASKS <- c(
   "higgs",
   "adult",
   "covertype",
@@ -101,9 +101,9 @@ TASKS = c(
   "video_transcoding"
 )
 
-LEARNERS = c("linear", "ridge", "ridge_tuned", "ranger", "rpart")
+LEARNERS <- c("linear", "ridge", "ridge_tuned", "ranger", "rpart")
 
-METHODS = c(
+METHODS <- c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",
@@ -136,21 +136,7 @@ METHODS = c(
   "632plus_1000"
 )
 
-# TINY_METHDOS = c("bccv", "bccv_bias")
-# SMALL_METHODS = c(
-#   "nested_cv",
-#   "conservative_z",
-#   "ts_bootstrap",
-#   "bayle_loo",
-#   "austern_zhou",
-#   "austern_zhou_rep",
-#   "oob_500",
-#   "oob_1000",
-#   "632plus_500",
-#   "632plus_1000"
- 
-# )
-CHEAP_METHODS = c(
+CHEAP_METHODS <- c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",
