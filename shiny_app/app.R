@@ -12,6 +12,7 @@ source("explanation.R")
 source("data.R")
 source("plot_specifications.R")
 source("Size_x_Coverage.R")
+source("target_comparison.R")
 
 ui = fluidPage(
   # Add a custom CSS for the banner
@@ -143,7 +144,9 @@ plotPage = fluidPage(
       specifications_taskplot("SxC_task"))
       )
     ),
-    tabPanel("3 Coverages in same Plot/More subsetting??", fluidPage()),
+    tabPanel("Target Comparison", fluidPage(
+      specification_target_comparsion("target_comparison")
+    )),
     tabPanel("CIs for coverage", fluidPage()),
     tabPanel("Width vs. Coverage", fluidPage()),
     tabPanel("Austern & Zhou", fluidPage()),
@@ -214,6 +217,10 @@ server = function(input, output, session) {
   
   observeEvent(input$Vlearner, {
     button_clicked("VIEW_learner")
+  })
+
+  observeEvent(input$Vtarget_comparison, {
+    button_clicked("VIEW_target_comparison")
   })
   
   observeEvent(input$Vtask, {
@@ -308,6 +315,30 @@ server = function(input, output, session) {
     )
     
   }, "SxC_learner")
+
+  callModule(function(input, output, session) {
+    output$Ptarget_comparison = renderPlotly({
+      clicker = button_clicked()
+      g = make_target_comparison_plot(ci_aggr, input)
+      makeplot(clicker, "VIEW_target_comparison", g)
+    })
+    
+    output$Dtarget_comparison = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_target_comparison_plot(ci_aggr, input)
+        print(addon_applied)
+        print(global_units)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = global_code))
+        }
+        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric( global_height), device = "png", units = global_units)
+      }
+    )
+    
+  }, "target_comparison")
   
   
   callModule(function(input, output, session) {
@@ -332,6 +363,7 @@ server = function(input, output, session) {
     )
     
   }, "SxC_task")
+
   
 }
 

@@ -192,6 +192,11 @@
       "Hash": "c966ea2957ff75e77afa5c908dfc89e1",
       "Requirements": []
     },
+    "anytime": {
+      "Package": "anytime",
+      "Version": "0.3.9",
+      "Source": "Repository"
+    },
     "argparser": {
       "Package": "argparser",
       "Version": "0.7.1",
@@ -2292,6 +2297,11 @@
     "shiny": {
       "Package": "shiny",
       "Version": "1.8.1.1",
+      "Source": "Repository"
+    },
+    "shinyWidgets": {
+      "Package": "shinyWidgets",
+      "Version": "0.8.6",
       "Source": "Repository"
     },
     "sourcetools": {
