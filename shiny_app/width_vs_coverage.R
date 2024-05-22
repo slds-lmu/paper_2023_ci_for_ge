@@ -10,8 +10,9 @@ specification_width_vs_coverage <- function(id) {
       sidebarPanel(
         fluidRow(
           column(6,
-            selectInput(ns("size"), "Size Category", c("100", "[100, 500]", "[100, ..., 10k]"), "100"),
+            selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
             selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
+            selectInput(ns("sep_group"), "Separately show:", choices = c("task","learner","none")),
             pickerInput(ns("learners"), "Learners:",
                         choices = LEARNERS,
                         multiple = TRUE,
@@ -55,16 +56,13 @@ make_width_vs_coverage_plot = function(data, input) {
   ), by = c("task", "size", "learner")]
 
   # ensure that only those are contained, which have all values 
-  data =  if (input$size == "100") {
-    data[size == 100, ]
-  } else if (input$size == "[100, 500]") {
-    data[size <= 500 & !startsWith(as.character(method), "bccv")]
-  } else {
-    data[method %in% CHEAP_METHODS, ]
-  }
+  data = data[size == as.integer(input$size), ] 
 
   by_vars = c("method", "size")
 
+  if (input$sep_group != "none") {
+    by_vars = c(by_vars, input$sep_group)
+  }
  
   data = data[
     learner %in% input$learners & 
@@ -73,7 +71,7 @@ make_width_vs_coverage_plot = function(data, input) {
       list(
         cov = mean(cov),
         rel_width = mean(rel_width)
-    ), by = c("method", "size")]
+    ), by = c(by_vars)]
 
 
 
@@ -81,9 +79,9 @@ make_width_vs_coverage_plot = function(data, input) {
     geom_point() + 
     facet_wrap(vars(size), scales = "free_x")
 
-  # if (input$group != "none") {
-  #   p <- p + facet_wrap(as.formula(paste0("~", input$group)), scales = "free_x")
-  # }
+  if (input$sep_group != "none") {
+    p <- p + facet_wrap(as.formula(paste0("~", input$sep_group)), scales = "free_x")
+  }
 
   p + 
     geom_hline(yintercept = 0.95, color = "red") + 

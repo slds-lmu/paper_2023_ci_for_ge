@@ -9,8 +9,7 @@ aggregated_Sx_Cplot_ui <- function(id) {
     sidebarLayout(
       sidebarPanel(
         fluidRow(
-          column(
-            6,
+          column(6,
             # helpText("Select variables for plotting:"),
             selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
             selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
