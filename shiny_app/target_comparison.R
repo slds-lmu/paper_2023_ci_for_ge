@@ -9,9 +9,7 @@ specification_target_comparsion <- function(id) {
     sidebarLayout(
       sidebarPanel(
         fluidRow(
-          column(
-            6,
-            # helpText("Select variables for plotting:"),
+          column(6,
             selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
             selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
             selectInput(ns("method"), "Method", choices = PQ_METHODS, selected = "bayle_10_within"),

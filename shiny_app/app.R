@@ -13,6 +13,7 @@ source("data.R")
 source("plot_specifications.R")
 source("Size_x_Coverage.R")
 source("target_comparison.R")
+source("width_vs_coverage.R")
 
 ui = fluidPage(
   # Add a custom CSS for the banner
@@ -147,8 +148,10 @@ plotPage = fluidPage(
     tabPanel("Target Comparison", fluidPage(
       specification_target_comparsion("target_comparison")
     )),
+    tabPanel("Width vs. Coverage", fluidPage(
+      specification_width_vs_coverage("width_vs_coverage")
+    )),
     tabPanel("CIs for coverage", fluidPage()),
-    tabPanel("Width vs. Coverage", fluidPage()),
     tabPanel("Austern & Zhou", fluidPage()),
     specifications_download("downloadNS"))
   )
@@ -221,6 +224,10 @@ server = function(input, output, session) {
 
   observeEvent(input$Vtarget_comparison, {
     button_clicked("VIEW_target_comparison")
+  })
+
+  observeEvent(input$Vwidth_vs_coverage, {
+    button_clicked("VIEW_width_vs_coverage")
   })
   
   observeEvent(input$Vtask, {
@@ -339,6 +346,30 @@ server = function(input, output, session) {
     )
     
   }, "target_comparison")
+
+  callModule(function(input, output, session) {
+    output$Pwidth_vs_coverage = renderPlotly({
+      clicker = button_clicked()
+      g = make_width_vs_coverage_plot(ci_aggr, input)
+      makeplot(clicker, "VIEW_width_vs_coverage", g)
+    })
+    
+    output$Dwidth_vs_coverage = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_width_vs_coverage_plot(ci_aggr, input)
+        print(addon_applied)
+        print(global_units)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = global_code))
+        }
+        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric( global_height), device = "png", units = global_units)
+      }
+    )
+    
+  }, "width_vs_coverage")
   
   
   callModule(function(input, output, session) {
