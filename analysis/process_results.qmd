@@ -1,5 +1,5 @@
 ---
-title: "Reduce the gigantic size"ö
+title: "Reduce the gigantic size"
 format: html
 editor: visual
 ---
