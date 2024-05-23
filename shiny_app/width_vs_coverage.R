@@ -11,6 +11,8 @@ specification_width_vs_coverage = function(id) {
           fluidRow(
             column(6,
               selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
+              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               selectInput(ns("sep_group"), "Separately show:", choices = c("task", "learner", "none")),
               pickerInput(ns("learners"), "Learners:",
@@ -46,6 +48,7 @@ specification_width_vs_coverage = function(id) {
 
 
 make_width_vs_coverage_plot = function(data, input) {
+  data = data[measure %in% translate_losses(input$loss_regr, input$loss_classif)]
   target = if (identical(input$target, "Risk")) "R" else "ER"
 
   # do this at the beginning, when bayle_10_all_pairs is always available

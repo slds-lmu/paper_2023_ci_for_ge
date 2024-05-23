@@ -12,6 +12,8 @@ specification_target_comparsion = function(id) {
             column(6,
               selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
+              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("method"), "Method", choices = PQ_METHODS, selected = "bayle_10_within"),
               pickerInput(ns("learners"), "Learners:",
                 choices = LEARNERS,
@@ -43,6 +45,7 @@ specification_target_comparsion = function(id) {
 make_target_comparison_plot = function(data, input) {
   data = data[
     !is.na(cov_PQ) &
+      measure %in% translate_losses(input$loss_regr, input$loss_classif) &
       size >= as.integer(input$min_size) & size <= as.integer(input$max_size) &
       task %in% input$tasks &
       method == input$method &

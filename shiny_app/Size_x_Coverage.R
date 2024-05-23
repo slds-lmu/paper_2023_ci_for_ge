@@ -1,6 +1,6 @@
 # agreggated
 
-aggregated_Sx_Cplot_ui = function(id) {
+specifications_aggregated = function(id) {
   ns = NS(id)
   tabPanel(
     "Method, aggregated",
@@ -17,6 +17,8 @@ aggregated_Sx_Cplot_ui = function(id) {
               sliderInput(ns("slider2"), "y Max", min = 0, max = 1, value = 1),
               selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
+              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("y"), "Y-Axis Variable:", choices = c("avg_cov_R", "avg_cov_ER", "avg_cov_PQ", "all")),
               selectInput(ns("sep_group"), "Separately show:", choices = c("task", "learner", "none")),
               pickerInput(ns("method"), "Method:",
@@ -66,7 +68,7 @@ fallback_plot = function(data, y, input) {
 
 
   newdat = data[method %in% input$method &
-    size >= min_size & size <= max_size,
+    size >= min_size & size <= max_size & measure %in% translate_losses(input$loss_regr, input$loss_classif),
   list(avg_cov_R = mean(cov_R),
     avg_cov_ER = mean(cov_ER),
     avg_cov_PQ = mean(cov_PQ)
@@ -88,9 +90,6 @@ fallback_plot = function(data, y, input) {
 
   if (!is.null(colorval) & is.null(line)) {
     output = ggplot(newdat, aes_string(x = "size", y = y, color = colorval)) + add
-  }
-  if (is.null(colorval) & is.null(line)) {
-    output = ggplot(newdat, aes_string(x = "size", y = y)) + add
   }
   if (is.null(colorval) & is.null(line)) {
     output = ggplot(newdat, aes_string(x = "size", y = y)) + add
@@ -128,6 +127,8 @@ specification_factory = function(atom, view_name, download_name, plot_name) {
                 # helpText("Select variables for plotting:"),
                 selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
                 selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
+                selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
+                selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
                 selectInput(ns("target"), "Target Quantity:", choices = c("Risk", "Expected Risk", "Proxy Quantity"), selected = "Risk"),
                 selectInput(ns("group"), "Group By:", choices = choices, choices[1L]),
                 selectInput(ns("color"), "Color:", choices = choices, choices[2L]),
@@ -161,7 +162,7 @@ plotter_factory = function(atom) {
 
 
     data = data[
-      data[[atom]] == input$atom & size >= min_size & size <= max_size,
+      data[[atom]] == input$atom & size >= min_size & size <= max_size & measure %in% translate_losses(input$loss_regr, input$loss_classif),
       list(cov = mean(get(paste0("cov_", target)))),
       by = by_vars
     ]

@@ -60,8 +60,9 @@ ci_aggr = ci[, .(
   bias = mean(estimate - R),
   ER = if (uniqueN(ER) == 1) unique(ER) else stop(),
   R_sd = sd(R),
-  estimate_sd = sd(estimate)
-), by = c("task", "learner", "size", "measure")]
+  estimate_sd = sd(estimate),
+  task_type = task_type
+), by = c("task", "learner", "size", "method",  "measure")]
 ```
 
 ```{r}

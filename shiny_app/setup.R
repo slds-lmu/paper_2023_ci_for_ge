@@ -165,3 +165,24 @@ CHEAP_METHODS = c(
   "632plus_100",
   "ts_bootstrap"
 )
+
+LOSSES = list(
+  regr =  c("Squared", "Absolute", "Perc. Sq.", "Std. Sq."),
+  classif = c("Zero-One", "Brier", "Log-Loss")
+)
+
+translate_loss = function(loss) {
+  switch(loss,
+    "Squared" = "se",
+    "Absolute" = "ae",
+    "Perc. Sq." = "percentual_se",
+    "Std. Sq." = "standardized_se",
+    "Zero-One" = "zero_one",
+    "Brier" = "bbrier",
+    "Log-Loss" = "logloss"
+  )
+}
+
+translate_losses = function(...) {
+  sapply(list(...), translate_loss)
+}

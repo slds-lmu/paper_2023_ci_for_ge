@@ -86,7 +86,7 @@ plotPage = fluidPage(
     tabsetPanel(
       tabPanel("Size x Coverage Plots", fluidPage(
         tabsetPanel(
-          aggregated_Sx_Cplot_ui("SxC_aggr"),
+          specifications_aggregated("SxC_aggr"),
           specifications_methodplot("SxC_method"),
           specifications_learnerplot("SxC_learner"),
           specifications_taskplot("SxC_task")
