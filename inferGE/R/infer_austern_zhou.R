@@ -1,12 +1,13 @@
 #' @export
-infer_austern_zhou = function(x, y, alpha = 0.05, ...) {
+infer_austern_zhou = function(x, y, alpha = 0.05, correct = TRUE, ...) {
+  assert_flag(correct)
   assert_alpha(alpha)
   UseMethod("infer_austern_zhou")
 }
 
 
 #' @export
-infer_austern_zhou.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL, ...) { #nolint
+infer_austern_zhou.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL, correct = TRUE, ...) { #nolint
   if (is.null(loss_fn)) loss_fn = default_loss_fn(x$task_type)
 
   assert_class(x$resampling, "ResamplingAusternZhou")
@@ -22,11 +23,11 @@ infer_austern_zhou.ResampleResult = function(x, y, alpha = 0.05, loss_fn = NULL,
   loss_table_var = calculate_loss(x$predictions("test"), loss_fn, task = x$task, resampling = x$resampling)
   loss_table_est = calculate_loss(y$predictions("test"), loss_fn, task = y$task, resampling = y$resampling)
 
-  infer_austern_zhou(x = loss_table_var, y = loss_table_est, alpha = alpha, loss = names(loss_fn), resampling = x$resampling)
+  infer_austern_zhou(x = loss_table_var, y = loss_table_est, alpha = alpha, loss = names(loss_fn), resampling = x$resampling, correct = correct)
 }
 
 #' @export
-infer_austern_zhou.loss_table = function(x, y, alpha = 0.05, loss, resampling) { # nolint
+infer_austern_zhou.loss_table = function(x, y, alpha = 0.05, loss, resampling, correct = TRUE) { # nolint
   assert_string(loss)
   assert_choice(loss, names(x))
   folds = resampling$param_set$values$folds
@@ -48,7 +49,12 @@ infer_austern_zhou.loss_table = function(x, y, alpha = 0.05, loss, resampling) {
   mu_half_repls = mus[-1, loss]
 
   # formula (27)
-  s2_cv = n / 2 * sum((mu_half - mu_half_repls)^2)
+  if (correct) {
+    s2_cv = n / 4 * sum((mu_half - mu_half_repls)^2)
+  } else {
+    s2_cv = n / 2 * sum((mu_half - mu_half_repls)^2)
+  }
+  
 
   z = qnorm(1 - alpha / 2)
 
@@ -61,7 +67,8 @@ infer_austern_zhou.loss_table = function(x, y, alpha = 0.05, loss, resampling) {
     info = list(list(
       mu_half = mu_half,
       mu_half_repls = mu_half_repls,
-      s2_cv = s2_cv
+      s2_cv = s2_cv,
+      correct = correct
     ))
   )
 }

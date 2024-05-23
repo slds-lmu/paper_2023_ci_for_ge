@@ -30,7 +30,7 @@ f = function(i) {
       res_cv = rsmp("cv", folds = 5L)
       rr_az_lm = resample(task, lrn("regr.lm"), res_az)
       rr_cv_lm = resample(task, lrn("regr.lm"), res_cv)
-      ci_az_lm = infer_austern_zhou(rr_az_lm, rr_cv_lm)
+      ci_az_lm = infer_austern_zhou(rr_az_lm, rr_cv_lm, correct = FALSE)
       sqrt(ci_az_lm$info[[1L]]$s2_cv / n)
     })
   

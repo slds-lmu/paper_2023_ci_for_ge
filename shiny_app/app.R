@@ -219,7 +219,7 @@ server = function(input, output, session) {
     output$fallbackplot = renderPlotly({
       clicker = button_clicked()
       y = input$y
-      g = fallback_plot(ci_aggr, y = y, input)
+      g = fallback_plot(ci_aggr, input)
       makeplot(clicker, "VIEW_fallback", g)
     })
 
@@ -230,7 +230,7 @@ server = function(input, output, session) {
       },
       content = function(file) {
         y = input$y
-        g = fallback_plot(ci_aggr, y = y, input)
+        g = fallback_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }

@@ -19,13 +19,14 @@ specifications_aggregated = function(id) {
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
               selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
-              selectInput(ns("y"), "Y-Axis Variable:", choices = c("avg_cov_R", "avg_cov_ER", "avg_cov_PQ", "all")),
+              selectInput(ns("y"), "Target:", choices = c("Risk", "Expected Risk", "Proxy Quantity", "all")),
               selectInput(ns("sep_group"), "Separately show:", choices = c("task", "learner", "none")),
               pickerInput(ns("method"), "Method:",
-                choices = levels(as.factor(as.data.frame(ci_aggr)$method)),
+                choices = METHODS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = levels(as.factor(as.data.frame(ci_aggr)$method))[1]),
+                METHODS[1]
+              ),
               br(),
               actionButton("viewPlot_fallback", "View Plot"),
               downloadButton(ns("downloadPlot_fallback"), "Download Plot")
@@ -45,7 +46,14 @@ specifications_aggregated = function(id) {
 
 
 
-fallback_plot = function(data, y, input) {
+fallback_plot = function(data, input) {
+  y = switch(input$y,
+    "Risk" = "avg_cov_R",
+    "Expected Risk" = "avg_cov_ER",
+    "Proxy Quantity" = "avg_cov_PQ",
+    "all" = "all"
+  )
+
   line = NULL
   colorval = NULL
   if (input$sep_group != "none") {
@@ -69,7 +77,7 @@ fallback_plot = function(data, y, input) {
 
   newdat = data[method %in% input$method &
     size >= min_size & size <= max_size & measure %in% translate_losses(input$loss_regr, input$loss_classif),
-  list(avg_cov_R = mean(cov_R),
+    list(avg_cov_R = mean(cov_R),
     avg_cov_ER = mean(cov_ER),
     avg_cov_PQ = mean(cov_PQ)
   ), by = vec]
@@ -109,7 +117,6 @@ specification_factory = function(atom, view_name, download_name, plot_name) {
   stopifnot(atom %in% c("learner", "method", "task"))
   choices = c("learner", "method", "task", "none")
   choices = choices[choices != atom]
-
 
   atom_choices = ATOM_CHOICES[[atom]]
 
@@ -177,12 +184,14 @@ plotter_factory = function(atom) {
       p = p + facet_wrap(as.formula(paste0("~", input$group)), scales = "free_x")
     }
     p = if (min_size == max_size) {
-      p + geom_point(aes(x = task, y = cov))
+      p + geom_point(aes(y = task, x = cov, color = NULL)) + 
+        geom_vline(xintercept = 0.95, color = "red")
+        
     } else {
-      p + geom_line()
+      p + geom_line() +
+        geom_hline(yintercept = 0.95, color = "red")
     }
     p = p +
-      geom_hline(yintercept = 0.95, color = "red") +
       labs(
         y = paste0("Coverage for ", input$target),
         x = "Dataset Size"
