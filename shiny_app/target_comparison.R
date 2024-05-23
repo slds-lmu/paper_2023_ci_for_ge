@@ -60,6 +60,7 @@ make_target_comparison_plot = function(data, input) {
   ggplot(data, aes(x = size, y = coverage, color = target)) +
     facet_wrap(vars(learner)) +
     geom_hline(color = "red", yintercept = 0.95) +
+    # geom_boxplot() + 
     ylim(NA, 1) +
     geom_line()
 }

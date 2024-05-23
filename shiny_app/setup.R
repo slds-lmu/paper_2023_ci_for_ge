@@ -1,12 +1,10 @@
-ci_aggr = readRDS(here("results", "ci_aggr_small.rds"))
+ci_aggr_orig = readRDS(here("results", "ci_aggr_small.rds"))
 
-ci_aggr = ci_aggr[task != "chen_10_null", ]
+ci_aggr = ci_aggr_orig[task != "chen_10_null", ]
 ci_aggr[, let(task = droplevels(task))]
 
-ci_aggr_null = ci_aggr[task == "chen_10_null", ]
-ci_aggr_null[, let(task = droplevels(task))]
-
-
+ci_aggr_null = ci_aggr_orig[task == "chen_10_null", ]
+ci_aggr_null$task = NULL
 
 capitalize = function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
@@ -137,3 +135,5 @@ ATOM_CHOICES = list(
   task = TASKS,
   method = METHODS
 )
+
+TASK_OVERVIEW = data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]

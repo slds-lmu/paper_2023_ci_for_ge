@@ -13,6 +13,8 @@ source("plot_specifications.R")
 source("Size_x_Coverage.R")
 source("target_comparison.R")
 source("width_vs_coverage.R")
+source("chen_10_null.R")
+source("under_vs_over.R")
 source("cis_for_cis.R")
 
 ui = fluidPage(
@@ -29,6 +31,7 @@ ui = fluidPage(
       actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
       actionButton("viewDataSheet", "View Parameter Data"),
+      actionButton("viewTaskOverview", "Dataset Overview"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
@@ -79,6 +82,15 @@ dataPage2 = fluidPage(
   ))
 )
 
+dataTaskOverview = fluidPage(
+  titlePanel("Task Overview"),
+  mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("task_overview")
+  ))
+)
+
 # UI for the plot page
 plotPage = fluidPage(
   titlePanel("Plot View"),
@@ -98,8 +110,14 @@ plotPage = fluidPage(
       tabPanel("Width vs. Coverage", fluidPage(
         specification_width_vs_coverage("width_vs_coverage")
       )),
+      tabPanel("Under vs. Over", fluidPage(
+        specification_under_vs_over("under_vs_over")
+      )),
       tabPanel("CIs for CI Coverage", fluidPage(
         specification_cis_for_cis("cis_for_cis")
+      )),
+      tabPanel("Chen 10 Null", fluidPage(
+        specification_chen_10_null("chen_10_null")
       )),
       tabPanel("Austern & Zhou", fluidPage()),
       specifications_download("downloadNS")
@@ -131,6 +149,12 @@ server = function(input, output, session) {
     })
   })
 
+  observeEvent(input$viewTaskOverview, {
+    output$pageContent = renderUI({
+      dataTaskOverview
+    })
+  })
+
   observeEvent(input$viewPlot, {
     output$pageContent = renderUI({
       plotPage
@@ -144,6 +168,11 @@ server = function(input, output, session) {
   )
 
   output$data_sheet = DT::renderDataTable(ci_aggr,
+    options = list(scrollX = TRUE),
+    rownames = FALSE
+  )
+
+  output$task_overview = DT::renderDataTable(TASK_OVERVIEW,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
@@ -179,8 +208,16 @@ server = function(input, output, session) {
     button_clicked("VIEW_width_vs_coverage")
   })
 
+  observeEvent(input$Vunder_vs_over, {
+    button_clicked("VIEW_under_vs_over")
+  })
+
   observeEvent(input$Vcis_for_cis, {
     button_clicked("VIEW_cis_for_cis")
+  })
+
+  observeEvent(input$Vchen_10_null, {
+    button_clicked("VIEW_chen_10_null")
   })
 
   observeEvent(input$Vtask, {
@@ -332,6 +369,30 @@ server = function(input, output, session) {
   }, "width_vs_coverage")
 
   callModule(function(input, output, session) {
+    output$Punder_vs_over = renderPlotly({
+      clicker = button_clicked()
+      g = make_under_vs_over_plot(ci_aggr, input)
+      makeplot(clicker, "VIEW_under_vs_over", g)
+    })
+
+    output$Dunder_vs_over = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_under_vs_over_plot(ci_aggr, input)
+        print(addon_applied)
+        print(global_units)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = global_code))
+        }
+        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+      }
+    )
+  }, "under_vs_over")
+
+
+  callModule(function(input, output, session) {
     output$Pcis_for_cis = renderPlotly({
       clicker = button_clicked()
       g = make_cis_for_cis_plot(ci_aggr, input)
@@ -354,8 +415,28 @@ server = function(input, output, session) {
     )
   }, "cis_for_cis")
 
+  callModule(function(input, output, session) {
+    output$Pchen_10_null = renderPlotly({
+      clicker = button_clicked()
+      g = make_chen_10_null_plot(ci_aggr_null, input)
+      makeplot(clicker, "VIEW_chen_10_null", g)
+    })
 
-
+    output$Dchen_10_null = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_chen_10_null_plot(ci_aggr_null, input)
+        print(addon_applied)
+        print(global_units)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = global_code))
+        }
+        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+      }
+    )
+  }, "chen_10_null")
 
   callModule(function(input, output, session) {
     output$Ptask = renderPlotly({

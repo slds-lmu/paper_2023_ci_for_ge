@@ -1,0 +1,19 @@
+data, task_type, p, openml_id, majority_ratio, dataset_type
+higgs, regr, 28, 45570, , physics-simulation
+bates_classif_20, classif, 20 , 45654, 50.0%, artificial
+bates_classif_100, classif, 100, 45668, 50.0%, artificial
+bates_regr_20, regr, 20 , 45655, ,artificial
+bates_regr_100, regr, 100, 45667, ,artificial
+friedman1, regr, 10, 45666, ,artificial
+colon, classif, 62, 45665, 50.0% , cov-estimate
+breast, classif, 77, 45669, 50.0%, cov-estimate
+prostate, classif, 102, 45672, 50.0%, cov-estimate
+chen_10_null, regr, 60, 45670, ,cov-estimate
+chen_10, regr, 60, 45671, ,cov-estimate
+simulated_adult, classif, 14 , 45689, 75.1%, density-estimate
+simulated_covertype, classif, 10, 45704, 50.0%, density-estimate
+simulated_electricity, classif, 8, 45693, 57.6%, density-estimate
+simulated_diamonds, regr, 9, 45692, ,density-estimate
+simulated_physiochemical_protein, regr, 9, 45694, , density-estimate
+simulated_video_transcoding, regr, 18, 45696, , density-estimate
+simulated_sgemm_gpu_kernel_performance, regr, 14, 45695, , density-estimate
