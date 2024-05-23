@@ -36,12 +36,19 @@ specifications_aggregated = function(id) {
         mainPanel(
           div(
             class = "plot-container",
-            # uiOutput(ns("dynamicPlotContainer"))
+            numericInput(
+              inputId = ns("height_input"),
+              label = "Add to display height:",
+              value = 400,    # Default value
+              min = NA,     # Minimum value (optional)
+              max = NA,     # Maximum value (optional)
+              step = 50     # Step size (optional)
+            ),
             plotlyOutput(ns("fallbackplot"))
+          )
           )
         )
     ))
-  )
 }
 
 

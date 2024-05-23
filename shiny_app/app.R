@@ -259,6 +259,10 @@ server = function(input, output, session) {
       g = fallback_plot(ci_aggr, input)
       makeplot(clicker, "VIEW_fallback", g)
     })
+    observe({
+      plotlyProxy("fallbackplot", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
 
 
     output$downloadPlot_fallback = downloadHandler(
