@@ -1,5 +1,5 @@
-specification_cis_for_cis <- function(id) {
-  ns <- NS(id)
+specification_cis_for_cis = function(id) {
+  ns = NS(id)
   tabPanel(
     "CIs for CIs",
     div(
@@ -37,15 +37,15 @@ specification_cis_for_cis <- function(id) {
 }
 
 
-make_cis_for_cis_plot <- function(data, input) {
-  data <- data[
+make_cis_for_cis_plot = function(data, input) {
+  data = data[
     learner == input$learner &
       task == input$task &
       size == input$size &
       method %in% input$methods,
   ]
   data[, let(method = droplevels(method))]
-  cov_var <- if (identical(input$target, "Risk")) "cov_R" else "cov_ER"
+  cov_var = if (identical(input$target, "Risk")) "cov_R" else "cov_ER"
   data[, let(
     cov = get(cov_var),
     upper = get(cov_var) + 1.96 * get(paste0(cov_var, "_se")),

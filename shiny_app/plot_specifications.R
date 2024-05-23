@@ -1,7 +1,7 @@
 theme_set(theme_bw())
 
 
-makeplot <- function(clicker, clicked, plot) {
+makeplot = function(clicker, clicked, plot) {
   if (is.null(clicker)) {
     ggplot() +
       theme_minimal()
@@ -15,8 +15,8 @@ makeplot <- function(clicker, clicked, plot) {
   }
 }
 
-specifications_download <- function(id) {
-  ns <- NS(id)
+specifications_download = function(id) {
+  ns = NS(id)
   tabPanel(
     "Download specifications",
     fluidRow(
@@ -47,18 +47,13 @@ specifications_download <- function(id) {
   )
 }
 
-download_vals <- list(" global_units",
-                      " global_width",
-                      " global_height",
-                      " global_code")
+download_vals = list(" global_units",
+  " global_width",
+  " global_height",
+  " global_code")
 
-setNULL <- function(download_vals){
-  for(i in seq_along(download_vals)){
-    assign(download_vals[[i]],NULL,env=.GlobalEnv)
+setNULL = function(download_vals) {
+  for (i in seq_along(download_vals)) {
+    assign(download_vals[[i]], NULL, env = .GlobalEnv)
   }
 }
-
-
-
-
-

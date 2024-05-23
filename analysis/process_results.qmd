@@ -28,12 +28,10 @@ ci = ci[!is.na(estimate), ]
 For now, only look at a subset:
 
 ```{r}
-ci = ci[measure %in% c("zero_one", "se")]
-
 ci[, let(
   task = as.factor(task),
   learner = as.factor(learner),
-  measure = NULL,
+  measure = as.factor(measure),
   method = as.factor(method),
   iters = NULL
 )]
@@ -44,7 +42,7 @@ ci[, let(
 ```{r}
 ci[, let(
   ER = mean(R)
-), by = c("task", "learner", "size", "method")]
+), by = c("task", "learner", "size", "method", "measure")]
 
 ci_aggr = ci[, .(
   cov_R = mean(lower <= R & upper >= R),
@@ -63,7 +61,7 @@ ci_aggr = ci[, .(
   ER = if (uniqueN(ER) == 1) unique(ER) else stop(),
   R_sd = sd(R),
   estimate_sd = sd(estimate)
-), by = c("task", "learner", "size", "method")]
+), by = c("task", "learner", "size", "measure")]
 ```
 
 ```{r}

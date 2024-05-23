@@ -1,4 +1,4 @@
-ci_aggr <- readRDS(here("results", "ci_aggr.rds"))
+ci_aggr = readRDS(here("results", "ci_aggr.rds"))
 
 ci_aggr = ci_aggr[task != "chen_10_null", ]
 ci_aggr[, let(task = droplevels(task))]
@@ -6,7 +6,7 @@ ci_aggr[, let(task = droplevels(task))]
 ci_aggr_null = ci_aggr[task == "chen_10_null", ]
 ci_aggr_null[, let(task = droplevels(task))]
 
-ATOM_CHOICES <- list(
+ATOM_CHOICES = list(
   learner = c("linear", "ridge", "ridge_tuned", "ranger", "rpart"),
   task = c(
     "higgs",
@@ -63,11 +63,11 @@ ATOM_CHOICES <- list(
 )
 
 
-capitalize <- function(x) {
+capitalize = function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
 }
 
-translate_target <- function(target) {
+translate_target = function(target) {
   switch(target,
     "Risk" = "R",
     "Expected Risk" = "ER",
@@ -76,7 +76,7 @@ translate_target <- function(target) {
   )
 }
 
-PQ_METHODS <- c(
+PQ_METHODS = c(
   "bayle_5_within",
   "bayle_5_all_pairs",
   "bayle_10_within",
@@ -88,7 +88,7 @@ PQ_METHODS <- c(
 )
 
 
-TASKS <- c(
+TASKS = c(
   "higgs",
   "adult",
   "covertype",
@@ -109,9 +109,9 @@ TASKS <- c(
   "video_transcoding"
 )
 
-LEARNERS <- c("linear", "ridge", "ridge_tuned", "ranger", "rpart")
+LEARNERS = c("linear", "ridge", "ridge_tuned", "ranger", "rpart")
 
-METHODS <- c(
+METHODS = c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",
@@ -144,7 +144,7 @@ METHODS <- c(
   "632plus_1000"
 )
 
-CHEAP_METHODS <- c(
+CHEAP_METHODS = c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",

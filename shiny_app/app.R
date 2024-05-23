@@ -15,10 +15,10 @@ source("target_comparison.R")
 source("width_vs_coverage.R")
 source("cis_for_cis.R")
 
-ui <- fluidPage(
+ui = fluidPage(
   # Add a custom CSS for the banner
   tags$head(
-    tags$style(HTML(paste(readLines("HTMLS/style.html"),collapse="")))
+    tags$style(HTML(paste(readLines("HTMLS/style.html"), collapse = "")))
   ),
   div(
     class = "header-banner",
@@ -52,17 +52,17 @@ ui <- fluidPage(
 
 
 # UI for the explanation page
-explanationPage <- fluidPage(
+explanationPage = fluidPage(
   titlePanel(""),
   mainPanel(
     width = 12,
     hr(""),
-    HTML(paste(readLines("explanation.html"),collapse=""))
+    HTML(paste(readLines("explanation.html"), collapse = ""))
   )
 )
 
 # UI for the data page
-dataPage <- fluidPage(
+dataPage = fluidPage(
   titlePanel("Data"),
   mainPanel(div(
     class = "content",
@@ -70,7 +70,7 @@ dataPage <- fluidPage(
     DT::dataTableOutput("mytable")
   ))
 )
-dataPage2 <- fluidPage(
+dataPage2 = fluidPage(
   titlePanel("Parameter data"),
   mainPanel(div(
     class = "content",
@@ -80,7 +80,7 @@ dataPage2 <- fluidPage(
 )
 
 # UI for the plot page
-plotPage <- fluidPage(
+plotPage = fluidPage(
   titlePanel("Plot View"),
   fluidPage(
     tabsetPanel(
@@ -107,49 +107,49 @@ plotPage <- fluidPage(
   )
 )
 
-server <- function(input, output, session) {
+server = function(input, output, session) {
   # Switch between pages
-  output$pageContent <- renderUI({
+  output$pageContent = renderUI({
     explanationPage
   })
 
   observeEvent(input$viewExplanation, {
-    output$pageContent <- renderUI({
+    output$pageContent = renderUI({
       explanationPage
     })
   })
 
   observeEvent(input$viewData, {
-    output$pageContent <- renderUI({
+    output$pageContent = renderUI({
       dataPage
     })
   })
 
   observeEvent(input$viewDataSheet, {
-    output$pageContent <- renderUI({
+    output$pageContent = renderUI({
       dataPage2
     })
   })
 
   observeEvent(input$viewPlot, {
-    output$pageContent <- renderUI({
+    output$pageContent = renderUI({
       plotPage
     })
   })
 
 
-  output$mytable <- DT::renderDataTable(ci_aggr,
+  output$mytable = DT::renderDataTable(ci_aggr,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
 
-  output$data_sheet <- DT::renderDataTable(ci_aggr,
+  output$data_sheet = DT::renderDataTable(ci_aggr,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
 
 
-  addon_applied <- reactiveVal(NULL)
+  addon_applied = reactiveVal(NULL)
   observeEvent(input$apply, {
     addon_applied(TRUE)
   })
@@ -165,7 +165,7 @@ server <- function(input, output, session) {
   }, "downloadNS")
 
 
-  button_clicked <- reactiveVal(NULL)
+  button_clicked = reactiveVal(NULL)
 
   observeEvent(input$Vlearner, {
     button_clicked("VIEW_learner")
@@ -200,13 +200,13 @@ server <- function(input, output, session) {
 
   callModule(function(input, output, session) {
     observeEvent(input$slider1, {
-      if(input$slider1 >= input$slider2){
+      if (input$slider1 >= input$slider2) {
         updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
       }
     })
-    
+
     observeEvent(input$slider2, {
-      if(input$slider2 <= input$slider1){
+      if (input$slider2 <= input$slider1) {
         updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
       }
     })
@@ -216,23 +216,23 @@ server <- function(input, output, session) {
       }
     })
 
-    output$fallbackplot <- renderPlotly({
-      clicker <- button_clicked()
-      y <- input$y
-      g <- fallback_plot(ci_aggr, y = y, input)
+    output$fallbackplot = renderPlotly({
+      clicker = button_clicked()
+      y = input$y
+      g = fallback_plot(ci_aggr, y = y, input)
       makeplot(clicker, "VIEW_fallback", g)
     })
-  
 
-    output$downloadPlot_fallback <- downloadHandler(
+
+    output$downloadPlot_fallback = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        y <- input$y
-        g <- fallback_plot(ci_aggr, y = y, input)
+        y = input$y
+        g = fallback_plot(ci_aggr, y = y, input)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -240,22 +240,22 @@ server <- function(input, output, session) {
   }, "SxC_aggr")
 
   callModule(function(input, output, session) {
-    output$Pmethod <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_methodplot(ci_aggr, input)
+    output$Pmethod = renderPlotly({
+      clicker = button_clicked()
+      g = make_methodplot(ci_aggr, input)
       makeplot(clicker, "VIEW_method", g)
     })
 
-    output$Dmethod <- downloadHandler(
+    output$Dmethod = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_methodplot(ci_aggr, input)
+        g = make_methodplot(ci_aggr, input)
         print(addon_applied)
         print(global_units)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -263,22 +263,22 @@ server <- function(input, output, session) {
   }, "SxC_method")
 
   callModule(function(input, output, session) {
-    output$Plearner <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_learnerplot(ci_aggr, input)
+    output$Plearner = renderPlotly({
+      clicker = button_clicked()
+      g = make_learnerplot(ci_aggr, input)
       makeplot(clicker, "VIEW_learner", g)
     })
 
-    output$Dlearner <- downloadHandler(
+    output$Dlearner = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_learnerplot(ci_aggr, input)
+        g = make_learnerplot(ci_aggr, input)
         print(addon_applied)
         print(global_units)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -286,22 +286,22 @@ server <- function(input, output, session) {
   }, "SxC_learner")
 
   callModule(function(input, output, session) {
-    output$Ptarget_comparison <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_target_comparison_plot(ci_aggr, input)
+    output$Ptarget_comparison = renderPlotly({
+      clicker = button_clicked()
+      g = make_target_comparison_plot(ci_aggr, input)
       makeplot(clicker, "VIEW_target_comparison", g)
     })
 
-    output$Dtarget_comparison <- downloadHandler(
+    output$Dtarget_comparison = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_target_comparison_plot(ci_aggr, input)
+        g = make_target_comparison_plot(ci_aggr, input)
         print(addon_applied)
         print(global_units)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -309,22 +309,22 @@ server <- function(input, output, session) {
   }, "target_comparison")
 
   callModule(function(input, output, session) {
-    output$Pwidth_vs_coverage <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_width_vs_coverage_plot(ci_aggr, input)
+    output$Pwidth_vs_coverage = renderPlotly({
+      clicker = button_clicked()
+      g = make_width_vs_coverage_plot(ci_aggr, input)
       makeplot(clicker, "VIEW_width_vs_coverage", g)
     })
 
-    output$Dwidth_vs_coverage <- downloadHandler(
+    output$Dwidth_vs_coverage = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_width_vs_coverage_plot(ci_aggr, input)
+        g = make_width_vs_coverage_plot(ci_aggr, input)
         print(addon_applied)
         print(global_units)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -332,22 +332,22 @@ server <- function(input, output, session) {
   }, "width_vs_coverage")
 
   callModule(function(input, output, session) {
-    output$Pcis_for_cis <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_cis_for_cis_plot(ci_aggr, input)
+    output$Pcis_for_cis = renderPlotly({
+      clicker = button_clicked()
+      g = make_cis_for_cis_plot(ci_aggr, input)
       makeplot(clicker, "VIEW_cis_for_cis", g)
     })
 
-    output$Dcis_for_cis <- downloadHandler(
+    output$Dcis_for_cis = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_cis_for_cis_plot(ci_aggr, input)
+        g = make_cis_for_cis_plot(ci_aggr, input)
         print(addon_applied)
         print(global_units)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
@@ -355,21 +355,23 @@ server <- function(input, output, session) {
   }, "cis_for_cis")
 
 
+
+
   callModule(function(input, output, session) {
-    output$Ptask <- renderPlotly({
-      clicker <- button_clicked()
-      g <- make_taskplot(ci_aggr, input)
+    output$Ptask = renderPlotly({
+      clicker = button_clicked()
+      g = make_taskplot(ci_aggr, input)
       makeplot(clicker, "VIEW_task", g)
     })
 
-    output$Dtask <- downloadHandler(
+    output$Dtask = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g <- make_taskplot(ci_aggr, input)
+        g = make_taskplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g <- g + eval(parse(text = global_code))
+          g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
