@@ -35,7 +35,7 @@ final$learner = ifelse(final$learner == "ridge", "ridge_tuned",
 final[startsWith(method, "austern_zhou"), let(
   lower = estimate - ((upper - lower) / 2) / sqrt(2),
   upper = estimate + ((upper - lower) / 2) / sqrt(2),
-  info = mlr3misc::map(info, function(i) c(i, list(correct = TRUE)))
+  info = mlr3misc::map(info, function(i) mlr3misc::insert_named(i, list(correct = TRUE, s2_cv = i$s2_cv / 2)))
 )]
 
 saveRDS(final, here("results", "final.rds"))

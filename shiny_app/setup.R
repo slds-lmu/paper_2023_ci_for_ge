@@ -1,16 +1,16 @@
-ci_aggr_orig = readRDS(here("results", "ci_aggr_small.rds"))
+ci_aggr_orig <- readRDS(here("results", "ci_aggr_small.rds"))
 
-ci_aggr = ci_aggr_orig[task != "chen_10_null", ]
+ci_aggr <- ci_aggr_orig[task != "chen_10_null", ]
 ci_aggr[, let(task = droplevels(task))]
 
-ci_aggr_null = ci_aggr_orig[task == "chen_10_null", ]
-ci_aggr_null$task = NULL
+ci_aggr_null <- ci_aggr_orig[task == "chen_10_null", ]
+ci_aggr_null$task <- NULL
 
-capitalize = function(x) {
+capitalize <- function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
 }
 
-translate_target = function(target) {
+translate_target <- function(target) {
   switch(target,
     "Risk" = "R",
     "Expected Risk" = "ER",
@@ -19,7 +19,7 @@ translate_target = function(target) {
   )
 }
 
-PQ_METHODS = c(
+PQ_METHODS <- c(
   # "bayle_5_within",
   # "bayle_5_all_pairs",
   # "bayle_10_within",
@@ -31,7 +31,7 @@ PQ_METHODS = c(
 )
 
 
-TASKS = c(
+TASKS <- c(
   "higgs",
   "adult",
   "covertype",
@@ -52,9 +52,9 @@ TASKS = c(
   "video_transcoding"
 )
 
-LEARNERS = c("linear", "ridge", "ridge_tuned", "ranger", "rpart")
+LEARNERS <- c("linear", "ridge", "ranger", "rpart")
 
-METHODS = c(
+METHODS <- c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",
@@ -87,7 +87,7 @@ METHODS = c(
   "632plus_1000"
 )
 
-CHEAP_METHODS = c(
+CHEAP_METHODS <- c(
   "holdout_66",
   "holdout_90",
   "corrected_t_10",
@@ -109,12 +109,12 @@ CHEAP_METHODS = c(
   "ts_bootstrap"
 )
 
-LOSSES = list(
-  regr =  c("Squared", "Absolute", "Perc. Sq.", "Std. Sq."),
+LOSSES <- list(
+  regr = c("Squared", "Absolute", "Perc. Sq.", "Std. Sq."),
   classif = c("Zero-One", "Brier", "Log-Loss")
 )
 
-translate_loss = function(loss) {
+translate_loss <- function(loss) {
   switch(loss,
     "Squared" = "se",
     "Absolute" = "ae",
@@ -126,14 +126,14 @@ translate_loss = function(loss) {
   )
 }
 
-translate_losses = function(...) {
+translate_losses <- function(...) {
   sapply(list(...), translate_loss)
 }
 
-ATOM_CHOICES = list(
+ATOM_CHOICES <- list(
   learner = LEARNERS,
   task = TASKS,
   method = METHODS
 )
 
-TASK_OVERVIEW = data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]
+TASK_OVERVIEW <- data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]

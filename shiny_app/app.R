@@ -14,6 +14,7 @@ source("Size_x_Coverage.R")
 source("target_comparison.R")
 source("width_vs_coverage.R")
 source("chen_10_null.R")
+source("learner_performance.R")
 source("under_vs_over.R")
 source("cis_for_cis.R")
 
@@ -119,6 +120,9 @@ plotPage = fluidPage(
       tabPanel("Chen 10 Null", fluidPage(
         specification_chen_10_null("chen_10_null")
       )),
+      tabPanel("Learner Performance", fluidPage(
+        specification_learner_performance("learner_performance")
+      )),
       tabPanel("Austern & Zhou", fluidPage()),
       specifications_download("downloadNS")
     )
@@ -199,6 +203,11 @@ server = function(input, output, session) {
   observeEvent(input$Vlearner, {
     button_clicked("VIEW_learner")
   })
+
+  observeEvent(input$Vlearner_performance, {
+    button_clicked("VIEW_learner_performance")
+  })
+
 
   observeEvent(input$Vtarget_comparison, {
     button_clicked("VIEW_target_comparison")
@@ -297,8 +306,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_methodplot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -324,8 +331,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_learnerplot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -347,8 +352,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_target_comparison_plot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -370,8 +373,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_width_vs_coverage_plot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -393,8 +394,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_under_vs_over_plot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -417,8 +416,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_cis_for_cis_plot(ci_aggr, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
@@ -426,6 +423,27 @@ server = function(input, output, session) {
       }
     )
   }, "cis_for_cis")
+
+  callModule(function(input, output, session) {
+    output$Plearner_performance = renderPlotly({
+      clicker = button_clicked()
+      g = make_learner_performance_plot(ci_aggr, input)
+      makeplot(clicker, "VIEW_learner_performance", g)
+    })
+
+    output$Dlearner_performance = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_learner_performance_plot(ci_aggr, input)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = global_code))
+        }
+        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+      }
+    )
+  }, "learner_performance")
 
   callModule(function(input, output, session) {
     output$Pchen_10_null = renderPlotly({
@@ -440,8 +458,6 @@ server = function(input, output, session) {
       },
       content = function(file) {
         g = make_chen_10_null_plot(ci_aggr_null, input)
-        print(addon_applied)
-        print(global_units)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
