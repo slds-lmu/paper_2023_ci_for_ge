@@ -286,6 +286,10 @@ server = function(input, output, session) {
       g = make_methodplot(ci_aggr, input)
       makeplot(clicker, "VIEW_method", g)
     })
+    observe({
+      plotlyProxy("Pmethod", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
 
     output$Dmethod = downloadHandler(
       filename = function() {
@@ -308,6 +312,10 @@ server = function(input, output, session) {
       clicker = button_clicked()
       g = make_learnerplot(ci_aggr, input)
       makeplot(clicker, "VIEW_learner", g)
+    })
+    observe({
+      plotlyProxy("Plearner", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
     output$Dlearner = downloadHandler(
@@ -447,6 +455,11 @@ server = function(input, output, session) {
       clicker = button_clicked()
       g = make_taskplot(ci_aggr, input)
       makeplot(clicker, "VIEW_task", g)
+    })
+    
+    observe({
+      plotlyProxy("Ptask", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
     output$Dtask = downloadHandler(

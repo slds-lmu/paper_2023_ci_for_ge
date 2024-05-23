@@ -156,6 +156,14 @@ specification_factory = function(atom, view_name, download_name, plot_name) {
           mainPanel(
             div(
               class = "plot-container",
+              numericInput(
+                inputId = ns("height_input"),
+                label = "Add to display height:",
+                value = 400,    # Default value
+                min = NA,     # Minimum value (optional)
+                max = NA,     # Maximum value (optional)
+                step = 50     # Step size (optional)
+              ),
               plotlyOutput(ns(plot_name)) ## we can define height + width as needed!
               # also as a function of inputs!
             )
