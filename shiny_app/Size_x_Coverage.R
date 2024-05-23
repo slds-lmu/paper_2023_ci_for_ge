@@ -66,8 +66,8 @@ fallback_plot = function(data, input) {
   min_size = as.integer(input$min_size)
   max_size = as.integer(input$max_size)
 
-  min_y = as.integer(input$slider1)
-  max_y = as.integer(input$slider2)
+  min_y = input$slider1
+  max_y = input$slider2
 
   vec = c("learner", "task", "method", "size")
   if (!is.null(aggregate)) {
