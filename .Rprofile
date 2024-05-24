@@ -19,7 +19,7 @@ if (dir.exists("/gscratch/sfische6/mlr3oml_cache")) {
 # - PROXY_PATH contains the results of ./experiments/proxy.R
 #   These are the proxy quantities, e.g. for bayle, which are also used
 #   to evaluate some of the confidence interval methods.
-SAVE_PATH <- = (dir.exists("/gscratch/sfische6/benchmarks/ci_for_ge")) {
+SAVE_PATH = if (dir.exists("/gscratch/sfische6/benchmarks/ci_for_ge")) {
   "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
 
@@ -30,7 +30,6 @@ Sys.setenv(TRUTH_PATH = paste0(SAVE_PATH, sep = "_", "truth"))
 Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "error"))
 Sys.setenv(MERGE_PATH = paste0(SAVE_PATH, sep = "_", "merge"))
 Sys.setenv(FINAL_PATH = paste0(SAVE_PATH, sep = "_", "final"))
-
 
 Sys.setenv(VAR_PATH_AZ = paste0(SAVE_PATH, sep = "_", "var_az"))
 
