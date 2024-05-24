@@ -46,14 +46,3 @@ specifications_download = function(id) {
     )
   )
 }
-
-download_vals = list(" global_units",
-  " global_width",
-  " global_height",
-  " global_code")
-
-setNULL = function(download_vals) {
-  for (i in seq_along(download_vals)) {
-    assign(download_vals[[i]], NULL, env = .GlobalEnv)
-  }
-}

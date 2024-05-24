@@ -17,6 +17,8 @@ source("chen_10_null.R")
 source("inducer_performance.R")
 source("under_vs_over.R")
 source("cis_for_cis.R")
+source("global_options.R")
+
 
 ui = fluidPage(
   # Add a custom CSS for the banner
@@ -25,14 +27,14 @@ ui = fluidPage(
   ),
   div(
     class = "header-banner",
-    h1(class = "title", "CIs for the GE Empirical Results"),
-    div(class = "subtitle", "Quick description of what's happening..."),
+    h1(class = "title", "CIs for the GE: Empirical Results of the Benchmark Study"),
+    div(class = "subtitle", 
+        "A supplement to", tags$em("“Constructing confidence intervals for “the” Generalization
+Error”")),
     div(
       class = "buttons",
       actionButton("viewPlot", "Plots"),
-      actionButton("viewData", "View Data"),
-      actionButton("viewDataSheet", "View Parameter Data"),
-      actionButton("viewDataOverview", "Datasets"),
+      actionButton("viewData", "Data"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
@@ -57,6 +59,7 @@ ui = fluidPage(
 
 # UI for the explanation page
 explanationPage = fluidPage(
+  withMathJax(),
   titlePanel(""),
   mainPanel(
     width = 12,
@@ -67,37 +70,41 @@ explanationPage = fluidPage(
 
 # UI for the data page
 dataPage = fluidPage(
+  withMathJax(),
   titlePanel("Data"),
-  mainPanel(div(
-    class = "content",
-    width = 12,
-    DT::dataTableOutput("mytable")
-  ))
-)
-dataPage2 = fluidPage(
-  titlePanel("Parameter data"),
-  mainPanel(div(
-    class = "content",
-    width = 12,
-    DT::dataTableOutput("data_sheet")
-  ))
-)
-
-dataDataOverview = fluidPage(
-  titlePanel("Data Overview"),
-  mainPanel(div(
+  fluidRow(hr(""),
+  HTML(paste(readLines("HTMLS/data_explanation.html"), collapse = ""))),
+  tabsetPanel(
+  tabPanel("Data Overview",
+    mainPanel(div(
     class = "content",
     width = 12,
     DT::dataTableOutput("data_overview")
-  ))
+  ))),
+    tabPanel("All Data",
+      mainPanel(div(
+      class = "content",
+      width = 12,
+      DT::dataTableOutput("mytable")
+    ))),
+  tabPanel("Parameter data",
+           mainPanel(div(
+             class = "content",
+             width = 12,
+             DT::dataTableOutput("data_sheet")
+           )))
+  )
 )
 
 # UI for the plot page
 plotPage = fluidPage(
   titlePanel("Plot View"),
   fluidPage(
+    withMathJax(),
     tabsetPanel(
+      specifications_DataOps("data_opsNS"),
       tabPanel("Size vs. Coverage Error", fluidPage(
+        withMathJax(),
         tabsetPanel(
           # specifications_aggregated("SxC_aggr"),
           specifications_methodplot("SxC_method"),
@@ -106,31 +113,38 @@ plotPage = fluidPage(
         )
       )),
       tabPanel("Target Comparison", fluidPage(
+        withMathJax(),
         specification_target_comparsion("target_comparison")
       )),
       tabPanel("Width vs. Coverage Error", fluidPage(
+        withMathJax(),
         specification_width_vs_coverage("width_vs_coverage")
       )),
       tabPanel("Under vs. Over", fluidPage(
+        withMathJax(),
         specification_under_vs_over("under_vs_over")
       )),
       tabPanel("CIs for CI Coverage", fluidPage(
+        withMathJax(),
         specification_cis_for_cis("cis_for_cis")
       )),
       tabPanel("Chen 10 Null", fluidPage(
+        withMathJax(),
         specification_chen_10_null("chen_10_null")
       )),
       tabPanel("Inducer Performance", fluidPage(
+        withMathJax(),
         specification_inducer_performance("inducer_performance")
       )),
-      tabPanel("Austern & Zhou", fluidPage()),
+      tabPanel("Austern & Zhou", fluidPage(
+        withMathJax(),
+      )),
       specifications_download("downloadNS")
     )
   )
 )
 
 server = function(input, output, session) {
-  # Switch between pages
   output$pageContent = renderUI({
     explanationPage
   })
@@ -187,16 +201,8 @@ server = function(input, output, session) {
   observeEvent(input$apply, {
     addon_applied(TRUE)
   })
-
-  setNULL(download_vals)
-  callModule(function(input, output, session) {
-    observe({
-      global_units <<- input$units
-      global_width <<- input$width
-      global_height <<- input$height
-      global_code <<- input$code
-    })
-  }, "downloadNS")
+  
+  download_global <- inputModuleServer("downloadNS",vals=list("units","width","height","code"))
 
 
   button_clicked = reactiveVal(NULL)
@@ -284,9 +290,9 @@ server = function(input, output, session) {
         y = input$y
         g = fallback_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "SxC_aggr")
@@ -320,9 +326,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_methodplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "SxC_method")
@@ -357,9 +363,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_inducerplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "SxC_inducer")
@@ -379,9 +385,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_target_comparison_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "target_comparison")
@@ -400,9 +406,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_width_vs_coverage_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "width_vs_coverage")
@@ -421,9 +427,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_under_vs_over_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "under_vs_over")
@@ -443,9 +449,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_cis_for_cis_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "cis_for_cis")
@@ -464,9 +470,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_inducer_performance_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "inducer_performance")
@@ -485,9 +491,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_chen_10_null_plot(ci_aggr_null, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "chen_10_null")
@@ -524,9 +530,9 @@ server = function(input, output, session) {
       content = function(file) {
         g = make_dgpplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
-          g = g + eval(parse(text = global_code))
+          g = g + eval(parse(text = download_global$code()))
         }
-        ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
       }
     )
   }, "SxC_dgp")
