@@ -21,7 +21,7 @@ specifications_DataOps = function(id) {
       column(
         6,
         fluidRow(
-          selectInput(ns("idk"), "IDK:", choices = c("a", "b", "c")),
+          pickerInput(ns("tasks_global"), "Selection of DGPs:", choices = DGPS),
         )
       ),
       column(

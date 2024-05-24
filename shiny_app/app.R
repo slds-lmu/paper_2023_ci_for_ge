@@ -203,6 +203,7 @@ server = function(input, output, session) {
   })
   
   download_global <- inputModuleServer("downloadNS",vals=list("units","width","height","code"))
+  globalOps <- inputModuleServer("data_opsNS",vals=list("tasks_global")) #Add new global choices!!!
 
 
   button_clicked = reactiveVal(NULL)
@@ -248,8 +249,7 @@ server = function(input, output, session) {
     button_clicked("VIEW_fallback")
   })
 
-
-
+  
 
   callModule(function(input, output, session) {
     observeEvent(input$slider1, {
@@ -298,6 +298,7 @@ server = function(input, output, session) {
   }, "SxC_aggr")
 
   callModule(function(input, output, session) {
+    
     observeEvent(input$slider1, {
       if (input$slider1 >= input$slider2) {
         updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
@@ -309,6 +310,7 @@ server = function(input, output, session) {
         updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
       }
     })
+    
     output$Pmethod = renderPlotly({
       clicker = button_clicked()
       g = make_methodplot(ci_aggr, input)
@@ -393,6 +395,9 @@ server = function(input, output, session) {
   }, "target_comparison")
 
   callModule(function(input, output, session) {
+    observe({
+      updatePickerInput(session, "dgps",choices=globalOps$tasks_global())
+    })
     output$Pwidth_vs_coverage = renderPlotly({
       clicker = button_clicked()
       g = make_width_vs_coverage_plot(ci_aggr, input)
