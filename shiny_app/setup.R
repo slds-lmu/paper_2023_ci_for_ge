@@ -1,10 +1,22 @@
 ci_aggr_orig <- readRDS(here("results", "ci_aggr_small.rds"))
+ci_aggr_orig$inducer = mlr3misc::map_chr(ci_aggr_orig$learner, function(l) {
+  switch(as.character(l),
+    "linear" = "lm_or_logreg",
+    "rpart" = "decision_tree",
+    "ranger" = "random_forest",
+    "ridge" = "ridge_lm_or_logreg"
+  )
+  })
+ci_aggr_orig$learner = NULL
+ci_aggr_orig$dgp = ci_aggr_orig$task
+ci_aggr_orig$task = NULL
 
-ci_aggr <- ci_aggr_orig[task != "chen_10_null", ]
-ci_aggr[, let(task = droplevels(task))]
 
-ci_aggr_null <- ci_aggr_orig[task == "chen_10_null", ]
-ci_aggr_null$task <- NULL
+ci_aggr <- ci_aggr_orig[dgp != "chen_10_null", ]
+ci_aggr[, let(dgp = droplevels(dgp))]
+
+ci_aggr_null <- ci_aggr_orig[dgp == "chen_10_null", ]
+ci_aggr_null$dgp <- NULL
 
 capitalize <- function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
@@ -31,7 +43,7 @@ PQ_METHODS <- c(
 )
 
 
-TASKS <- c(
+DGPS <- c(
   "higgs",
   "adult",
   "covertype",
@@ -52,7 +64,7 @@ TASKS <- c(
   "video_transcoding"
 )
 
-LEARNERS <- c("linear", "ridge", "ranger", "rpart")
+INDUCERS <- c("lm_or_logreg", "ridge_lm_or_logreg", "random_forest", "decision_tree")
 
 METHODS <- c(
   "holdout_66",
@@ -131,9 +143,9 @@ translate_losses <- function(...) {
 }
 
 ATOM_CHOICES <- list(
-  learner = LEARNERS,
-  task = TASKS,
+  inducer = INDUCERS,
+  dgp = DGPS,
   method = METHODS
 )
 
-TASK_OVERVIEW <- data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]
+DATA_OVERVIEW <- data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]

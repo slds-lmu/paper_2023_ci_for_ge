@@ -1,4 +1,4 @@
-data, task_type, p, openml_id, majority_ratio, dataset_type
+dgp, task_type, p, openml_id, majority_ratio, dataset_type
 higgs, regr, 28, 45570, , physics-simulation
 bates_classif_20, classif, 20 , 45654, 50.0%, artificial
 bates_classif_100, classif, 100, 45668, 50.0%, artificial

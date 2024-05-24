@@ -10,10 +10,10 @@ specification_cis_for_cis = function(id) {
             column(
               6,
               selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
-              selectInput(ns("learner"), "Learner:", choices = LEARNERS),
+              selectInput(ns("inducer"), "inducer:", choices = INDUCERS),
               selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
-              selectInput(ns("task"), "Task:", choices = TASKS),
+              selectInput(ns("dgp"), "DGPs:", choices = DGPS),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
@@ -41,9 +41,9 @@ specification_cis_for_cis = function(id) {
 
 make_cis_for_cis_plot = function(data, input) {
   data = data[
-    learner == input$learner &
+    inducer == input$inducer &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
-      task == input$task &
+      dgp == input$dgp &
       size == input$size &
       method %in% input$methods,
   ]

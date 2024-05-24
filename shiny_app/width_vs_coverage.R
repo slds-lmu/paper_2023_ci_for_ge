@@ -3,9 +3,11 @@
 specification_width_vs_coverage = function(id) {
   ns = NS(id)
   tabPanel(
-    "Width vs Coverage",
+    "Width vs Coverage Error",
     div(
       class = "content",
+      fluidRow(column(12,
+        HTML(paste(readLines("HTMLS/width_vs_coverage.html"), collapse = "")))),
       sidebarLayout(
         sidebarPanel(
           fluidRow(
@@ -14,22 +16,22 @@ specification_width_vs_coverage = function(id) {
               selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
-              selectInput(ns("sep_group"), "Separately show:", choices = c("task", "learner", "none")),
-              pickerInput(ns("learners"), "Learners:",
-                choices = LEARNERS,
+              selectInput(ns("sep_group"), "Group:", choices = c("dgp", "inducer", "none")),
+              pickerInput(ns("inducers"), "inducers:",
+                choices = INDUCERS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = LEARNERS),
+                selected = INDUCERS),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
                 selected = METHODS),
-              pickerInput(ns("tasks"), "Tasks:",
-                choices = TASKS,
+              pickerInput(ns("dgps"), "DGPs:",
+                choices = DGPS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = TASKS),
+                selected = DGPS),
               br(),
               actionButton("Vwidth_vs_coverage", "View Plot"),
               downloadButton(ns("Dwidth_vs_coverage"), "Download Plot")
@@ -56,7 +58,7 @@ make_width_vs_coverage_plot = function(data, input) {
     rel_width = width / .SD[method == "bayle_10_all_pairs", "width"][[1L]],
     method = method,
     cov = get(paste0("cov_", target))
-  ), by = c("task", "size", "learner")]
+  ), by = c("dgp", "size", "inducer")]
 
   # ensure that only those are contained, which have all values
   data = data[size == as.integer(input$size), ]
@@ -68,17 +70,17 @@ make_width_vs_coverage_plot = function(data, input) {
   }
 
   data = data[
-    learner %in% input$learners &
-      task %in% input$tasks &
+    inducer %in% input$inducers &
+      dgp %in% input$dgps &
       method %in% input$methods,
     list(
-      cov = mean(cov),
+      cov_error = sqrt(mean((cov - 0.95)^2)),
       rel_width = mean(rel_width)
     ), by = c(by_vars)]
 
 
 
-  p = ggplot(data, aes(x = rel_width, y = cov, color = method)) +
+  p = ggplot(data, aes(x = rel_width, y = cov_error, color = method)) +
     geom_point() +
     facet_wrap(vars(size), scales = "free_x")
 
@@ -87,10 +89,8 @@ make_width_vs_coverage_plot = function(data, input) {
   }
 
   p +
-    geom_hline(yintercept = 0.95, color = "red") +
-    ylim(NA, 1) +
     labs(
       x = "Width relative to Bayle (10-folds, all-pairs)",
-      y = paste0("Coverage of ", input$target)
+      y = paste0("Coverage Error (RMSE) for", input$target)
     )
 }

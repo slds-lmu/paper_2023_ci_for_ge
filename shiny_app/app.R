@@ -14,7 +14,7 @@ source("Size_x_Coverage.R")
 source("target_comparison.R")
 source("width_vs_coverage.R")
 source("chen_10_null.R")
-source("learner_performance.R")
+source("inducer_performance.R")
 source("under_vs_over.R")
 source("cis_for_cis.R")
 
@@ -32,7 +32,7 @@ ui = fluidPage(
       actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
       actionButton("viewDataSheet", "View Parameter Data"),
-      actionButton("viewTaskOverview", "Dataset Overview"),
+      actionButton("viewDataOverview", "Dataset Overview"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
@@ -83,12 +83,12 @@ dataPage2 = fluidPage(
   ))
 )
 
-dataTaskOverview = fluidPage(
-  titlePanel("Task Overview"),
+dataDataOverview = fluidPage(
+  titlePanel("Data Overview"),
   mainPanel(div(
     class = "content",
     width = 12,
-    DT::dataTableOutput("task_overview")
+    DT::dataTableOutput("data_overview")
   ))
 )
 
@@ -97,18 +97,18 @@ plotPage = fluidPage(
   titlePanel("Plot View"),
   fluidPage(
     tabsetPanel(
-      tabPanel("Size x Coverage Plots", fluidPage(
+      tabPanel("Size vs. Coverage Error", fluidPage(
         tabsetPanel(
-          specifications_aggregated("SxC_aggr"),
+          # specifications_aggregated("SxC_aggr"),
           specifications_methodplot("SxC_method"),
-          specifications_learnerplot("SxC_learner"),
-          specifications_taskplot("SxC_task")
+          specifications_inducerplot("SxC_inducer"),
+          specifications_dgpplot("SxC_dgp")
         )
       )),
       tabPanel("Target Comparison", fluidPage(
         specification_target_comparsion("target_comparison")
       )),
-      tabPanel("Width vs. Coverage", fluidPage(
+      tabPanel("Width vs. Coverage Error", fluidPage(
         specification_width_vs_coverage("width_vs_coverage")
       )),
       tabPanel("Under vs. Over", fluidPage(
@@ -120,8 +120,8 @@ plotPage = fluidPage(
       tabPanel("Chen 10 Null", fluidPage(
         specification_chen_10_null("chen_10_null")
       )),
-      tabPanel("Learner Performance", fluidPage(
-        specification_learner_performance("learner_performance")
+      tabPanel("Inducer Performance", fluidPage(
+        specification_inducer_performance("inducer_performance")
       )),
       tabPanel("Austern & Zhou", fluidPage()),
       specifications_download("downloadNS")
@@ -153,9 +153,10 @@ server = function(input, output, session) {
     })
   })
 
-  observeEvent(input$viewTaskOverview, {
+  observeEvent(input$viewDataOverview, {
     output$pageContent = renderUI({
-      dataTaskOverview
+
+      dataDataOverview
     })
   })
 
@@ -176,7 +177,7 @@ server = function(input, output, session) {
     rownames = FALSE
   )
 
-  output$task_overview = DT::renderDataTable(TASK_OVERVIEW,
+  output$data_overview = DT::renderDataTable(DATA_OVERVIEW,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
@@ -200,12 +201,12 @@ server = function(input, output, session) {
 
   button_clicked = reactiveVal(NULL)
 
-  observeEvent(input$Vlearner, {
-    button_clicked("VIEW_learner")
+  observeEvent(input$Vinducer, {
+    button_clicked("VIEW_inducer")
   })
 
-  observeEvent(input$Vlearner_performance, {
-    button_clicked("VIEW_learner_performance")
+  observeEvent(input$Vinducer_performance, {
+    button_clicked("VIEW_inducer_performance")
   })
 
 
@@ -229,8 +230,8 @@ server = function(input, output, session) {
     button_clicked("VIEW_chen_10_null")
   })
 
-  observeEvent(input$Vtask, {
-    button_clicked("VIEW_task")
+  observeEvent(input$Vdgp, {
+    button_clicked("VIEW_dgp")
   })
 
   observeEvent(input$Vmethod, {
@@ -256,6 +257,7 @@ server = function(input, output, session) {
         updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
       }
     })
+
     observe({
       if (is.null(input$method) || length(input$method) == 0) {
         updatePickerInput(session, "method", selected = levels(as.factor(as.data.frame(ci_aggr)$method))[1])
@@ -290,6 +292,17 @@ server = function(input, output, session) {
   }, "SxC_aggr")
 
   callModule(function(input, output, session) {
+    observeEvent(input$slider1, {
+      if (input$slider1 >= input$slider2) {
+        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
+      }
+    })
+
+    observeEvent(input$slider2, {
+      if (input$slider2 <= input$slider1) {
+        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
+      }
+    })
     output$Pmethod = renderPlotly({
       clicker = button_clicked()
       g = make_methodplot(ci_aggr, input)
@@ -315,31 +328,44 @@ server = function(input, output, session) {
   }, "SxC_method")
 
   callModule(function(input, output, session) {
-    output$Plearner = renderPlotly({
+
+    observeEvent(input$slider1, {
+      if (input$slider1 >= input$slider2) {
+        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
+      }
+    })
+
+    observeEvent(input$slider2, {
+      if (input$slider2 <= input$slider1) {
+        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
+      }
+    })
+    output$Pinducer = renderPlotly({
       clicker = button_clicked()
-      g = make_learnerplot(ci_aggr, input)
-      makeplot(clicker, "VIEW_learner", g)
+      g = make_inducerplot(ci_aggr, input)
+      makeplot(clicker, "VIEW_inducer", g)
     })
     observe({
-      plotlyProxy("Plearner", session) %>%
+      plotlyProxy("Pinducer", session) %>%
         plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
-    output$Dlearner = downloadHandler(
+    output$Dinducer = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g = make_learnerplot(ci_aggr, input)
+        g = make_inducerplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
     )
-  }, "SxC_learner")
+  }, "SxC_inducer")
 
   callModule(function(input, output, session) {
+
     output$Ptarget_comparison = renderPlotly({
       clicker = button_clicked()
       g = make_target_comparison_plot(ci_aggr, input)
@@ -425,25 +451,25 @@ server = function(input, output, session) {
   }, "cis_for_cis")
 
   callModule(function(input, output, session) {
-    output$Plearner_performance = renderPlotly({
+    output$Pinducer_performance = renderPlotly({
       clicker = button_clicked()
-      g = make_learner_performance_plot(ci_aggr, input)
-      makeplot(clicker, "VIEW_learner_performance", g)
+      g = make_inducer_performance_plot(ci_aggr, input)
+      makeplot(clicker, "VIEW_inducer_performance", g)
     })
 
-    output$Dlearner_performance = downloadHandler(
+    output$Dinducer_performance = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g = make_learner_performance_plot(ci_aggr, input)
+        g = make_inducer_performance_plot(ci_aggr, input)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
     )
-  }, "learner_performance")
+  }, "inducer_performance")
 
   callModule(function(input, output, session) {
     output$Pchen_10_null = renderPlotly({
@@ -467,30 +493,43 @@ server = function(input, output, session) {
   }, "chen_10_null")
 
   callModule(function(input, output, session) {
-    output$Ptask = renderPlotly({
+
+    observeEvent(input$slider1, {
+      if (input$slider1 >= input$slider2) {
+        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
+      }
+    })
+
+    observeEvent(input$slider2, {
+      if (input$slider2 <= input$slider1) {
+        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
+      }
+    })
+
+    output$Pdgp = renderPlotly({
       clicker = button_clicked()
-      g = make_taskplot(ci_aggr, input)
-      makeplot(clicker, "VIEW_task", g)
+      g = make_dgpplot(ci_aggr, input)
+      makeplot(clicker, "VIEW_dgp", g)
     })
     
     observe({
-      plotlyProxy("Ptask", session) %>%
+      plotlyProxy("Pdgp", session) %>%
         plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
-    output$Dtask = downloadHandler(
+    output$Ddgp = downloadHandler(
       filename = function() {
         "plot.png"
       },
       content = function(file) {
-        g = make_taskplot(ci_aggr, input)
+        g = make_dgpplot(ci_aggr, input)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = global_code))
         }
         ggsave(file, plot = g, width = as.numeric(global_width), height = as.numeric(global_height), device = "png", units = global_units)
       }
     )
-  }, "SxC_task")
+  }, "SxC_dgp")
 }
 
 # Run the application

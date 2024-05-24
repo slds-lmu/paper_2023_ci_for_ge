@@ -6,6 +6,8 @@ specification_target_comparsion = function(id) {
     "Target Comparison",
     div(
       class = "content",
+      fluidRow(column(12,
+        HTML(paste(readLines("HTMLS/target_comparison.html"), collapse = "")))),
       sidebarLayout(
         sidebarPanel(
           fluidRow(
@@ -15,16 +17,16 @@ specification_target_comparsion = function(id) {
               selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("method"), "Method", choices = PQ_METHODS, selected = "bayle_10_within"),
-              pickerInput(ns("learners"), "Learners:",
-                choices = LEARNERS,
+              pickerInput(ns("inducers"), "inducers:",
+                choices = INDUCERS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = LEARNERS),
-              pickerInput(ns("tasks"), "Tasks:",
-                choices = TASKS,
+                selected = INDUCERS),
+              pickerInput(ns("dgps"), "DGPS:",
+                choices = DGPS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = TASKS),
+                selected = DGPS),
               br(),
               actionButton("Vtarget_comparison", "View Plot"),
               downloadButton(ns("Dtarget_comparison"), "Download Plot")
@@ -47,20 +49,27 @@ make_target_comparison_plot = function(data, input) {
     !is.na(cov_PQ) &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
       size >= as.integer(input$min_size) & size <= as.integer(input$max_size) &
-      task %in% input$tasks &
+      dgp %in% input$dgps &
       method == input$method &
-      learner %in% input$learners,
-    list(cov_PQ = mean(cov_PQ), cov_R = mean(cov_R), cov_ER = mean(cov_ER)),
-    by = c("size", "learner")
+      inducer %in% input$inducers,
+      list(
+        cov_err_PQ = sqrt(mean((cov_PQ - 0.95)^2)),
+        cov_err_R  = sqrt(mean((cov_R - 0.95)^2)),
+        cov_err_ER  = sqrt(mean((cov_ER - 0.95)^2))
+      ),
+    by = c("size", "inducer")
   ]
 
-  data = melt(data, id.vars = c("size", "learner"), measure.vars = c("cov_R", "cov_ER", "cov_PQ"),
+  data = melt(data, id.vars = c("size", "inducer"), measure.vars = c("cov_err_R", "cov_err_ER", "cov_err_PQ"),
     variable.name = "target", value.name = "coverage")
 
   ggplot(data, aes(x = size, y = coverage, color = target)) +
-    facet_wrap(vars(learner)) +
-    geom_hline(color = "red", yintercept = 0.95) +
+    facet_wrap(vars(inducer)) +
     # geom_boxplot() + 
-    ylim(NA, 1) +
-    geom_line()
+    geom_line() + 
+
+    labs(
+      y = "Coverage Error (RMSE)",
+      x = "Dataset Size"
+    )
 }

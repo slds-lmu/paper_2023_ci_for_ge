@@ -11,8 +11,8 @@ specification_under_vs_over = function(id) {
               selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
-              selectInput(ns("task"), "Task:", choices = TASKS),
-              selectInput(ns("learner"), "Learner:", choices = LEARNERS),
+              selectInput(ns("dgp"), "DGP:", choices = DGPS),
+              selectInput(ns("inducer"), "Inducer:", choices = INDUCERS),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
                 multiple = TRUE,
@@ -40,8 +40,8 @@ make_under_vs_over_plot = function(data, input) {
   target = translate_target(input$target)
   data = data[
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
-      task == input$task &
-      learner == input$learner &
+      dgp == input$dgp &
+      inducer == input$inducer &
       method %in% input$methods,
       list(
         under = mean(get(paste0("under_", target))),
@@ -57,9 +57,4 @@ make_under_vs_over_plot = function(data, input) {
     geom_bar(stat = "identity", position = "stack") +
     facet_wrap(vars(size)) + 
     geom_vline(xintercept = 0.05, color = "black")
-    # facet_wrap(vars(learner)) +
-    # geom_hline(color = "red", yintercept = 0.95) +
-    # # geom_boxplot() + 
-    # ylim(NA, 1) +
-    # geom_line()
 }

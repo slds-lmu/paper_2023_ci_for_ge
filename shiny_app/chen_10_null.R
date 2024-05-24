@@ -19,11 +19,11 @@ specification_chen_10_null = function(id) {
                 options = list(`actions-box` = TRUE),
                 selected = METHODS
               ),
-              pickerInput(ns("learners"), "Learners:",
-                choices = LEARNERS,
+              pickerInput(ns("inducers"), "Inducers:",
+                choices = INDUCERS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
-                selected = LEARNERS),
+                selected = INDUCERS),
               br(),
               actionButton("Vchen_10_null", "View Plot"),
               downloadButton(ns("Dchen_10_null"), "Download Plot")
@@ -49,17 +49,17 @@ make_chen_10_null_plot = function(data, input) {
       size <= as.integer(input$max_size) & 
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
       method %in% input$methods &
-      learner %in% input$learners,
+      inducer %in% input$inducers,
       list(
         cov = mean(get(paste0("cov_", target)))
     ),
-    by = c("learner", "size", "method")
+    by = c("inducer", "size", "method")
   ]
 
   print(data)
 
   ggplot(data, aes(y = method, x = cov)) +
-    facet_grid(vars(learner), vars(size)) +
+    facet_grid(vars(inducer), vars(size)) +
     geom_point() + 
     geom_vline(xintercept = 0.95, color = "red") +
     xlim(NA, 1)

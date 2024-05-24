@@ -1,34 +1,19 @@
----
-title: "Reduce the gigantic size"
-format: html
-editor: visual
----
-
-```{r}
 library(data.table)
 library(ggplot2)
 library(here)
 library(mlr3misc)
-```
 
-```{r}
 ci = readRDS(here("results", "final.rds"))
 ci = ci[learner != "ridge_tuned", ]
-```
 
-We observed one NA, which we just remove
+# We observed one NA, which we just remove
 
-```{r}
-stopifnot(sum(is.na(ci$lower) | is.na(ci$upper) | is.na(ci$estimate)) == 1)
-```
+#stopifnot(sum(is.na(ci$lower) | is.na(ci$upper) | is.na(ci$estimate)) == 1)
 
-```{r}
 ci = ci[!is.na(estimate), ]
-```
 
-For now, only look at a subset:
+#For now, only look at a subset:
 
-```{r}
 ci[, let(
   task = as.factor(task),
   learner = as.factor(learner),
@@ -38,9 +23,6 @@ ci[, let(
 )]
 
 
-```
-
-```{r}
 ci[, let(
   ER = mean(R)
 ), by = c("task", "learner", "size", "method", "measure")]
@@ -64,9 +46,7 @@ ci_aggr = ci[, .(
   estimate_sd = sd(estimate),
   task_type = as.factor(task_type[1])
 ), by = c("task", "learner", "size", "method",  "measure")]
-```
 
-```{r}
 removed_methods = c(
     paste0("oob_", c(10, 50, 100, 500)),
     paste0("632plus_", c(10, 50, 100, 500)),
@@ -82,4 +62,4 @@ saveRDS(ci_aggr_small, here("results", "ci_aggr_small.rds"))
 saveRDS(ci_aggr, here("results", "ci_aggr.rds"))
 saveRDS(ci_small, here("results", "ci_small.rds"))
 saveRDS(ci, here("results", "ci.rds"))
-```
+
