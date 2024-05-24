@@ -19,38 +19,19 @@ if (dir.exists("/gscratch/sfische6/mlr3oml_cache")) {
 # - PROXY_PATH contains the results of ./experiments/proxy.R
 #   These are the proxy quantities, e.g. for bayle, which are also used
 #   to evaluate some of the confidence interval methods.
-SAVE_PATH = if (dir.exists("/gscratch/sfische6/benchmarks/ci_for_ge")) {
-  "/gscratch/sfische6/benchmarks/ci_for_ge/final"
+SAVE_PATH <- = (dir.exists("/gscratch/sfische6/benchmarks/ci_for_ge")) {
+  "/gscratch/sfische6/benchmarks/ci_for_ge/final_test"
 }
 
 Sys.setenv(RESAMPLE_PATH = paste0(SAVE_PATH, sep = "_", "resample"))
-Sys.setenv(CI_PATH       = paste0(SAVE_PATH, sep = "_", "ci"))
-Sys.setenv(PROXY_PATH    = paste0(SAVE_PATH, sep = "_", "proxy"))
-Sys.setenv(TRUTH_PATH    = paste0(SAVE_PATH, sep = "_", "truth"))
-Sys.setenv(ERROR_PATH    = paste0(SAVE_PATH, sep = "_", "error"))
-Sys.setenv(MERGE_PATH    = paste0(SAVE_PATH, sep = "_", "merge"))
-Sys.setenv(FINAL_PATH    = paste0(SAVE_PATH, sep = "_", "final"))
+Sys.setenv(CI_PATH = paste0(SAVE_PATH, sep = "_", "ci"))
+Sys.setenv(PROXY_PATH = paste0(SAVE_PATH, sep = "_", "proxy"))
+Sys.setenv(TRUTH_PATH = paste0(SAVE_PATH, sep = "_", "truth"))
+Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "error"))
+Sys.setenv(MERGE_PATH = paste0(SAVE_PATH, sep = "_", "merge"))
+Sys.setenv(FINAL_PATH = paste0(SAVE_PATH, sep = "_", "final"))
 
-Sys.setenv(RESAMPLE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "resample_boot"))
-Sys.setenv(CI_PATH_BOOT          = paste0(SAVE_PATH, sep = "_", "ci_boot"))
-Sys.setenv(MERGE_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "merge_boot"))
-Sys.setenv(ERROR_PATH_BOOT    = paste0(SAVE_PATH, sep = "_", "error_boot"))
-Sys.setenv(RESAMPLE_PATH_AUSTERN = paste0(SAVE_PATH, sep = "_", "resample_austern"))
 
-Sys.setenv(RESAMPLE_PATH_LM = paste0(SAVE_PATH, sep = "_", "resample_lm"))
-Sys.setenv(CI_PATH_LM       = paste0(SAVE_PATH, sep = "_", "ci_lm"))
-Sys.setenv(PROXY_PATH_LM    = paste0(SAVE_PATH, sep = "_", "proxy_lm"))
-Sys.setenv(TRUTH_PATH_LM    = paste0(SAVE_PATH, sep = "_", "truth_lm"))
-Sys.setenv(ERROR_PATH_LM    = paste0(SAVE_PATH, sep = "_", "error_lm"))
-Sys.setenv(FINAL_PATH_LM    = paste0(SAVE_PATH, sep = "_", "final_lm"))
-
-Sys.setenv(RESAMPLE_PATH_RIDGE = paste0(SAVE_PATH, sep = "_", "resample_ridge"))
-Sys.setenv(CI_PATH_RIDGE       = paste0(SAVE_PATH, sep = "_", "ci_ridge"))
-Sys.setenv(PROXY_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "proxy_ridge"))
-Sys.setenv(TRUTH_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "truth_ridge"))
-Sys.setenv(ERROR_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "error_ridge"))
-Sys.setenv(FINAL_PATH_RIDGE    = paste0(SAVE_PATH, sep = "_", "final_ridge"))
-
-Sys.setenv(VAR_PATH_AZ       = paste0(SAVE_PATH, sep = "_", "var_az"))
+Sys.setenv(VAR_PATH_AZ = paste0(SAVE_PATH, sep = "_", "var_az"))
 
 rm(SAVE_PATH)
