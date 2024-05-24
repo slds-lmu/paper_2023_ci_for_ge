@@ -28,7 +28,8 @@
     "DT": {
       "Package": "DT",
       "Version": "0.33",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "DiagrammeR": {
       "Package": "DiagrammeR",
@@ -195,7 +196,8 @@
     "anytime": {
       "Package": "anytime",
       "Version": "0.3.9",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "argparser": {
       "Package": "argparser",
@@ -1099,23 +1101,12 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteUsername": "slds-lmu",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "0d0e9dc71aac87b6566bd414bdb07d9ea2890bb3",
+      "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteSubdir": "inferGE",
-      "Hash": "651243efdbec43e154c76c2999d1d5fb",
-      "Requirements": [
-        "R6",
-        "checkmate",
-        "data.table",
-        "mlr3",
-        "mlr3measures",
-        "mlr3misc",
-        "mlr3pipelines",
-        "paradox",
-        "withr"
-      ]
+      "RemoteRef": "main",
+      "RemoteSha": "86ca21bf8b156c16140e86c74d991eaa147a4e60",
+      "Requirements": []
     },
     "ini": {
       "Package": "ini",
@@ -1893,7 +1884,8 @@
     "plotly": {
       "Package": "plotly",
       "Version": "4.10.4",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "prabclus": {
       "Package": "prabclus",
@@ -2297,12 +2289,14 @@
     "shiny": {
       "Package": "shiny",
       "Version": "1.8.1.1",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "shinyWidgets": {
       "Package": "shinyWidgets",
       "Version": "0.8.6",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "sourcetools": {
       "Package": "sourcetools",
