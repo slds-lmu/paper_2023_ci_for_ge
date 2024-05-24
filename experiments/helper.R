@@ -1,4 +1,4 @@
-n make_task = function(data_id, size, repl, resampling) {
+make_task = function(data_id, size, repl, resampling) {
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
 
   # the ids for the data subset
@@ -55,8 +55,6 @@ n make_task = function(data_id, size, repl, resampling) {
   return(task)
 }
 
-name_to_id = list(
-)
 
 make_resampling = function(resampling_id, resampling_params) {
   resampling = do.call(rsmp, c(list(.key = resampling_id), resampling_params[[1]]))
