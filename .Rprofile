@@ -20,7 +20,7 @@ if (dir.exists("/gscratch/sfische6/mlr3oml_cache")) {
 #   These are the proxy quantities, e.g. for bayle, which are also used
 #   to evaluate some of the confidence interval methods.
 SAVE_PATH <- = (dir.exists("/gscratch/sfische6/benchmarks/ci_for_ge")) {
-  "/gscratch/sfische6/benchmarks/ci_for_ge/final_test"
+  "/gscratch/sfische6/benchmarks/ci_for_ge/final"
 }
 
 Sys.setenv(RESAMPLE_PATH = paste0(SAVE_PATH, sep = "_", "resample"))
