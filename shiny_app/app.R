@@ -32,7 +32,7 @@ ui = fluidPage(
       actionButton("viewPlot", "Plots"),
       actionButton("viewData", "View Data"),
       actionButton("viewDataSheet", "View Parameter Data"),
-      actionButton("viewDataOverview", "Dataset Overview"),
+      actionButton("viewDataOverview", "Datasets"),
       actionButton("viewExplanation", "View explanation again")
     )
   ),
@@ -61,7 +61,7 @@ explanationPage = fluidPage(
   mainPanel(
     width = 12,
     hr(""),
-    HTML(paste(readLines("explanation.html"), collapse = ""))
+    HTML(paste(readLines("HTMLS/explanation.html"), collapse = ""))
   )
 )
 

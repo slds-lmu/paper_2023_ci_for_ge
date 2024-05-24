@@ -4,6 +4,8 @@ specification_chen_10_null = function(id) {
     "Chen 10 Null",
     div(
       class = "content",
+      fluidRow(column(12,
+        HTML(paste(readLines("HTMLS/chen_10_null.html"), collapse = "")))),
       sidebarLayout(
         sidebarPanel(
           fluidRow(
@@ -55,8 +57,6 @@ make_chen_10_null_plot = function(data, input) {
     ),
     by = c("inducer", "size", "method")
   ]
-
-  print(data)
 
   ggplot(data, aes(y = method, x = cov)) +
     facet_grid(vars(inducer), vars(size)) +

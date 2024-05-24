@@ -73,7 +73,7 @@ METHODS <- c(
   # "corrected_t_50",
   "corrected_t_100",
   # "bayle_5_within",
-  # "bayle_5_all_pairs",
+  "bayle_5_all_pairs",
   # "bayle_10_within",
   "bayle_10_all_pairs",
   "dietterich",

@@ -1,0 +1,43 @@
+<div style='text-align:left;'><p>
+
+This shiny-app is a visual exploration of a large-scale benchmark experiment that compared various methods for constructing confidence intervals for the generalization error.<br><br>
+
+The general dimensions of the analysis are:<br>
+
+<ul>
+  <li> <b>Method</b>:
+       The inference method (see tab TODO for an explanation of the abbreviations used on the website).
+  <li> <b>DGPs</b>:
+       The data-generating process (see tab Datasets).
+  <li> <b>Inducers</b>:
+       The inducing algorithm, which includes a linear model / logistic regression, a (logistic) ridge regression, a decision tree and a random forest.
+  <li> <b>Dataset Size</b>:
+       The size of the datasets (100, 500, 1000, 5000 and 10000).<br> Note that expensive methods are not applied to all dataset sizes.
+  <li> <b>Loss Function</b>:
+       The loss function used to evaluate the performance of the trained models.<br>
+       For <i>regression</i>, the squared, absolte, percentual squared, and standardized squared error are available.<br>
+       For <i>classification</i>, the zero-one, binary brier and log-loss can be selected.
+  <li> <b>Target Quantity</b>:
+       We evaluate the coverage of the confidence intervals with respect to three target quantity, namely the Risk, the Expected Risk and the proxy quantity (if applicable).
+</ul>
+
+
+For the main analysis, we only consider a subset of the inference methods, as the plots otherwise become hard to read.<br>
+
+The inference methods that are excluded from the analysis are:
+ <ul>
+  <li> <b>Bayle</b>:
+       We only include the cross-validation the results for the all-pairs estimator.<br>
+       This is, because there is no noticeable difference when using the within-fold variance estimator.
+  <li> <b>OOB/632</b>:
+       For 10, 50 and 100 repetitions, the confidence intervals are far too wide and are not included therefore.<br>
+       Further, the versions with 500 repetitions and 1000 repetitions perform similarly and we therefore only include the better version with 1000 repetitions in the main analysis.
+
+</ul> 
+
+We also exlcude <i>chen_10_null</i> DGP, which is the only DGP without a relationship between the features and the target variable.<br> 
+A/perce
+
+It is analysed separately.
+</p><p>&nbsp;</p><hr><p>&nbsp;</p>
+</div>
