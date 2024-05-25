@@ -13,8 +13,9 @@ specification_width_vs_coverage = function(id) {
           fluidRow(
             column(6,
               selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               selectInput(ns("sep_group"), "Group:", choices = c("dgp", "inducer", "none")),
               pickerInput(ns("inducers"), "inducers:",
@@ -49,9 +50,11 @@ specification_width_vs_coverage = function(id) {
 }
 
 
-make_width_vs_coverage_plot = function(data, input) {
+make_width_vs_coverage_plot = function(data, input, globalOps) {
   data = data[measure %in% translate_losses(input$loss_regr, input$loss_classif)]
   target = if (identical(input$target, "Risk")) "R" else "ER"
+
+  scales = translate_scales(input$free_scales)
 
   # do this at the beginning, when bayle_10_all_pairs is always available
   data = data[, list(
@@ -82,10 +85,15 @@ make_width_vs_coverage_plot = function(data, input) {
 
   p = ggplot(data, aes(x = rel_width, y = cov_error, color = method)) +
     geom_point() +
-    facet_wrap(vars(size), scales = "free_x")
+    facet_wrap(vars(size), scales = scales)
 
   if (input$sep_group != "none") {
-    p = p + facet_wrap(as.formula(paste0("~", input$sep_group)), scales = "free_x")
+    p = if (input$free_scales == "none") {
+      p + facet_wrap(as.formula(paste0("~", input$sep_group)))
+    } else {
+      scales = translate_scales(input$free_scales)
+      p + facet_wrap(as.formula(paste0("~", input$sep_group)), scales = scales)
+    }
   }
 
   p +

@@ -8,8 +8,8 @@ specification_inducer_performance = function(id) {
         sidebarPanel(
           fluidRow(
             column(6,
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("dgp"), "DGP", DGPS, DGPS[[1]]),
               br(),
               actionButton("Vinducer_performance", "View Plot"),
@@ -28,7 +28,8 @@ specification_inducer_performance = function(id) {
 }
 
 
-make_inducer_performance_plot = function(data, input) {
+make_inducer_performance_plot = function(data, input, globalOps) {
+
 
   data = data[
     method == "bayle_10_all_pairs" & 

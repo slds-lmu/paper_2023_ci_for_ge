@@ -106,7 +106,7 @@ plotPage = fluidPage(
       tabPanel("Size vs. Coverage Error", fluidPage(
         withMathJax(),
         tabsetPanel(
-          # specifications_aggregated("SxC_aggr"),
+          specifications_aggregated("SxC_aggr"),
           specifications_methodplot("SxC_method"),
           specifications_inducerplot("SxC_inducer"),
           specifications_dgpplot("SxC_dgp")
@@ -203,7 +203,7 @@ server = function(input, output, session) {
   })
   
   download_global <- inputModuleServer("downloadNS",vals=list("units","width","height","code"))
-  globalOps <- inputModuleServer("data_opsNS",vals=list("tasks_global")) #Add new global choices!!!
+  globalOps <- inputModuleServer("data_opsNS",vals=list("dgps_global", "methods_global")) #Add new global choices!!!
 
 
   button_clicked = reactiveVal(NULL)
@@ -269,11 +269,15 @@ server = function(input, output, session) {
         updatePickerInput(session, "method", selected = levels(as.factor(as.data.frame(ci_aggr)$method))[1])
       }
     })
+    observe({
+      methods = globalOps$methods_global()
+      updatePickerInput(session, "method", choices = methods, selected = methods)
+    })
 
     output$fallbackplot = renderPlotly({
       clicker = button_clicked()
       y = input$y
-      g = fallback_plot(ci_aggr, input)
+      g = fallback_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_fallback", g)
     })
     observe({
@@ -288,7 +292,7 @@ server = function(input, output, session) {
       },
       content = function(file) {
         y = input$y
-        g = fallback_plot(ci_aggr, input)
+        g = fallback_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -298,6 +302,10 @@ server = function(input, output, session) {
   }, "SxC_aggr")
 
   callModule(function(input, output, session) {
+    observe({
+      methods = globalOps$methods_global()
+      updateSelectInput(session, "atom",choices = methods, selected = if (length(methods)) methods[1L])
+    })
     
     observeEvent(input$slider1, {
       if (input$slider1 >= input$slider2) {
@@ -313,7 +321,7 @@ server = function(input, output, session) {
     
     output$Pmethod = renderPlotly({
       clicker = button_clicked()
-      g = make_methodplot(ci_aggr, input)
+      g = make_methodplot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_method", g)
     })
     observe({
@@ -326,7 +334,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_methodplot(ci_aggr, input)
+        g = make_methodplot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -350,7 +358,7 @@ server = function(input, output, session) {
     })
     output$Pinducer = renderPlotly({
       clicker = button_clicked()
-      g = make_inducerplot(ci_aggr, input)
+      g = make_inducerplot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_inducer", g)
     })
     observe({
@@ -363,7 +371,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_inducerplot(ci_aggr, input)
+        g = make_inducerplot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -374,9 +382,20 @@ server = function(input, output, session) {
 
   callModule(function(input, output, session) {
 
+
+    observe({
+      dgps = globalOps$dgps_global()
+      updatePickerInput(session, "dgps", choices = dgps, selected = dgps)
+    })
+
+    observe({
+      methods = PQ_METHODS[PQ_METHODS %in% globalOps$methods_global()]
+      updateSelectInput(session, "method",choices = methods, selected = if (length(methods)) methods[1L])
+    })
+
     output$Ptarget_comparison = renderPlotly({
       clicker = button_clicked()
-      g = make_target_comparison_plot(ci_aggr, input)
+      g = make_target_comparison_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_target_comparison", g)
     })
 
@@ -385,7 +404,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_target_comparison_plot(ci_aggr, input)
+        g = make_target_comparison_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -396,11 +415,11 @@ server = function(input, output, session) {
 
   callModule(function(input, output, session) {
     observe({
-      updatePickerInput(session, "dgps",choices=globalOps$tasks_global())
+      updatePickerInput(session, "dgps",choices=globalOps$dgps_global())
     })
     output$Pwidth_vs_coverage = renderPlotly({
       clicker = button_clicked()
-      g = make_width_vs_coverage_plot(ci_aggr, input)
+      g = make_width_vs_coverage_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_width_vs_coverage", g)
     })
 
@@ -409,7 +428,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_width_vs_coverage_plot(ci_aggr, input)
+        g = make_width_vs_coverage_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -421,7 +440,7 @@ server = function(input, output, session) {
   callModule(function(input, output, session) {
     output$Punder_vs_over = renderPlotly({
       clicker = button_clicked()
-      g = make_under_vs_over_plot(ci_aggr, input)
+      g = make_under_vs_over_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_under_vs_over", g)
     })
 
@@ -430,7 +449,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_under_vs_over_plot(ci_aggr, input)
+        g = make_under_vs_over_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -443,7 +462,7 @@ server = function(input, output, session) {
   callModule(function(input, output, session) {
     output$Pcis_for_cis = renderPlotly({
       clicker = button_clicked()
-      g = make_cis_for_cis_plot(ci_aggr, input)
+      g = make_cis_for_cis_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_cis_for_cis", g)
     })
 
@@ -452,7 +471,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_cis_for_cis_plot(ci_aggr, input)
+        g = make_cis_for_cis_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -464,7 +483,7 @@ server = function(input, output, session) {
   callModule(function(input, output, session) {
     output$Pinducer_performance = renderPlotly({
       clicker = button_clicked()
-      g = make_inducer_performance_plot(ci_aggr, input)
+      g = make_inducer_performance_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_inducer_performance", g)
     })
 
@@ -473,7 +492,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_inducer_performance_plot(ci_aggr, input)
+        g = make_inducer_performance_plot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -485,7 +504,7 @@ server = function(input, output, session) {
   callModule(function(input, output, session) {
     output$Pchen_10_null = renderPlotly({
       clicker = button_clicked()
-      g = make_chen_10_null_plot(ci_aggr_null, input)
+      g = make_chen_10_null_plot(ci_aggr_null, input, globalOps)
       makeplot(clicker, "VIEW_chen_10_null", g)
     })
 
@@ -494,7 +513,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_chen_10_null_plot(ci_aggr_null, input)
+        g = make_chen_10_null_plot(ci_aggr_null, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }
@@ -504,6 +523,10 @@ server = function(input, output, session) {
   }, "chen_10_null")
 
   callModule(function(input, output, session) {
+    observe({
+      dgps = globalOps$dgps_global()
+      updateSelectInput(session, "atom", choices = dgps, selected = if (length(dgps)) dgps[1])
+    })
 
     observeEvent(input$slider1, {
       if (input$slider1 >= input$slider2) {
@@ -519,7 +542,7 @@ server = function(input, output, session) {
 
     output$Pdgp = renderPlotly({
       clicker = button_clicked()
-      g = make_dgpplot(ci_aggr, input)
+      g = make_dgpplot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_dgp", g)
     })
     
@@ -533,7 +556,7 @@ server = function(input, output, session) {
         "plot.png"
       },
       content = function(file) {
-        g = make_dgpplot(ci_aggr, input)
+        g = make_dgpplot(ci_aggr, input, globalOps)
         if (!is.null(addon_applied)) {
           g = g + eval(parse(text = download_global$code()))
         }

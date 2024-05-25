@@ -15,25 +15,24 @@ specifications_DataOps = function(id) {
         withMathJax(),
         titlePanel("Global Options"),
         fluidRow(hr(""),
-                 HTML("Explain some stuff?"),
+            HTML(paste(readLines("HTMLS/global_options.html"), collapse = "")),
         hr("")),
     fluidRow(
       column(
         6,
         fluidRow(
-          pickerInput(ns("tasks_global"), "Selection of DGPs:", choices = DGPS),
-        )
-      ),
-      column(
-        6,
-        fluidRow(
-          selectInput(ns("tbd01"), "TBD1:", choices = c("in", "cm", "mm", "px")),
-          textInput(ns("tbd02"), "TBD2:", value = 4),
-          textInput(ns("tbd3"), "TBD3:", value = 4)
-        )
+          pickerInput(ns("dgps_global"), "DGPs:",
+          choices = DGPS,
+          multiple = TRUE,
+          setdiff(DGPS, "chen_10_null")),
+          pickerInput(
+            ns("methods_global"), "Inference Methods:",
+            choices = METHODS,
+            multiple = TRUE,
+            options = list(`actions-box` = TRUE),
+            selected = DEFAULT_METHODS)
+          )
       )
     )
-      )
   )
-
-}
+)} 

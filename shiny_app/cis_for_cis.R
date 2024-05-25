@@ -11,8 +11,8 @@ specification_cis_for_cis = function(id) {
               6,
               selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("inducer"), "inducer:", choices = INDUCERS),
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("dgp"), "DGPs:", choices = DGPS),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               pickerInput(ns("methods"), "Methods:",
@@ -39,7 +39,7 @@ specification_cis_for_cis = function(id) {
 }
 
 
-make_cis_for_cis_plot = function(data, input) {
+make_cis_for_cis_plot = function(data, input, globalOps) {
   data = data[
     inducer == input$inducer &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &

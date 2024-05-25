@@ -14,10 +14,11 @@ specification_target_comparsion = function(id) {
             column(6,
               selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
-              selectInput(ns("method"), "Method", choices = PQ_METHODS, selected = "bayle_10_within"),
-              pickerInput(ns("inducers"), "inducers:",
+              selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("method"), "Method:", choices = PQ_METHODS, selected = "bayle_10_within"),
+              pickerInput(ns("inducers"), "Inducers:",
                 choices = INDUCERS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
@@ -44,7 +45,8 @@ specification_target_comparsion = function(id) {
 }
 
 
-make_target_comparison_plot = function(data, input) {
+make_target_comparison_plot = function(data, input, globalOps) {
+  scales = translate_scales(input$free_scales)
   data = data[
     !is.na(cov_PQ) &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
@@ -64,7 +66,7 @@ make_target_comparison_plot = function(data, input) {
     variable.name = "target", value.name = "coverage")
 
   ggplot(data, aes(x = size, y = coverage, color = target)) +
-    facet_wrap(vars(inducer)) +
+    facet_wrap(vars(inducer), scales = scales) +
     # geom_boxplot() + 
     geom_line() + 
 

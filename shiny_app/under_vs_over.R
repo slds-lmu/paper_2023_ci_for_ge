@@ -8,8 +8,8 @@ specification_under_vs_over = function(id) {
         sidebarPanel(
           fluidRow(
             column(6,
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               selectInput(ns("dgp"), "DGP:", choices = DGPS),
               selectInput(ns("inducer"), "Inducer:", choices = INDUCERS),
@@ -36,7 +36,7 @@ specification_under_vs_over = function(id) {
 }
 
 
-make_under_vs_over_plot = function(data, input) {
+make_under_vs_over_plot = function(data, input, globalOps) {
   target = translate_target(input$target)
   data = data[
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &

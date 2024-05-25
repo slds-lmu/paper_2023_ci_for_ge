@@ -12,9 +12,9 @@ specification_chen_10_null = function(id) {
             column(6,
               selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
-              selectInput(ns("loss_regr"), "Loss(Regr):", LOSSES$regr, "Squared"),
+              selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
-              selectInput(ns("loss_classif"), "Loss(Classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
                 multiple = TRUE,
@@ -43,7 +43,7 @@ specification_chen_10_null = function(id) {
 }
 
 
-make_chen_10_null_plot = function(data, input) {
+make_chen_10_null_plot = function(data, input, globalOps) {
   target = translate_target(input$target)
 
   data = data[
