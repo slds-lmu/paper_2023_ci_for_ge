@@ -1,7 +1,7 @@
 specification_cis_for_cis = function(id) {
   ns = NS(id)
   tabPanel(
-    "CIs for CIs",
+    "CIs for Coverage",
     div(
       class = "content",
       sidebarLayout(
@@ -9,11 +9,12 @@ specification_cis_for_cis = function(id) {
           fluidRow(
             column(
               6,
+              sliderInput(ns("range"), "Range:", min = 0, max = 1, value = c(0, 1)),
               selectInput(ns("size"), "Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("inducer"), "inducer:", choices = INDUCERS),
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
-              selectInput(ns("dgp"), "DGPs:", choices = DGPS),
+              selectInput(ns("dgp"), "DGP:", choices = DGPS),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
@@ -30,6 +31,14 @@ specification_cis_for_cis = function(id) {
         mainPanel(
           div(
             class = "plot-container",
+            numericInput(
+              inputId = ns("height_input"),
+              label = "Add to display height:",
+              value = 400,    # Default value
+              min = NA,     # Minimum value (optional)
+              max = NA,     # Maximum value (optional)
+              step = 50     # Step size (optional)
+            ),
             plotlyOutput(ns("Pcis_for_cis"))
           )
         )
@@ -56,6 +65,10 @@ make_cis_for_cis_plot = function(data, input, globalOps) {
   )]
 
   ggplot(data) +
-    geom_point(aes(y = method, x = cov)) +
-    geom_errorbar(aes(y = method, xmin = lower, xmax = upper))
+    geom_errorbar(aes(y = method, xmin = lower, xmax = upper)) + 
+    xlim(input$range[1], input$range[2]) +
+    geom_vline(xintercept = 0.95, color = "red", linetype = "dotted") +
+    labs(
+      x = "Coverage Ratio"
+    )
 }

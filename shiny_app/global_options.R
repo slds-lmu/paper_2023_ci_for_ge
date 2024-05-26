@@ -11,6 +11,8 @@ specifications_DataOps = function(id) {
   ns = NS(id)
   tabPanel(
     "Global Options",
+    div(
+      class = "content",
       fluidPage(
         withMathJax(),
         titlePanel("Global Options"),
@@ -33,6 +35,6 @@ specifications_DataOps = function(id) {
             selected = DEFAULT_METHODS)
           )
       )
-    )
+    ))
   )
 )} 

@@ -10,16 +10,20 @@ specification_chen_10_null = function(id) {
         sidebarPanel(
           fluidRow(
             column(6,
-              selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
-              selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk"), "Risk"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
+              selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk", "Proxy Quantity"), "Risk"),
               pickerInput(ns("methods"), "Methods:",
                 choices = METHODS,
                 multiple = TRUE,
                 options = list(`actions-box` = TRUE),
                 selected = METHODS
+              ),
+              pickerInput(ns("sizes"), "Sizes:",
+                choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)),
+                multiple = TRUE,
+                options = list(`actions-box` = TRUE),
+                selected = as.character(c(100L, 500L, 1000L, 5000L, 10000L))
               ),
               pickerInput(ns("inducers"), "Inducers:",
                 choices = INDUCERS,
@@ -35,6 +39,14 @@ specification_chen_10_null = function(id) {
         mainPanel(
           div(
             class = "plot-container",
+            numericInput(
+              inputId = ns("height_input"),
+              label = "Add to display height:",
+              value = 400,    # Default value
+              min = NA,     # Minimum value (optional)
+              max = NA,     # Maximum value (optional)
+              step = 50     # Step size (optional)
+            ),
             plotlyOutput(ns("Pchen_10_null"))
           )
         )
@@ -46,9 +58,10 @@ specification_chen_10_null = function(id) {
 make_chen_10_null_plot = function(data, input, globalOps) {
   target = translate_target(input$target)
 
+  print(data)
+
   data = data[
-    size >= as.integer(input$min_size) &
-      size <= as.integer(input$max_size) & 
+    size %in% as.integer(input$sizes) &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
       method %in% input$methods &
       inducer %in% input$inducers,
@@ -58,10 +71,16 @@ make_chen_10_null_plot = function(data, input, globalOps) {
     by = c("inducer", "size", "method")
   ]
 
+  data = data[!is.na(cov)]
+  data$method = droplevels(data$method)
+
   ggplot(data, aes(y = method, x = cov)) +
     facet_grid(vars(inducer), vars(size)) +
     geom_point() + 
     geom_vline(xintercept = 0.95, color = "red") +
-    xlim(NA, 1)
-
+    xlim(NA, 1) + 
+    labs(
+      x = "Coverage Ratio",
+      y = "Inference Method"
+    )
   }

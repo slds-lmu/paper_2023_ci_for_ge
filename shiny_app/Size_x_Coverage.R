@@ -11,16 +11,15 @@ specifications_aggregated = function(id) {
           fluidRow(
             column(6,
               # helpText("Select variables for plotting:"),
-              sliderInput(ns("slider1"), "y Min", min = 0, max = 1, value = 0),
+              sliderInput(ns("range"), "Range:", min = 0, max = 1, value = c(0, 1)),
               selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
-              sliderInput(ns("slider2"), "y Max", min = 0, max = 1, value = 1),
               selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("y"), "Target Quantity:", choices = c("Risk", "Expected Risk", "Proxy Quantity", "all")),
               selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Average Coverage"), "Coverage Error"),
-              selectInput(ns("sep_group"), "Separately show:", choices = c("dgp", "inducer", "none")),
+              selectInput(ns("sep_group"), "Color:", choices = c("dgp", "inducer", "none")),
               pickerInput(ns("method"), "Method:",
                 choices = METHODS,
                 multiple = TRUE,
@@ -53,10 +52,9 @@ specifications_aggregated = function(id) {
 
 
 fallback_plot = function(data, input, globalOps) {
-  data = data[as.character(method) %in% globalOps$methods_global() & as.character(dgp) %in% globalOps$dgps_global() ]
+  data = data[as.character(method) %in% globalOps$methods_global() & as.character(dgp) %in% globalOps$dgps_global()]
   y = switch(input$y,
-    "Risk" = "y_R",
-    "Expected Risk" = "y_ER",
+    "Risk" = "y_R",    "Expected Risk" = "y_ER",
     "Proxy Quantity" = "y_PQ",
     "all" = "all"
   )
@@ -75,8 +73,8 @@ fallback_plot = function(data, input, globalOps) {
 
   scales = translate_scales(input$free_scales)
 
-  min_y = input$slider1
-  max_y = input$slider2
+  min_y = input$range[1]
+  max_y = input$range[2]
 
   vec = c("inducer", "dgp", "method", "size")
   if (!is.null(aggregate)) {
@@ -183,8 +181,7 @@ specification_factory = function(atom, view_name, download_name, plot_name) {
               column(
                 6,
                 # helpText("Select variables for plotting:"),
-                sliderInput(ns("slider1"), "y Min", min = 0, max = 1, value = 0),
-                sliderInput(ns("slider2"), "y Max", min = 0, max = 1, value = 1),
+                sliderInput(ns("range"), "Range:", min = 0, max = 1, value = c(0, 1)),
                 selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
                 selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
                 selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
@@ -233,9 +230,6 @@ plotter_factory = function(atom) {
 
     scales = translate_scales(input$free_scales)
     
-    min_y = input$slider1
-    max_y = input$slider2
-
     data = if (input$evaluation == "Coverage Error") {
       data[
         data[[atom]] == input$atom & size >= min_size & size <= max_size & measure %in% translate_losses(input$loss_regr, input$loss_classif),
@@ -260,7 +254,7 @@ plotter_factory = function(atom) {
       p + labs(
           x = paste0(input$evaluation, " for ", input$target),
           y = input$color
-        ) + xlim(min_y, max_y)
+        ) + xlim(input$range[1], input$range[2])
 
       if (input$evaluation == "Average Coverage") {
         p = p + geom_vline(xintercept = 0.95, color = "red")
@@ -273,7 +267,7 @@ plotter_factory = function(atom) {
         x = "Dataset Size",
         y = paste0(input$evaluation, " for ", input$target) 
       ) +
-       ylim(min_y, max_y) +
+       ylim(input$range[1], input$range[2]) +
        geom_line()
     }
   }

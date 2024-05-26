@@ -1,6 +1,6 @@
 <div style='text-align:left;'><p>
 
-This shiny-app is a visual exploration of our large-scale benchmark experiment, which compared various methods for constructing confidence intervals for the generalization error.<br><br>
+This shiny-app is a visual exploration of a large-scale benchmark experiment that compared various methods for constructing confidence intervals for the generalization error.<br><br>
 
 The general dimensions of the analysis are:<br>
 
@@ -21,23 +21,5 @@ The general dimensions of the analysis are:<br>
        We evaluate the coverage of the confidence intervals with respect to three target quantity, namely the Risk, the Expected Risk and the proxy quantity (if applicable).
 </ul>
 
-
-For the main analysis, we only consider a subset of the inference methods, as the plots otherwise become hard to read.<br>
-
-The inference methods that are excluded from the analysis are:
- <ul>
-  <li> <b>Bayle</b>:
-       We only include the cross-validation the results for the all-pairs estimator.<br>
-       This is, because there is no noticeable difference when using the within-fold variance estimator.
-  <li> <b>OOB/632</b>:
-       For 10, 50 and 100 repetitions, the confidence intervals are far too wide and are not included therefore.<br>
-       Further, the versions with 500 repetitions and 1000 repetitions perform similarly and we therefore only include the better version with 1000 repetitions in the main analysis.
-
-</ul> 
-
-We also exlcude <i>chen_10_null</i> DGP, which is the only DGP without a relationship between the features and the target variable.<br> 
-A/perce
-
-It is analysed separately.
 </p><p>&nbsp;</p><hr><p>&nbsp;</p>
 </div>

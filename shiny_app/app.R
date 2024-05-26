@@ -116,15 +116,15 @@ plotPage = fluidPage(
         withMathJax(),
         specification_target_comparsion("target_comparison")
       )),
-      tabPanel("Width vs. Coverage Error", fluidPage(
+      tabPanel("Width vs. Cov.", fluidPage(
         withMathJax(),
         specification_width_vs_coverage("width_vs_coverage")
       )),
-      tabPanel("Under vs. Over", fluidPage(
+      tabPanel("Under/Over-Cov", fluidPage(
         withMathJax(),
         specification_under_vs_over("under_vs_over")
       )),
-      tabPanel("CIs for CI Coverage", fluidPage(
+      tabPanel("CIs for Coverage", fluidPage(
         withMathJax(),
         specification_cis_for_cis("cis_for_cis")
       )),
@@ -252,18 +252,6 @@ server = function(input, output, session) {
   
 
   callModule(function(input, output, session) {
-    observeEvent(input$slider1, {
-      if (input$slider1 >= input$slider2) {
-        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
-      }
-    })
-
-    observeEvent(input$slider2, {
-      if (input$slider2 <= input$slider1) {
-        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
-      }
-    })
-
     observe({
       if (is.null(input$method) || length(input$method) == 0) {
         updatePickerInput(session, "method", selected = levels(as.factor(as.data.frame(ci_aggr)$method))[1])
@@ -306,19 +294,6 @@ server = function(input, output, session) {
       methods = globalOps$methods_global()
       updateSelectInput(session, "atom",choices = methods, selected = if (length(methods)) methods[1L])
     })
-    
-    observeEvent(input$slider1, {
-      if (input$slider1 >= input$slider2) {
-        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
-      }
-    })
-
-    observeEvent(input$slider2, {
-      if (input$slider2 <= input$slider1) {
-        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
-      }
-    })
-    
     output$Pmethod = renderPlotly({
       clicker = button_clicked()
       g = make_methodplot(ci_aggr, input, globalOps)
@@ -345,17 +320,6 @@ server = function(input, output, session) {
 
   callModule(function(input, output, session) {
 
-    observeEvent(input$slider1, {
-      if (input$slider1 >= input$slider2) {
-        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
-      }
-    })
-
-    observeEvent(input$slider2, {
-      if (input$slider2 <= input$slider1) {
-        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
-      }
-    })
     output$Pinducer = renderPlotly({
       clicker = button_clicked()
       g = make_inducerplot(ci_aggr, input, globalOps)
@@ -381,11 +345,14 @@ server = function(input, output, session) {
   }, "SxC_inducer")
 
   callModule(function(input, output, session) {
-
-
     observe({
       dgps = globalOps$dgps_global()
       updatePickerInput(session, "dgps", choices = dgps, selected = dgps)
+    })
+
+    observe({
+      plotlyProxy("Ptarget_comparison", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
     observe({
@@ -415,7 +382,17 @@ server = function(input, output, session) {
 
   callModule(function(input, output, session) {
     observe({
-      updatePickerInput(session, "dgps",choices=globalOps$dgps_global())
+      dgps = globalOps$dgps_global()
+      updatePickerInput(session, "dgps", choices = dgps, selected = dgps)
+    })
+    observe({
+      methods = globalOps$methods_global()
+      updatePickerInput(session, "methods", choices = methods, selected = methods)
+    })
+
+    observe({
+      plotlyProxy("Pwidth_vs_coverage", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
     output$Pwidth_vs_coverage = renderPlotly({
       clicker = button_clicked()
@@ -438,10 +415,23 @@ server = function(input, output, session) {
   }, "width_vs_coverage")
 
   callModule(function(input, output, session) {
+    observe({
+      dgps = globalOps$dgps_global()
+      updatePickerInput(session, "dgps", choices = dgps, selected = dgps)
+    })
+    observe({
+      methods = globalOps$methods_global()
+      updatePickerInput(session, "methods", choices = methods, selected = methods)
+    })
     output$Punder_vs_over = renderPlotly({
       clicker = button_clicked()
       g = make_under_vs_over_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_under_vs_over", g)
+    })
+
+    observe({
+      plotlyProxy("Punder_vs_over", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
     })
 
     output$Dunder_vs_over = downloadHandler(
@@ -460,11 +450,25 @@ server = function(input, output, session) {
 
 
   callModule(function(input, output, session) {
+    observe({
+      dgps = globalOps$dgps_global()
+      updatePickerInput(session, "dgp", choices = dgps, selected = if (length(dgps)) dgps[1])
+    })
+    observe({
+      methods = globalOps$methods_global()
+      updatePickerInput(session, "methods", choices = methods, selected = methods)
+    })
+    observe({
+      plotlyProxy("Pcis_for_cis", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
     output$Pcis_for_cis = renderPlotly({
       clicker = button_clicked()
       g = make_cis_for_cis_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_cis_for_cis", g)
     })
+
+    
 
     output$Dcis_for_cis = downloadHandler(
       filename = function() {
@@ -502,6 +506,20 @@ server = function(input, output, session) {
   }, "inducer_performance")
 
   callModule(function(input, output, session) {
+    observe({
+      dgps = globalOps$dgps_global()
+      updatePickerInput(session, "dgps", choices = dgps, selected = dgps)
+    })
+    observe({
+      methods = globalOps$methods_global()
+      updatePickerInput(session, "methods", choices = methods, selected = methods)
+    })
+
+    observe({
+      plotlyProxy("Pchen_10_null", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
+
     output$Pchen_10_null = renderPlotly({
       clicker = button_clicked()
       g = make_chen_10_null_plot(ci_aggr_null, input, globalOps)
@@ -526,18 +544,6 @@ server = function(input, output, session) {
     observe({
       dgps = globalOps$dgps_global()
       updateSelectInput(session, "atom", choices = dgps, selected = if (length(dgps)) dgps[1])
-    })
-
-    observeEvent(input$slider1, {
-      if (input$slider1 >= input$slider2) {
-        updateSliderInput(session, "slider2", value = input$slider1 + 0.1)
-      }
-    })
-
-    observeEvent(input$slider2, {
-      if (input$slider2 <= input$slider1) {
-        updateSliderInput(session, "slider1", value = input$slider2 - 0.1)
-      }
     })
 
     output$Pdgp = renderPlotly({
