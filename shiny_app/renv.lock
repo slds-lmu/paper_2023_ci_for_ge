@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://ftp.fau.de/cran"
+        "URL": "https://packagemanager.posit.co/cran/latest"
       }
     ]
   },

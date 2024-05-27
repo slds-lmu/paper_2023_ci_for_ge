@@ -54,9 +54,11 @@ data/artificial/*.pq
 data/splits/**/*.parquet
 data/lambdas.rds
 
-results/*.rds
+results/ci.rds
+results/ci_small.rds
+results/density-estimate/*.rds
+results/final.rds
+results/raw/*.rds
 
 *.pyc
 figures
-
-results/**/*.rds
