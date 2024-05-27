@@ -1,13 +1,15 @@
 # Confidence Intervals for the Generalization Error
 
-## Start App
+[//]: # ## Start App 
 
-To start the shiny-app, first make sure that `renv` is installed and run `renv::restore("shiny_app")` from the root of this repository.
-To start the app, simply run the code below from the root of this repository.
+[//]: # To start the shiny-app, first make sure that `renv` is installed and run
+[//]: # `renv::restore("shiny_app")` from the root of this repository.
+[//]: # To start the app, simply run the code below from the root of this repository.
 
-```bash
-make shiny
-```
+[//]: # ```bash
+[//]: # make shiny
+[//]: # ```
+
 
 ## Overview
 
