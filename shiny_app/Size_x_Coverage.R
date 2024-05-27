@@ -18,7 +18,7 @@ specifications_aggregated = function(id) {
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("y"), "Target Quantity:", choices = c("Risk", "Expected Risk", "Proxy Quantity", "all")),
-              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Average Coverage"), "Coverage Error"),
+              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Coverage Frequency"), "Coverage Error"),
               selectInput(ns("sep_group"), "Color:", choices = c("dgp", "inducer", "none")),
               pickerInput(ns("method"), "Method:",
                 choices = METHODS,
@@ -119,7 +119,7 @@ fallback_plot = function(data, input, globalOps) {
         y = input$sep_group
       )
 
-    if (input$evaluation == "Average Coverage") {
+    if (input$evaluation == "Coverage Frequency") {
       output = output + geom_vline(xintercept = 0.95, color = "red")
     }
   } else {
@@ -148,7 +148,7 @@ fallback_plot = function(data, input, globalOps) {
       )
     } else {
       output + labs(
-        y = "Average Coverage",
+        y = "Coverage Frequency",
         x = "Dataset Size"
       ) + 
       geom_hline(yintercept = 0.95, color = "red")
@@ -185,7 +185,7 @@ specification_factory = function(atom, view_name, download_name, plot_name) {
                 selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
                 selectInput(ns("min_size"), "Min Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "100"),
                 selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
-                selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Average Coverage"), "Coverage Error"),
+                selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Coverage Frequency"), "Coverage Frequency"),
                 selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
                 selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
                 selectInput(ns("target"), "Target Quantity:", choices = c("Risk", "Expected Risk", "Proxy Quantity"), selected = "Risk"),
@@ -251,12 +251,12 @@ plotter_factory = function(atom) {
     if (min_size == max_size) {
       p = ggplot(data, aes_string(x = "y", y = input$color)) + geom_point()
       if (input$group != "none") p = p + facet_wrap(as.formula(paste0("~", input$group)), scales = scales)
-      p + labs(
+      p = p + labs(
           x = paste0(input$evaluation, " for ", input$target),
-          y = input$color
+          y = input$evaluation
         ) + xlim(input$range[1], input$range[2])
 
-      if (input$evaluation == "Average Coverage") {
+      if (input$evaluation == "Coverage Frequency") {
         p = p + geom_vline(xintercept = 0.95, color = "red")
       }
       p

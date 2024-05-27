@@ -18,6 +18,7 @@ source("inducer_performance.R")
 source("under_vs_over.R")
 source("cis_for_cis.R")
 source("global_options.R")
+source("az.R")
 
 
 ui = fluidPage(
@@ -33,9 +34,9 @@ ui = fluidPage(
 Error”")),
     div(
       class = "buttons",
-      actionButton("viewPlot", "Plots"),
+      actionButton("viewExplanation", "Overview"),
       actionButton("viewData", "Data"),
-      actionButton("viewExplanation", "View explanation again")
+      actionButton("viewPlot", "Plots")
     )
   ),
   fluidRow(
@@ -75,24 +76,36 @@ dataPage = fluidPage(
   fluidRow(hr(""),
   HTML(paste(readLines("HTMLS/data_explanation.html"), collapse = ""))),
   tabsetPanel(
-  tabPanel("Data Overview",
+  tabPanel("DGPs",
     mainPanel(div(
     class = "content",
     width = 12,
     DT::dataTableOutput("data_overview")
   ))),
-    tabPanel("All Data",
-      mainPanel(div(
-      class = "content",
-      width = 12,
-      DT::dataTableOutput("mytable")
-    ))),
-  tabPanel("Parameter data",
-           mainPanel(div(
-             class = "content",
-             width = 12,
-             DT::dataTableOutput("data_sheet")
-           )))
+  tabPanel("Inference Methods",
+    mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("method_overview")
+  ))),
+  tabPanel("Inducers",
+    mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("inducer_overview")
+  ))),
+  tabPanel("Loss Functions",
+    mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("loss_overview")
+  ))),
+  tabPanel("Results",
+    mainPanel(div(
+    class = "content",
+    width = 12,
+    DT::dataTableOutput("result_overview")
+  )))
   )
 )
 
@@ -103,7 +116,7 @@ plotPage = fluidPage(
     withMathJax(),
     tabsetPanel(
       specifications_DataOps("data_opsNS"),
-      tabPanel("Size vs. Coverage Error", fluidPage(
+      tabPanel("Size vs. Coverage", fluidPage(
         withMathJax(),
         tabsetPanel(
           specifications_aggregated("SxC_aggr"),
@@ -138,6 +151,7 @@ plotPage = fluidPage(
       )),
       tabPanel("Austern & Zhou", fluidPage(
         withMathJax(),
+        specification_az("az")
       )),
       specifications_download("downloadNS")
     )
@@ -181,7 +195,15 @@ server = function(input, output, session) {
   })
 
 
-  output$mytable = DT::renderDataTable(ci_aggr,
+  output$result_overview = DT::renderDataTable(ci_aggr_overview,
+    options = list(scrollX = TRUE),
+    rownames = FALSE
+  )
+  output$loss_overview = DT::renderDataTable(LOSS_OVERVIEW,
+    options = list(scrollX = TRUE),
+    rownames = FALSE
+  )
+  output$inducer_overview = DT::renderDataTable(INDUCER_OVERVIEW,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
@@ -192,6 +214,11 @@ server = function(input, output, session) {
   )
 
   output$data_overview = DT::renderDataTable(DATA_OVERVIEW,
+    options = list(scrollX = TRUE),
+    rownames = FALSE
+  )
+
+  output$method_overview = DT::renderDataTable(METHOD_OVERVIEW,
     options = list(scrollX = TRUE),
     rownames = FALSE
   )
@@ -210,6 +237,10 @@ server = function(input, output, session) {
 
   observeEvent(input$Vinducer, {
     button_clicked("VIEW_inducer")
+  })
+
+  observeEvent(input$Vaz, {
+    button_clicked("VIEW_az")
   })
 
   observeEvent(input$Vinducer_performance, {
@@ -570,6 +601,32 @@ server = function(input, output, session) {
       }
     )
   }, "SxC_dgp")
+
+  callModule(function(input, output, session) {
+    output$Paz = renderPlotly({
+      clicker = button_clicked()
+      g = make_az_plot(az, input, globalOps)
+      makeplot(clicker, "VIEW_az", g)
+    })
+    
+    observe({
+      plotlyProxy("Paz", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
+
+    output$Ddgp = downloadHandler(
+      filename = function() {
+        "plot.png"
+      },
+      content = function(file) {
+        g = make_daz(ci_aggr, input, globalOps)
+        if (!is.null(addon_applied)) {
+          g = g + eval(parse(text = download_global$code()))
+        }
+        ggsave(file, plot = g, width = as.numeric(download_global$width()), height = as.numeric(download_global$height()), device = "png", units = download_global$units())
+      }
+    )
+  }, "az")
 }
 
 # Run the application

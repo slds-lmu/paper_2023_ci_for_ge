@@ -19,7 +19,7 @@ specification_width_vs_coverage = function(id) {
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("target"), "Target:", choices = c("Risk", "Expected Risk", "Proxy Quantity"), "Risk"),
-              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Average Coverage"), "Coverage Error"),
+              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Coverage Frequency"), "Coverage Frequency"),
               selectInput(ns("sep_group"), "Group:", choices = c("dgp", "inducer", "none")),
               pickerInput(ns("inducers"), "inducers:",
                 choices = INDUCERS,
@@ -132,7 +132,7 @@ make_width_vs_coverage_plot = function(data, input, globalOps) {
       y = input$evaluation
     )
 
-  if (input$evaluation == "Average Coverage") {
+  if (input$evaluation == "Coverage Frequency") {
     p = p + geom_hline(yintercept = 0.95, color = "red")
   }
   p

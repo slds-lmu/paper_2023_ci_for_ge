@@ -4,6 +4,8 @@ specification_inducer_performance = function(id) {
     "Inducer Performance",
     div(
       class = "content",
+      fluidRow(column(12,
+        HTML(paste(readLines("HTMLS/inducer_performance.html"), collapse = "")))),
       sidebarLayout(
         sidebarPanel(
           fluidRow(

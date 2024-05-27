@@ -17,7 +17,7 @@ specification_target_comparsion = function(id) {
               selectInput(ns("max_size"), "Max Size:", choices = as.character(c(100L, 500L, 1000L, 5000L, 10000L)), "10000"),
               selectInput(ns("free_scales"), "Free Scales:", choices = c("x", "y", "both", "none"), "none"),
               selectInput(ns("loss_regr"), "Loss (regr):", LOSSES$regr, "Squared"),
-              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Average Coverage"), "Coverage Error"),
+              selectInput(ns("evaluation"), "Evaluation:", choices = c("Coverage Error", "Coverage Frequency"), "Coverage Error"),
               selectInput(ns("loss_classif"), "Loss (classif):", LOSSES$classif, "Zero-One"),
               selectInput(ns("method"), "Method:", choices = PQ_METHODS, selected = "bayle_10_within"),
               pickerInput(ns("inducers"), "Inducers:",
@@ -103,7 +103,7 @@ make_target_comparison_plot = function(data, input, globalOps) {
       x = "Dataset Size"
     )
 
-  if (input$evaluation == "Average Coverage") {
+  if (input$evaluation == "Coverage Frequency") {
     p = p + geom_hline(yintercept = 0.95, color = "red")
   }
 

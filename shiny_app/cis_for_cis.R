@@ -4,6 +4,8 @@ specification_cis_for_cis = function(id) {
     "CIs for Coverage",
     div(
       class = "content",
+      fluidRow(column(12,
+        HTML(paste(readLines("HTMLS/cis_for_cis.html"), collapse = "")))),
       sidebarLayout(
         sidebarPanel(
           fluidRow(
@@ -69,6 +71,6 @@ make_cis_for_cis_plot = function(data, input, globalOps) {
     xlim(input$range[1], input$range[2]) +
     geom_vline(xintercept = 0.95, color = "red", linetype = "dotted") +
     labs(
-      x = "Coverage Ratio"
+      x = "Coverage Frequency"
     )
 }

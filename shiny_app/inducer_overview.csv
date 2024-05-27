@@ -1,0 +1,5 @@
+name,Description
+lm_or_logreg,Fit a standard linear model to regression problems and a logistic model to classification problems. Results for this inducer should be interpreted with care for datases of size 100 with a large number of features.
+ridge_lm_or_logreg,"Fit a L2-penalized linear model to regression problems and L2-penalized logistic model to classification problems. For each combination of (DGP, n), a reasonable lambda parameter was found beforehand and then used for all 500 replications of an experiment."
+decision_tree,A regression or classification tree as implemented in the rpart R package.
+random_forest,A random forest with 50 trees as implemented in the R package ranger.

@@ -1,0 +1,12 @@
+<div style='text-align:left;'><p>
+
+Besides the main benchmark study, we conducted a separate experiment that compared the variance estimator from the ROCV inference method (Austern and Zhou) with the true variance of the CV point estimate.
+We used a linear regression model on datasets simulated from a distribution following the relationship below:
+
+$$Y_i = X_i + E_i, \quad \text{where } i = 1, \ldots, n, \quad X_i \overset{i.i.d.}{\sim} \mathcal{N}(0, 1), \quad E_i \overset{i.i.d.}{\sim} \mathcal{N}(0, 0.04)$$
+The experiment was repeated for different choices of $$n \in \{500, 1000, 5000, 10000\}$$.
+To estimate the true variance of the (5-fold) cross-validation, we obtained 100 cross-validation point estimates on independently simulated datasets.
+The variance estimator for the ROCV method was repeated 10 times.
+The plot below shows that the ratio of the estimated standard deviation to the true standard deviation of the cross-validation point estimate is close to sqrt(2), thereby empirically supporting our theoretical argument.
+</p><p>&nbsp;</p><hr><p>&nbsp;</p>
+</div>

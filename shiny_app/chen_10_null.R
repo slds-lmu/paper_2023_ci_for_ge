@@ -58,8 +58,6 @@ specification_chen_10_null = function(id) {
 make_chen_10_null_plot = function(data, input, globalOps) {
   target = translate_target(input$target)
 
-  print(data)
-
   data = data[
     size %in% as.integer(input$sizes) &
       measure %in% translate_losses(input$loss_regr, input$loss_classif) &
@@ -80,7 +78,7 @@ make_chen_10_null_plot = function(data, input, globalOps) {
     geom_vline(xintercept = 0.95, color = "red") +
     xlim(NA, 1) + 
     labs(
-      x = "Coverage Ratio",
+      x = "Coverage Frequency",
       y = "Inference Method"
     )
   }

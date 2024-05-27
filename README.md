@@ -1,9 +1,22 @@
 # Confidence Intervals for the Generalization Error
 
+## Start App
+
+To start the shiny-app, simply clone the repository, make sure that you have `renv` installed, and then run the code below.
+
+```bash
+make shiny
+```
+
+This will first restore the renv environment (containing only the packages required to run the shiny app), and then start the application. 
+
+## Oveview
+
 This is the code accompanying the Paper <TODO></TODO>
 
 The content of this repository is:
 
+* `./shiny_app/` contains the code for the shiny-app, which allows for a convenient visual exploration of the experiment results. 
 * `./data/` contains some input data and is the folder where datasets that are generated will be stored.
 * `./datamodels/` contains the code related to the generation of the datasets.
 * `./experiments` contains the code for the main experiments comparing the different confidence interval methods.

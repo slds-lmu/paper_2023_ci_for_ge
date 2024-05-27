@@ -1,5 +1,7 @@
 ci_aggr_orig <- readRDS(here("results", "ci_aggr.rds"))
 
+az = readRDS(here("results", "az.rds"))
+
 ci_aggr_orig$inducer = mlr3misc::map_chr(ci_aggr_orig$learner, function(l) {
   switch(as.character(l),
     "linear" = "lm_or_logreg",
@@ -19,6 +21,12 @@ ci_aggr[, let(dgp = droplevels(dgp))]
 
 ci_aggr_null <- ci_aggr_orig[dgp == "chen_10_null", ]
 ci_aggr_null$dgp <- NULL
+
+ci_aggr_overview = ci_aggr[, c(
+  c("method", "dgp", "task_type", "size", "inducer", "measure", "cov_R", "cov_ER", "cov_PQ", "width", "bias", "ER")
+)]
+
+setnames(ci_aggr_overview, "ER", "Expected Risk")
 
 capitalize <- function(x) {
   paste0(toupper(substring(x, 1, 1)), substring(x, 2))
@@ -128,10 +136,9 @@ DEFAULT_METHODS = setdiff(METHODS, c(
   "oob_10",
   "632plus_10",
   "oob_50",
-  "ls_bootstrap_50",
   "632plus_50",
   "oob_100",
-  "ls_bootstrap_100",
+  "ls_bootstrap_50",
   "632plus_100"
 ))
 
@@ -185,6 +192,7 @@ ATOM_CHOICES <- list(
 )
 
 DATA_OVERVIEW <- data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]
+setnames(DATA_OVERVIEW, "dgp", "name")
 
 translate_scales = function(free_scales) {
   switch(free_scales, 
@@ -194,3 +202,14 @@ translate_scales = function(free_scales) {
     NULL
   )
 }
+
+METHOD_OVERVIEW = fread(here("shiny_app", "method_overview.csv"))
+METHOD_OVERVIEW$new_name = NULL
+
+setnames(ci_aggr_overview, 
+  c("cov_R", "cov_ER", "cov_PQ"),
+  c("Cov. R", "Cov. ER", "Cov. PQ")
+)
+
+INDUCER_OVERVIEW = fread(here("shiny_app", "inducer_overview.csv"))
+LOSS_OVERVIEW = fread(here("shiny_app", "loss_overview.csv"))
