@@ -22,6 +22,14 @@ specification_inducer_performance = function(id) {
         mainPanel(
           div(
             class = "plot-container",
+            numericInput(
+              inputId = ns("height_input"),
+              label = "Add to display height:",
+              value = 400,    # Default value
+              min = NA,     # Minimum value (optional)
+              max = NA,     # Maximum value (optional)
+              step = 50     # Step size (optional)
+            ),
             plotlyOutput(ns("Pinducer_performance"))
           )
         )
