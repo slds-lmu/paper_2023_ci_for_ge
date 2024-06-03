@@ -512,6 +512,12 @@ server = function(input, output, session) {
       g = make_inducer_performance_plot(ci_aggr, input, globalOps)
       makeplot(clicker, "VIEW_inducer_performance", g)
     })
+
+    
+    observe({
+      plotlyProxy("Pinducer_performance", session) %>%
+        plotlyProxyInvoke("relayout", list(height = input$height_input))
+    })
     
     output$Dinducer_performance = downloadHandler(
       filename = function() {

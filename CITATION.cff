@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  Reproducible code for ''Constructing confidence intervals
+  for 'the' Generalization Error''
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Sebastian
+    family-names: Fischer
+    email: sebastian.fischer@stat.uni-muenchen.de
+    affiliation: 'Department of Statistics, LMU Munich'
+    orcid: 'https://orcid.org/0000-0002-9609-3197'
+  - given-names: Hannah
+    family-names: Schulz-Kümpel
+    email: hannah.kuempel@stat.uni-muenchen.de
+    affiliation: 'Department of Statistics, LMU Munich'
+    orcid: 'https://orcid.org/0000-0003-3972-8392'
+identifiers:
+  - type: url
+    value: 'https://github.com/slds-lmu/paper_2023_ci_for_ge'
+    description: GitHub repo
+repository-code: 'https://github.com/slds-lmu/paper_2023_ci_for_ge'
+url: 'http://127.0.0.1:3547'
+license: MIT
