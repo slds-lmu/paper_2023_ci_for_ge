@@ -88,14 +88,14 @@ make_64plots(data=ci_aggr,
              input_y = "Expected Risk",input_range = c(0,1), input_size = 500,
              input_evaluation = "Coverage Frequency",
              input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "lm_or_logreg") 
+             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "lm_or_logreg") +ggtitle("Plot for expected risk, classic loss and lm/logistic regression")
 ggsave("64plots/PNGs/ER_lmlog.png",width=9,height=7.5)
 
 make_64plots(data=ci_aggr,
              input_y = "Expected Risk",input_range = c(0,1), input_size = 500,
              input_evaluation = "Coverage Frequency",
              input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "decision_tree") 
+             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "decision_tree") +ggtitle("Plot for expected risk, classic loss and decision tree")
 ggsave("64plots/PNGs/ER_decisiontree.png",width=9,height=7.5)
 
 make_64plots(data=ci_aggr,
