@@ -48,11 +48,13 @@ make_64plots = function(data,
 
   ####
   plotdata <- add_info(newdat,DATA_OVERVIEW,"dgp","name")
-  plotdata$width <- round(plotdata$width,2)
-  plotdata$numwidth <- as.character(plotdata$width)
+  #plotdata$stand_width <- round(plotdata$width/mean(plotdata$width),2)
+  plotdata$numwidth <- as.character(plotdata$stand_width)
   
-  max <- round(max(plotdata$width),1)
-  breaks <- c(0, 0.5, 1, 2, max)
+  plotdata <- plotdata[, stand_width := round(width/mean(width),2), by = dgp]
+  plotdata$numwidth <- as.character(plotdata$stand_width)
+  
+  breaks <- c(0,0.5,1,1.5,max(plotdata$stand_width))
   colors <- c("darkgreen","darkblue", "purple", "red")
   ####
   
@@ -88,14 +90,14 @@ make_64plots(data=ci_aggr,
              input_y = "Expected Risk",input_range = c(0,1), input_size = 500,
              input_evaluation = "Coverage Frequency",
              input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "lm_or_logreg") +ggtitle("Plot for expected risk, classic loss and lm/logistic regression")
+             methods = setdiff(DEFAULT_METHODS,c("ls_bootstrap_100","ts_bootstrap")), dgps = DGPS, inducers = "lm_or_logreg") +ggtitle("Plot for expected risk, classic loss and lm/logistic regression")
 ggsave("64plots/PNGs/ER_lmlog.png",width=9,height=7.5)
 
 make_64plots(data=ci_aggr,
              input_y = "Expected Risk",input_range = c(0,1), input_size = 500,
              input_evaluation = "Coverage Frequency",
              input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-             methods = DEFAULT_METHODS, dgps = DGPS, inducers = "decision_tree") +ggtitle("Plot for expected risk, classic loss and decision tree")
+             methods = setdiff(DEFAULT_METHODS,c("ls_bootstrap_100","ts_bootstrap")), dgps = DGPS, inducers = "decision_tree") +ggtitle("Plot for expected risk, classic loss and decision tree")
 ggsave("64plots/PNGs/ER_decisiontree.png",width=9,height=7.5)
 
 make_64plots(data=ci_aggr,
