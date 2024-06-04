@@ -44,7 +44,8 @@ ci_aggr = ci[, .(
   ER = if (uniqueN(ER) == 1) unique(ER) else stop(),
   R_sd = sd(R),
   estimate_sd = sd(estimate),
-  task_type = as.factor(task_type[1])
+  task_type = as.factor(task_type[1]),
+  iters = iters 
 ), by = c("task", "learner", "size", "method",  "measure")]
 
 removed_methods = c(

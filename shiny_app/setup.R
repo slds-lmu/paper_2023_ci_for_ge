@@ -192,7 +192,6 @@ ATOM_CHOICES <- list(
 )
 
 DATA_OVERVIEW <- data.table::fread(here("shiny_app", "dgps.csv"))[, -"openml_id"]
-setnames(DATA_OVERVIEW, "dgp", "name")
 
 translate_scales = function(free_scales) {
   switch(free_scales, 
