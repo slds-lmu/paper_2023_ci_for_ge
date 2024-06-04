@@ -57,6 +57,10 @@ make_64plots = function(data,
   breaks <- c(0,0.5,1,1.5,max(plotdata$stand_width))
   colors <- c("darkgreen","darkblue", "purple", "red")
   ####
+  cat("levels(as.factor(plotdata$dgp)):\n")
+  print(levels(as.factor(plotdata$dgp)))
+  cat("dgps:\n")
+  print(dgps)
   
   p <- make_baseplot(plotdata,y,input_evaluation,input_range,inducers,scales,colors,breaks)
   
