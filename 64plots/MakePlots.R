@@ -110,23 +110,19 @@ make_64plots(data = ci_aggr,
   input_loss_regr = "Squared", input_loss_classif = "Zero-One",
   methods = DEFAULT_METHODS, dgps = DGPS, inducers = INDUCERS,
   sep_reg_class = FALSE)
-
-inducers = unique(ci_aggr$inducer)
-sizes = unique(ci_aggr$size)
-
-
 make_64plots(data = ci_aggr,
   input_y = "Risk", input_range = c(0, 1), input_size = 100,
   input_evaluation = "Coverage Frequency",
   input_loss_regr = "Squared", input_loss_classif = "Zero-One",
   methods = DEFAULT_METHODS, dgps = DGPS, inducers = "random_forest",
   sep_reg_class = FALSE) + ggtitle(
-  paste("inducer: ", inducer, ", size: ", 100, ", target: ", input_y, ", loss: L2/0-1")
+  paste("inducer: ", "random_forest", ", size: ", 100, ", target: ", "Risk", ", loss: L2/0-1")
 )
 
 ggsave(here("64plots", "PNGs", "test.png"), width = 12, height = 14)
 
-stop()
+inducers = unique(ci_aggr$inducer)
+sizes = unique(ci_aggr$size)
 
 for (inducer in inducers) {
   for (size in sizes) {
