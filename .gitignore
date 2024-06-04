@@ -60,5 +60,7 @@ results/density-estimate/*.rds
 results/final.rds
 results/raw/*.rds
 
+64plots/PNGs/**.png
+
 *.pyc
 figures
