@@ -12,14 +12,11 @@ ci = ci[learner != "ridge_tuned", ]
 
 ci = ci[!is.na(estimate), ]
 
-#For now, only look at a subset:
-
 ci[, let(
   task = as.factor(task),
   learner = as.factor(learner),
   measure = as.factor(measure),
-  method = as.factor(method),
-  iters = NULL
+  method = as.factor(method)
 )]
 
 
@@ -44,9 +41,16 @@ ci_aggr = ci[, .(
   ER = if (uniqueN(ER) == 1) unique(ER) else stop(),
   R_sd = sd(R),
   estimate_sd = sd(estimate),
+  rmse_ER = sqrt(mean((estimate - mean(R))^2)),
+  rmse_R = sqrt(mean((estimate - R)^2)),
   task_type = as.factor(task_type[1]),
-  iters = iters 
+  iters = mean(iters) 
 ), by = c("task", "learner", "size", "method",  "measure")]
+
+# this only has an effect for bccv and bccv_bias
+ci_aggr[, let(
+  iters = round(mean(iters))
+), by = c("size", "method")]
 
 removed_methods = c(
     paste0("oob_", c(10, 50, 100, 500)),
