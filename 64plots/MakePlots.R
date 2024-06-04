@@ -48,7 +48,9 @@ make_64plots = function(data,
   }
 
   plotdata = newdat[DATA_OVERVIEW, on = c(dgp = "name_short"), nomatch = 0]
-  plotdata[, stand_width := round(width / mean(width), 2), by = "dgp"]
+  plotdata[, let(
+    stand_width = round(width / .SD[method == "bayle_10_all_pairs", "width"][[1L]],2)
+  ), by = "dgp"]
   plotdata$numwidth = as.character(plotdata$stand_width)
 
   breaks = c(0, 0.5, 1, 1.5, max(plotdata$stand_width))
@@ -81,7 +83,7 @@ make_64plots = function(data,
     ) +
     theme_bw() +
     theme(legend.position = "bottom", legend.box = "vertical") +
-    guides(color = guide_colorbar(title = "Average CI width",
+    guides(color = guide_colorbar(title = "CI width rel. to Bayle (10)",
       barwidth = 30,
       barheight = 0.5))
 
@@ -111,6 +113,20 @@ make_64plots(data = ci_aggr,
 
 inducers = unique(ci_aggr$inducer)
 sizes = unique(ci_aggr$size)
+
+
+make_64plots(data = ci_aggr,
+  input_y = "Risk", input_range = c(0, 1), input_size = 100,
+  input_evaluation = "Coverage Frequency",
+  input_loss_regr = "Squared", input_loss_classif = "Zero-One",
+  methods = DEFAULT_METHODS, dgps = DGPS, inducers = "random_forest",
+  sep_reg_class = FALSE) + ggtitle(
+  paste("inducer: ", inducer, ", size: ", 100, ", target: ", input_y, ", loss: L2/0-1")
+)
+
+ggsave(here("64plots", "PNGs", "test.png"), width = 12, height = 14)
+
+stop()
 
 for (inducer in inducers) {
   for (size in sizes) {
