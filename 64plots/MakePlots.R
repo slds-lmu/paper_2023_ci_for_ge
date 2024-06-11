@@ -11,6 +11,7 @@ source("64plots/Plotfuns.R")
 
 inducers = unique(ci_aggr$inducer)
 sizes = unique(ci_aggr$size)
+METHODS <- setdiff(DEFAULT_METHODS, c("ls_bootstrap_100", "ts_bootstrap"))
 
 stand = "mean" #or "Bayle"
 
@@ -25,7 +26,7 @@ for (inducer in inducers) {
                              input_y = input_y, input_range = c(0, 1), input_size = size,
                              input_evaluation = "Coverage Frequency",
                              input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-                             methods = DEFAULT_METHODS, dgps = DGPS, inducers = inducer,
+                             methods = METHODS, dgps = DGPS, inducers = inducer,
                              sep_reg_class = FALSE, stand=stand) 
       initialize_nested_list(stand_loss_list_DGPs, c(as.character(size), inducer))
       initialize_nested_list(stand_loss_list_methods, c(as.character(size), inducer))
@@ -50,7 +51,7 @@ for (inducer in inducers) {
                                input_y = "Risk", input_range = c(0, 1), input_size = size,
                                input_evaluation = "Coverage Frequency",
                                input_loss_regr = loss, input_loss_classif = loss,
-                               methods = DEFAULT_METHODS, dgps = DGPS, inducers = inducer,
+                               methods = METHODS, dgps = DGPS, inducers = inducer,
                                sep_reg_class = FALSE, stand=stand)  
         initialize_nested_list(stand_loss_list_DGPs, c(as.character(size), inducer,input_y))
         initialize_nested_list(stand_loss_list_methods, c(as.character(size), inducer,input_y))
@@ -73,7 +74,7 @@ for (inducer in inducers) {
         input_y = input_y, input_range = c(0, 1), input_size = size,
         input_evaluation = "Coverage Frequency",
         input_loss_regr = "Squared", input_loss_classif = "Zero-One",
-        methods = DEFAULT_METHODS, dgps = DGPS, inducers = inducer,
+        methods = METHODS, dgps = DGPS, inducers = inducer,
         sep_reg_class = FALSE, stand=stand) 
       output[["plot"]] + + ggtitle(
         paste("inducer: ", inducer, ", size: ", size, ", target: ", input_y, ", loss: L2/0-1")
@@ -94,7 +95,7 @@ for (inducer in inducers) {
           input_y = "Risk", input_range = c(0, 1), input_size = size,
           input_evaluation = "Coverage Frequency",
           input_loss_regr = loss, input_loss_classif = loss,
-          methods = DEFAULT_METHODS, dgps = DGPS, inducers = inducer,
+          methods = METHODS, dgps = DGPS, inducers = inducer,
           sep_reg_class = FALSE, stand=stand)
         output[["plot"]] + ggtitle(
           paste("inducer: ", inducer, ", size: ", size, ", target: ", input_y, ", loss: ", loss)
