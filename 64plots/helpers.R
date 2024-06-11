@@ -89,7 +89,7 @@ initialize_nested_list <- function(lst, keys) {
   }
 }
 
-flatten_nested_list <- function(lst, parent_names = list()) {
+flatten_nested_list <- function(lst, parent_names = list(),fun=NULL) {
   do.call(rbind, lapply(names(lst), function(name) {
     current_data <- lst[[name]]
     current_parent_names <- c(parent_names, name)
@@ -98,6 +98,8 @@ flatten_nested_list <- function(lst, parent_names = list()) {
       # Create a data frame from parent names
       parent_df <- as.data.frame(t(current_parent_names), stringsAsFactors = FALSE)
       colnames(parent_df) <- paste0("Level", seq_along(current_parent_names))
+      
+      if(!is.null(fun)){current_data <- fun(current_data)}
       
       # Combine with the current data frame
       combined_df <- cbind(parent_df, current_data)

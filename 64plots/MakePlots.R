@@ -64,6 +64,20 @@ for (inducer in inducers) {
   }
 }
 
+#,fun=function(x){data.frame(n_under_R=mean(x$n_under_R),n_underER=mean(x$n_under_ER),)})
+Suspicious_DGPS_standard <- flatten_nested_list(stand_loss_list_DGPs,parent_names = list("standard:L2/0-1"))
+names(Suspicious_DGPS_standard)[1:4] <- c("loss","size","inducer","target")
+Suspicious_DGPS_other <- flatten_nested_list(other_loss_list_DGPs)
+names(Suspicious_DGPS_other)[1:4] <- c("size","inducer","target","loss")
+Suspicious_DGPS <- rbind(Suspicious_DGPS_standard,Suspicious_DGPS_other)
+save(Suspicious_DGPS,file="64plots/Data/Suspicious_DGPS.RData")
+
+MethodsAll_standard <- flatten_nested_list(stand_loss_list_methods,parent_names = list("standard:L2/0-1"))
+names(MethodsAll_standard)[1:4] <- c("loss","size","inducer","target")
+MethodsAll_other <- flatten_nested_list(other_loss_list_methods)
+names(MethodsAll_other)[1:4] <- c("size","inducer","target","loss")
+AllMethods <- rbind(MethodsAll_standard,MethodsAll_other)
+save(AllMethods,file="64plots/Data/AllMethods.RData")
 
         
 #### Making Plots
