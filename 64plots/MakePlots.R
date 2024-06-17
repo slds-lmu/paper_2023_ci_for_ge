@@ -5,7 +5,7 @@ library(here)
 library(viridis)
 
 
-source("shiny_app/setup.R")
+source("shiny_app_old/setup.R")
 source("64plots/helpers.R")
 source("64plots/Plotfuns.R")
 

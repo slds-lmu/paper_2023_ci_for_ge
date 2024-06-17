@@ -67,16 +67,26 @@ find_suspicious_dgps <- function(plotdata,y,cutoff,cutoff_method_check,CI_width)
   lower_than_cutoff <- unique(plotdata[plotdata[[y]]<cutoff & method %in%cutoff_method_check,]$dgp)
   if(length(lower_than_cutoff)>0){
     D1 <- data.frame(name=lower_than_cutoff,
-                     reason=paste0("y<",cutoff," for solid methods"))
-  }else{D1 <- data.frame(name="none",reason="none")}
+                     reason=paste0("coverage< cutoff (value) for solid methods"),
+                     value=cutoff)
+  }else{D1 <- data.frame(name="none",reason="none",value="none")}
   
   larger_than_CI_width <- plotdata[,list(mean_width=mean(width)),by="dgp"]
   larger_than_CI_width <- larger_than_CI_width[which(plotdata[,list(mean_width=mean(width)),by="dgp"]$mean_width>CI_width),]
   if(nrow(larger_than_CI_width)>0){
     D2 <- data.frame(name=unique(larger_than_CI_width$dgp),
-                     reason=paste0("average width of",unique(larger_than_CI_width$mean_width)," (>",CI_width,")"))
-  }else{D2 <- data.frame(name="none",reason="none")}
-  return(rbind(D1,D2))
+                     reason=paste0("average width >",CI_width,", specifically see value"),
+                     value=round(unique(larger_than_CI_width$mean_width),2))
+  }else{D2 <- data.frame(name="none",reason="none",value="none")}
+  
+  holdout_special <- unique(plotdata[plotdata[[y]]<0.9 & method == "holdout_90" & size == 10000,]$dgp)
+  if(length(holdout_special)>0){
+  D3 <- data.frame(name=unique(holdout_special),
+                   reason=paste0("coverage< cutoff (value) for holdout_90 and size 10000"),
+                   value=0.9)
+      }else{D3 <- data.frame(name="none",reason="none",value="none")}
+  
+  return(rbind(D1,D2,D3))
 }
 
 
