@@ -1,0 +1,19 @@
+name, name_short, task_type, p, openml_id, majority_ratio, dataset_type
+higgs, higgs, regr, 28, 45570, , physics-simulation
+bates_classif_20, bates_classif_20, classif, 20 , 45654, 50.0%, artificial
+bates_classif_100, bates_classif_100, classif, 100, 45668, 50.0%, artificial
+bates_regr_20, bates_regr_20, regr, 20 , 45655, ,artificial
+bates_regr_100, bates_regr_100, regr, 100, 45667, ,artificial
+friedman1, friedman1, regr, 10, 45666, ,artificial
+colon, colon, classif, 62, 45665, 50.0% , cov-estimate
+breast, breast, classif, 77, 45669, 50.0%, cov-estimate
+prostate, prostate, classif, 102, 45672, 50.0%, cov-estimate
+chen_10_null, chen_10_null, regr, 60, 45670, ,cov-estimate
+chen_10, chen_10, regr, 60, 45671, ,cov-estimate
+simulated_adult, adult, classif, 14 , 45689, 75.1%, density-estimate
+simulated_covertype, covertype, classif, 10, 45704, 50.0%, density-estimate
+simulated_electricity, electricity, classif, 8, 45693, 57.6%, density-estimate
+simulated_diamonds, diamonds, regr, 9, 45692, ,density-estimate
+simulated_physiochemical_protein, physiochemical_protein, regr, 9, 45694, , density-estimate
+simulated_video_transcoding, video_transcoding, regr, 18, 45696, , density-estimate
+simulated_sgemm_gpu_kernel_performance, sgemm_gpu, regr, 14, 45695, , density-estimate
