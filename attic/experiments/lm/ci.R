@@ -155,8 +155,6 @@ batchExport(list(
 
 
 chunk_size = 200L
-<<<<<<< Updated upstream
-=======
 
 i = seq_len(nrow(tbl2))
 

@@ -36,6 +36,7 @@ ci_aggr = ci[, .(
   cov_ER_se = sd(lower <= ER & upper >= ER) / .N,
   cov_PQ_se = sd(lower <= PQ & upper >= PQ) / .N,
   width = mean(upper - lower),
+  width_median = median(upper - lower),
   width_sd = sd(upper - lower),
   bias = mean(estimate - R),
   ER = if (uniqueN(ER) == 1) unique(ER) else stop(),

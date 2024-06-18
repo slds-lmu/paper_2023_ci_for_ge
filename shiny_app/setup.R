@@ -23,7 +23,7 @@ ci_aggr_null <- ci_aggr_orig[dgp == "chen_10_null", ]
 ci_aggr_null$dgp <- NULL
 
 ci_aggr_overview = ci_aggr[, c(
-  c("method", "dgp", "task_type", "size", "inducer", "measure", "cov_R", "cov_ER", "cov_PQ", "width", "bias", "ER")
+  c("method", "dgp", "task_type", "size", "inducer", "measure", "cov_R", "cov_ER", "cov_PQ", "width", "bias", "ER", "rmse_R", "rmse_ER")
 )]
 
 setnames(ci_aggr_overview, "ER", "Expected Risk")
