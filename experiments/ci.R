@@ -158,32 +158,46 @@ batchExport(list(
   reg = EVAL_REG)
 
 
-batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
-  name = tbl2[i, "name"][[1]]
-  inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
-  x = tbl2[i, "x"][[1]]
-  y = tbl2[i, "y"][[1]]
-  z = tbl2[i, "z"][[1]]
+chunk_size = 200L
 
-  args = tbl2[i, "args"][[1]][[1]]
-  learner_name = tbl2[i, "learner_name"][[1]]
-  resampling_name = tbl2[i, "resampling_name_x"][[1]]
-  task_name = tbl2[i, "task_name"][[1]]
-  size = tbl2[i, "size"][[1]]
-  repl = tbl2[i, "repl"][[1]]
+i = seq_len(nrow(tbl2))
 
-  calculate_ci(
-    name = name,
-    inference = inference,
-    x = x,
-    y = y,
-    z = z,
-    args = args,
-    learner_name = learner_name,
-    task_name = task_name,
-    resampling_name = resampling_name,
-    size = size,
-    repl = repl
-  )
+chunks = data.table(id = seq_len(nrow(tbl2)), chunk = batchtools::chunk(seq_len(nrow(tbl2)), chunk.size = chunk_size, shuffle = TRUE))
+
+chunked_args = map(unique(chunks$chunk), function(cid) {
+  ids = chunks[list(cid), "id", on = "chunk"]$id
+  map(ids, function(i) {
+    list(
+      x = tbl2[i, "x"][[1]],
+      y = tbl2[i, "y"][[1]],
+      z = tbl2[i, "z"][[1]],
+      args = tbl2[i, "args"][[1]][[1]],
+      learner_name = tbl2[i, "learner_name"][[1]],
+      resampling_name = tbl2[i, "resampling_name_x"][[1]],
+      task_name = tbl2[i, "task_name"][[1]],
+      size = tbl2[i, "size"][[1]],
+      repl = tbl2[i, "repl"][[1]]
+    )
+  })
 })
 
+
+batchMap(args = chunked_args, fun = function(args) {
+  map(args, function(arg) {
+    inference = getFromNamespace(arg$name, ns = "inferGE")
+
+    calculate_ci(
+      name = arg$name,
+      inference = inference,
+      x = arg$x,
+      y = arg$y,
+      z = arg$z,
+      args = arg$args,
+      learner_name = arrg$learner_name,
+      task_name = arg$task_name,
+      resampling_name = arg$resampling_name,
+      size = arg$size,
+      repl = arg$repl
+    )
+  }) |> rbindlist(fill = TRUE)
+})
