@@ -56,7 +56,7 @@ f = function(.row) {
 
     rr = ResampleResult$new(data)
 
-    infer_bates(rr, alpha = 0.05)
+    cbind(infer_bates(rr, alpha = 0.05), data.table(reps_outer = r))
   }), fill = TRUE)
 }
 

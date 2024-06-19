@@ -43,12 +43,18 @@ test_that("bbrier", {
 test_that("measures", {
   std_se = msr("regr.std_mse")
   percentual_se = msr("regr.percentual_mse")
+  std_ae = msr("regr.std_mae")
+  percentual_ae = msr("regr.percentual_mae")
+  winorised_se = msr("regr.winsorized_mse")
 
   task = tsk("mtcars")
   pred = lrn("regr.rpart")$train(task)$predict(task)
 
   expect_numeric(pred$score(std_se, task = task), len = 1L)
   expect_numeric(pred$score(percentual_se, task = task), len = 1L)
+  expect_numeric(pred$score(std_ae, task = task), len = 1L)
+  expect_numeric(pred$score(percentual_ae, task = task), len = 1L)
+  expect_numeric(pred$score(winorised_se, task = task), len = 1L)
 })
 
 test_that("est_gamma with standardized_se", {
@@ -56,3 +62,4 @@ test_that("est_gamma with standardized_se", {
   p = lrn("regr.rpart")$train(task)$predict(task)
   expect_numeric(est_gamma(p, standardized_se, task = task, train_set = task$row_ids))
 })
+

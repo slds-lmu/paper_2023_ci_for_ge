@@ -14,9 +14,29 @@ percentual_se = function(truth, response, ...) {
 }
 
 #' @export
+percentual_ae = function(truth, response, ...) {
+  assert_regr(truth, response = response)
+  mlr3measures::ae(truth, response) / (abs(truth) + EPS)
+}
+
+#' @export
 standardized_se = function(truth, response, task, train_set = NULL, ...) {
   assert_regr(truth, response = response)
   mlr3measures::se(truth, response) / (sd(task$truth(train_set)) + EPS)
+}
+
+#' @export
+standardized_ae = function(truth, response, task, train_set = NULL, ...) {
+  assert_regr(truth, response = response)
+  mlr3measures::ae(truth, response) / (sd(task$truth(train_set)) + EPS)
+}
+
+#' @export
+winsorized_se = function(truth, response, ...) {
+  se = mlr3measures::se(truth = prediction$truth, response = prediction$response, ...)
+  upper = quantile(se, probs = 0.9)
+  se[se >= upper] = upper
+  mean(se)
 }
 
 #' @export
@@ -38,7 +58,7 @@ bbrier = function(truth, prob, ...) {
 }
 
 #' @export
-MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
+MeasureRegrStdMSE = R6Class("MeasureRegrStdMSE",
   inherit = mlr3::MeasureRegr,
   public = list(
     initialize = function() {
@@ -61,6 +81,28 @@ MeasureRegrStdMSE = R6Class("MeasureRegrStdSE",
 )
 
 #' @export
+MeasureRegrStdMAE = R6Class("MeasureRegrStdMAE",
+  inherit = mlr3::MeasureRegr,
+  public = list(
+    initialize = function() {
+      super$initialize(
+        id = "regr.std_mae",
+        range = c(0, Inf),
+        minimize = TRUE,
+        predict_type = "response",
+        packages = "inferGE",
+        properties = "requires_task",
+        label = "Standardized MSE"
+      )
+    }
+  ),
+  private = list(
+    .score = function(prediction, train_set, ...) {
+      mean(standardized_ae(truth = prediction$truth, response = prediction$response, ...))
+    }
+  )
+)
+#' @export
 MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
   inherit = mlr3::MeasureRegr,
   public = list(
@@ -82,6 +124,55 @@ MeasureRegrPercentualMSE = R6Class("MeasureRegrPercentualMSE",
   )
 )
 
+#' @export
+MeasureRegrPercentualMAE = R6Class("MeasureRegrPercentualMAE",
+  inherit = mlr3::MeasureRegr,
+  public = list(
+    initialize = function() {
+      super$initialize(
+        id = "regr.percentual_ae",
+        range = c(0, Inf),
+        minimize = TRUE,
+        predict_type = "response",
+        packages = "inferGE",
+        label = "Percentual MAE"
+      )
+    }
+  ),
+  private = list(
+    .score = function(prediction, ...) {
+      mean(percentual_ae(truth = prediction$truth, response = prediction$response, ...))
+    }
+  )
+)
+
+#' @export
+MeasureRegrWinsorizedMSE = R6Class("MeasureRegrWinsorizedMSE",
+  inherit = mlr3::MeasureRegr,
+  public = list(
+    initialize = function() {
+      super$initialize(
+        id = "regr.winsorized_mse",
+        range = c(0, Inf),
+        minimize = TRUE,
+        predict_type = "response",
+        packages = "inferGE",
+        label = "Percentual MAE"
+      )
+    }
+  ),
+  private = list(
+    .score = function(prediction, ...) {
+      winsorized_se(truth = prediction$truth, response = prediction$response, ...)
+    }
+  )
+)
+
 #' @include zzz.R
 custom_measures[["regr.std_mse"]] = function() MeasureRegrStdMSE$new()
 custom_measures[["regr.percentual_mse"]] = function() MeasureRegrPercentualMSE$new()
+
+custom_measures[["regr.std_mae"]] = function() MeasureRegrStdMAE$new()
+custom_measures[["regr.percentual_mae"]] = function() MeasureRegrPercentualMAE$new()
+
+custom_measures[["regr.winsorized_mse"]] = function() MeasureRegrWinsorizedMSE$new()

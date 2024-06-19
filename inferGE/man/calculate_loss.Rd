@@ -4,7 +4,14 @@
 \alias{calculate_loss}
 \title{Calculate pairwise Loss fnuctoins}
 \usage{
-calculate_loss(predictions, loss_fns = NULL, na_value = NaN, task)
+calculate_loss(
+  predictions,
+  loss_fns = NULL,
+  na_value = NaN,
+  task,
+  resampling = NULL,
+  iters = seq_along(predictions)
+)
 }
 \arguments{
 \item{predictions}{(list of \code{\link{Prediction}}s)\cr

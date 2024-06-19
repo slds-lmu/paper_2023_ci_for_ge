@@ -222,7 +222,19 @@ make_resample_result = function(i, jt, reg) {
 
 # x and y represent ids of resample experiments
 # Most inference methods need only one resample experiments, but some need two
-calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name, size, repl, resampling_name) {
+calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name, size, repl, resampling_name,
+  loss_fns_classif = list(
+    logloss  = inferGE::logloss,
+    bbrier   = inferGE::bbrier,
+    zero_one = mlr3measures::zero_one
+  ),
+  loss_fns_regr = list(
+    ae              = mlr3measures::ae,
+    se              = mlr3measures::se,
+    percentual_se   = inferGE::percentual_se,
+    standardized_se = inferGE::standardized_se
+  )
+) {
   ids = list(x = x, y = y, z = z)
   if (is.na(y)) ids$y = NULL
   if (is.na(z)) ids$z = NULL
@@ -241,18 +253,9 @@ calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name,
   }
 
   loss_fns = if (rrs[[1L]]$task$task_type == "classif") {
-    list(
-      logloss  = inferGE::logloss,
-      bbrier   = inferGE::bbrier,
-      zero_one = mlr3measures::zero_one
-    )
+    loss_fns_classif
   } else {
-    list(
-      ae              = mlr3measures::ae,
-      se              = mlr3measures::se,
-      percentual_se   = inferGE::percentual_se,
-      standardized_se = inferGE::standardized_se
-    )
+    loss_fns_regr
   }
 
   params = c(rrs, list(alpha = 0.05))
