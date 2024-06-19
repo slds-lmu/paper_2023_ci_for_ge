@@ -273,7 +273,7 @@ calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name,
         task = task_name,
         size = size,
         repl = repl,
-	resampling = resampling_name,
+       	resampling = resampling_name,
         iters = sum(map_int(rrs, "iters"))
       ), ci)
 

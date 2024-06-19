@@ -34,4 +34,10 @@ Sys.setenv(FINAL_PATH = paste0(SAVE_PATH, sep = "_", "final"))
 Sys.setenv(VAR_PATH_AZ = paste0(SAVE_PATH, sep = "_", "var_az"))
 Sys.setenv(RESAMPLE_PATH_ABLATION = paste0(SAVE_PATH, sep = "_", "resample_ablation"))
 
+Sys.setenv(ABLATION_NCV = paste0(SAVE_PATH, sep = "_", "ablation_ncv"))
+Sys.setenv(ABLATION_CORT = paste0(SAVE_PATH, sep = "_", "ablation_cort"))
+Sys.setenv(ABLATION_CONZ = paste0(SAVE_PATH, sep = "_", "ablation_conz"))
+Sys.setenv(ABLATION_HO = paste0(SAVE_PATH, sep = "_", "ablation_ho"))
+Sys.setenv(ABLATION_CV = paste0(SAVE_PATH, sep = "_", "ablation_cv"))
+
 rm(SAVE_PATH)
