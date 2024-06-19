@@ -33,7 +33,7 @@ standardized_ae = function(truth, response, task, train_set = NULL, ...) {
 
 #' @export
 winsorized_se = function(truth, response, ...) {
-  se = mlr3measures::se(truth = prediction$truth, response = prediction$response, ...)
+  se = mlr3measures::se(truth = truth, response = response, ...)
   upper = quantile(se, probs = 0.9)
   se[se >= upper] = upper
   mean(se)
