@@ -163,7 +163,7 @@ MeasureRegrWinsorizedMSE = R6Class("MeasureRegrWinsorizedMSE",
   ),
   private = list(
     .score = function(prediction, ...) {
-      winsorized_se(truth = prediction$truth, response = prediction$response, ...)
+      mean(winsorized_se(truth = prediction$truth, response = prediction$response, ...))
     }
   )
 )
