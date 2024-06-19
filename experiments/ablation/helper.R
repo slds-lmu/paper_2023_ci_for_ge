@@ -8,7 +8,7 @@ make_tbl = function(.resampling_id) {
   tbl = rbindlist(map(reg_paths, function(reg_path) {
     exp_reg = loadRegistry(reg_path, make.default = FALSE)
     tbl = unwrap(getJobTable())
-    tbl = tbl[resampling_id == .resampling_id, c("job.id", "repl", "size", "task_name", "learner_id")][[1L]]
+    tbl = tbl[resampling_id == .resampling_id, c("job.id", "repl", "size", "task_name", "learner_id", "data_id")][[1L]]
     tbl$reg_path = reg_path
     tbl
   }), fill = TRUE)
