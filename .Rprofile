@@ -32,5 +32,6 @@ Sys.setenv(MERGE_PATH = paste0(SAVE_PATH, sep = "_", "merge"))
 Sys.setenv(FINAL_PATH = paste0(SAVE_PATH, sep = "_", "final"))
 
 Sys.setenv(VAR_PATH_AZ = paste0(SAVE_PATH, sep = "_", "var_az"))
+Sys.setenv(RESAMPLE_PATH_ABLATION = paste0(SAVE_PATH, sep = "_", "resample_ablation"))
 
 rm(SAVE_PATH)

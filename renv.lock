@@ -28,8 +28,7 @@
     "DT": {
       "Package": "DT",
       "Version": "0.33",
-      "Source": "Repository",
-      "Requirements": []
+      "Source": "Repository"
     },
     "DiagrammeR": {
       "Package": "DiagrammeR",
@@ -2300,8 +2299,7 @@
     "shinyWidgets": {
       "Package": "shinyWidgets",
       "Version": "0.8.6",
-      "Source": "Repository",
-      "Requirements": []
+      "Source": "Repository"
     },
     "sourcetools": {
       "Package": "sourcetools",
