@@ -4,6 +4,7 @@ library(data.table)
 library(mlr3)
 library(mlr3misc)
 library(inferGE)
+library(here)
 
 source(here("experiments", "ablation", "helper.R"))
 
@@ -13,9 +14,9 @@ reg = makeExperimentRegistry(
 )
 
 TBL = make_tbl("nested_cv")
-GROUPS = unique(tbl$group)
+GROUPS = unique(TBL$group)
 
-exportBatch(list(TBL = TBL))
+batchExport(list(TBL = TBL))
 
 f = function(.row) {
   tbl = TBL[.row, ]
@@ -30,13 +31,13 @@ f = function(.row) {
     resampling = rsmp("subsampling") 
   )
 
-  learner = lrn(tbl$learner_id[[1L]])
+  learner = lrn(tbl$learner[[1L]])
 
   repeats = 200
   folds = 5
 
-  rbindlist(map(1:repeats, function(r) {
-    res = loadResult(reg) 
+  rbindlist(map(seq(10, 200, by = 10), function(r) {
+    res = loadResult(tbl$job.id[[1L]], reg) 
     predictions = res$test_predictions
 
     preds = map(predictions[1:(folds^2 * r)], function(pred) list(test = pred))
@@ -58,7 +59,6 @@ f = function(.row) {
     infer_bates(rr, alpha = 0.05)
   }), fill = TRUE)
 }
-
 
 f(1)
 # batchMap(.row = TBL$job.id)
