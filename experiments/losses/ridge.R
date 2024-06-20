@@ -7,7 +7,7 @@ library(inferGE)
 source(here::here("experiments", "helper.R"))
 
 EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
-EVAL_PATH = Sys.getenv("CI_PATH")
+EVAL_PATH = Sys.getenv("CI_PATH_LOSSES_ORIGINAL")
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
@@ -19,6 +19,7 @@ EVAL_REG = if (file.exists(EVAL_PATH)) {
 }
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
+EXPERIMENT_TBL = EXPERIMENT_TBL[task_type == "regr", ]
 
 # order is as in experiments/design.R
 # we use the default alpha = 0.05 everywhere
@@ -39,8 +40,8 @@ EVAL_CONFIG = list(
   list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                               list()),
 
   # cv_5
-  list("bayle_5_within",    "infer_bayle",           list(x = "cv_5"),                                          list(variance = "within-fold")),
-  list("bayle_5_all_pairs", "infer_bayle",           list(x = "cv_5"),                                          list(variance = "all-pairs")),
+  # list("bayle_5_within",    "infer_bayle",           list(x = "cv_5"),                                          list(variance = "within-fold")),
+  # list("bayle_5_all_pairs", "infer_bayle",           list(x = "cv_5"),                                          list(variance = "all-pairs")),
 
   # cv_10
   list("bayle_10_within",    "infer_bayle",          list(x = "cv_10"),                                         list(variance = "within-fold")),
@@ -53,17 +54,17 @@ EVAL_CONFIG = list(
 
   # bootstrap_10
   # ls-bootstrap needs more than 10 repetitions, so don't calculate it here
-  list("oob_10",             "infer_oob",            list(x = "bootstrap_10"),                                  list()),
-  list("632plus_10",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),                  list()),
+  # list("oob_10",             "infer_oob",            list(x = "bootstrap_10"),                                  list()),
+  # list("632plus_10",         "infer_632plus",        list(x = "bootstrap_10", y = "insample"),                  list()),
 
   # bootstrap_50 and 100
-  list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                                  list()),
-  list("ls_bootstrap_50",    "infer_ls_boot",        list(x = "bootstrap_50", y = "insample"),                  list()),
-  list("632plus_50",         "infer_632plus",        list(x = "bootstrap_50", y = "insample"),                  list()),
+  # list("oob_50",             "infer_oob",            list(x = "bootstrap_50"),                                  list()),
+  # list("ls_bootstrap_50",    "infer_ls_boot",        list(x = "bootstrap_50", y = "insample"),                  list()),
+  # list("632plus_50",         "infer_632plus",        list(x = "bootstrap_50", y = "insample"),                  list()),
 
-  list("oob_100",            "infer_oob",            list(x = "bootstrap_100"),                                 list()),
-  list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"),                 list()),
-  list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"),                 list()),
+  # list("oob_100",            "infer_oob",            list(x = "bootstrap_100"),                                 list()),
+  # list("ls_bootstrap_100",   "infer_ls_boot",        list(x = "bootstrap_100", y = "insample"),                 list()),
+  # list("632plus_100",        "infer_632plus",        list(x = "bootstrap_100", y = "insample"),                 list()),
 
   # insample
   # also used for other resampling methods
@@ -77,27 +78,27 @@ EVAL_CONFIG = list(
   list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                                list()),
 
   # nested_bootstrap
-  list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
+  # list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
 
   # loo
   list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs")),
 
   # austern_zhou
-  list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),                      list()),
+  # list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),                      list()),
 
-  list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"),            list()),
+  # list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"),            list()),
 
   # bccv
   list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list()),
+  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
 
   # oob
-  list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
-  list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
+  # list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
+  # list("oob_1000",           "infer_oob",            list(x = "bootstrap_1000"),                                list()),
 
-  # 632plus
-  list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
-  list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
+  # # 632plus
+  # list("632plus_500",        "infer_632plus",        list(x = "bootstrap_500", y = "insample"),                 list()),
+  # list("632plus_1000",       "infer_632plus",        list(x = "bootstrap_1000", y = "insample"),                list())
 )
 
 # now we create the table that contains the job ids
@@ -183,7 +184,11 @@ batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
     task_name = task_name,
     resampling_name = resampling_name,
     size = size,
-    repl = repl
+    repl = repl,
+    loss_fns_regr = list(
+      percentual_ae = inferGE::percentual_ae,
+      standardized_ae = inferGE::standardized_ae,
+      winsorized_se = inferGE::winsorized_se
+    )
   )
 })
-

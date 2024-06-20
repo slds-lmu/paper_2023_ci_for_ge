@@ -28,7 +28,8 @@
     "DT": {
       "Package": "DT",
       "Version": "0.33",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "DiagrammeR": {
       "Package": "DiagrammeR",
@@ -499,7 +500,8 @@
     "cowplot": {
       "Package": "cowplot",
       "Version": "1.1.3",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "cpp11": {
       "Package": "cpp11",
@@ -1109,7 +1111,7 @@
       "RemoteRepo": "paper_2023_ci_for_ge",
       "RemoteSubdir": "inferGE",
       "RemoteRef": "main",
-      "RemoteSha": "86ca21bf8b156c16140e86c74d991eaa147a4e60",
+      "RemoteSha": "764ff8fc161b439e405bf7517bbff6ff708a1900",
       "Requirements": []
     },
     "ini": {
@@ -2299,7 +2301,8 @@
     "shinyWidgets": {
       "Package": "shinyWidgets",
       "Version": "0.8.6",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "sourcetools": {
       "Package": "sourcetools",
@@ -2636,7 +2639,8 @@
     "viridis": {
       "Package": "viridis",
       "Version": "0.6.5",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "viridisLite": {
       "Package": "viridisLite",

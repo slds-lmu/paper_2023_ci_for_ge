@@ -19,7 +19,7 @@ EVAL_REG = if (file.exists(EVAL_PATH)) {
 }
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
-EXPERIMENT_TBL = EXPERIMENT_TBL[task_type == "regr", ]
+EXPERIMENT_TBL = EXPERIMENT_TBL[task_type == "regr" & learner_id %nin% c("regr.cv_glmnet", "classif.cv_glmnet"), ]
 
 # order is as in experiments/design.R
 # we use the default alpha = 0.05 everywhere
@@ -176,15 +176,15 @@ chunked_args = map(unique(chunks$chunk), function(cid) {
       resampling_name = tbl2[i, "resampling_name_x"][[1]],
       task_name = tbl2[i, "task_name"][[1]],
       size = tbl2[i, "size"][[1]],
-      repl = tbl2[i, "repl"][[1]]
+      repl = tbl2[i, "repl"][[1]],
+      inference = tbl2[i, "inference"][[1]]
     )
   })
 })
 
-
-batchMap(args = chunked_args, fun = function(args) {
-  map(args, function(arg) {
-    inference = getFromNamespace(arg$name, ns = "inferGE")
+batchMap(.args = chunked_args, fun = function(.args) {
+  map(.args, function(arg) {
+    inference = getFromNamespace(arg$inference, ns = "inferGE")
 
     calculate_ci(
       name = arg$name,
@@ -193,15 +193,15 @@ batchMap(args = chunked_args, fun = function(args) {
       y = arg$y,
       z = arg$z,
       args = arg$args,
-      learner_name = arrg$learner_name,
+      learner_name = arg$learner_name,
       task_name = arg$task_name,
       resampling_name = arg$resampling_name,
       size = arg$size,
       repl = arg$repl,
       loss_fns_regr = list(
-        percentual_ae = mlr3measures::percentual_ae,
-        standardized_ae = mlr3measures::standardized_ae,
-        winsorized_se = mlr3measures::winsorized_se
+        percentual_ae = inferGE::percentual_ae,
+        standardized_ae = inferGE::standardized_ae,
+        winsorized_se = inferGE::winsorized_se
       )
     )
   }) |> rbindlist(fill = TRUE)
