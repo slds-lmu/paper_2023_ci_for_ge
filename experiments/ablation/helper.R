@@ -2,8 +2,8 @@ make_tbl = function(.resampling_names) {
   reg_paths = c(
     "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample",
     "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_ridge",
-    "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_lm",
-    "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_ablation"
+    "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_lm"
+  #  "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_ablation"
   )
 
   tbl = rbindlist(map(reg_paths, function(reg_path) {

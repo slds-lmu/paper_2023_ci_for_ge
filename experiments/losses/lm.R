@@ -6,8 +6,8 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
-EVAL_PATH = Sys.getenv("CI_PATH_LOSSES_ORIGINAL")
+EXPERIMENT_PATH = "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_lm"
+EVAL_PATH = Sys.getenv("CI_PATH_LOSSES_LM")
 
 EVAL_REG = if (file.exists(EVAL_PATH)) {
   loadRegistry(EVAL_PATH, writeable = TRUE)
@@ -19,7 +19,7 @@ EVAL_REG = if (file.exists(EVAL_PATH)) {
 }
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
 EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
-EXPERIMENT_TBL = EXPERIMENT_TBL[task_type == "regr", ]
+EXPERIMENT_TBL = EXPERIMENT_TBL[task_type == "regr" & learner_id %nin% c("regr.cv_glmnet", "classif.cv_glmnet"), ]
 
 # order is as in experiments/design.R
 # we use the default alpha = 0.05 everywhere
@@ -81,16 +81,16 @@ EVAL_CONFIG = list(
   # list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
 
   # loo
-  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs")),
+  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs"))
 
   # austern_zhou
   # list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),                      list()),
 
   # list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"),            list()),
 
-  # bccv
-  list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
+  # bv
+  #list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
+  #list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
 
   # oob
   # list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),
@@ -158,37 +158,52 @@ batchExport(list(
   ),
   reg = EVAL_REG)
 
+chunk_size = 200L
 
-batchMap(i = seq_len(nrow(tbl2)), fun =  function(i) {
-  name = tbl2[i, "name"][[1]]
-  inference = getFromNamespace(tbl2[i, "inference"][[1]], ns = "inferGE")
-  x = tbl2[i, "x"][[1]]
-  y = tbl2[i, "y"][[1]]
-  z = tbl2[i, "z"][[1]]
+i = seq_len(nrow(tbl2))
 
-  args = tbl2[i, "args"][[1]][[1]]
-  learner_name = tbl2[i, "learner_name"][[1]]
-  resampling_name = tbl2[i, "resampling_name_x"][[1]]
-  task_name = tbl2[i, "task_name"][[1]]
-  size = tbl2[i, "size"][[1]]
-  repl = tbl2[i, "repl"][[1]]
+chunks = data.table(id = seq_len(nrow(tbl2)), chunk = batchtools::chunk(seq_len(nrow(tbl2)), chunk.size = chunk_size, shuffle = TRUE))
 
-  calculate_ci(
-    name = name,
-    inference = inference,
-    x = x,
-    y = y,
-    z = z,
-    args = args,
-    learner_name = learner_name,
-    task_name = task_name,
-    resampling_name = resampling_name,
-    size = size,
-    repl = repl,
-    loss_fns_regr = list(
-      percentual_ae = inferGE::percentual_ae,
-      standardized_ae = inferGE::standardized_ae,
-      winsorized_se = inferGE::winsorized_se
+chunked_args = map(unique(chunks$chunk), function(cid) {
+  ids = chunks[list(cid), "id", on = "chunk"]$id
+  map(ids, function(i) {
+    list(
+      x = tbl2[i, "x"][[1]],
+      y = tbl2[i, "y"][[1]],
+      z = tbl2[i, "z"][[1]],
+      args = tbl2[i, "args"][[1]][[1]],
+      learner_name = tbl2[i, "learner_name"][[1]],
+      resampling_name = tbl2[i, "resampling_name_x"][[1]],
+      task_name = tbl2[i, "task_name"][[1]],
+      size = tbl2[i, "size"][[1]],
+      repl = tbl2[i, "repl"][[1]],
+      inference = tbl2[i, "inference"][[1]]
     )
-  )
+  })
 })
+
+batchMap(.args = chunked_args, fun = function(.args) {
+  map(.args, function(arg) {
+    inference = getFromNamespace(arg$inference, ns = "inferGE")
+
+    calculate_ci(
+      name = arg$name,
+      inference = inference,
+      x = arg$x,
+      y = arg$y,
+      z = arg$z,
+      args = arg$args,
+      learner_name = arg$learner_name,
+      task_name = arg$task_name,
+      resampling_name = arg$resampling_name,
+      size = arg$size,
+      repl = arg$repl,
+      loss_fns_regr = list(
+        percentual_ae = inferGE::percentual_ae,
+        standardized_ae = inferGE::standardized_ae,
+        winsorized_se = inferGE::winsorized_se
+      )
+    )
+  }) |> rbindlist(fill = TRUE)
+})
+

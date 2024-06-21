@@ -41,8 +41,7 @@ Sys.setenv(ABLATION_HO = paste0(SAVE_PATH, sep = "_", "ablation_ho"))
 Sys.setenv(ABLATION_CV = paste0(SAVE_PATH, sep = "_", "ablation_cv"))
 
 Sys.setenv(CI_PATH_LOSSES_ORIGINAL = paste0(SAVE_PATH, sep = "_", "ci_losses_original"))
-Sys.setenv(CI_PATH_LOSSES_LINEAR = paste0(SAVE_PATH, sep = "_", "ci_losses_linear"))
+Sys.setenv(CI_PATH_LOSSES_LM = paste0(SAVE_PATH, sep = "_", "ci_losses_lm"))
 Sys.setenv(CI_PATH_LOSSES_RIDGE = paste0(SAVE_PATH, sep = "_", "ci_losses_ridge"))
-Sys.setenv(CI_PATH_LOSSES_ABLATION = paste0(SAVE_PATH, sep = "_", "ci_losses_ablation"))
 
 rm(SAVE_PATH)

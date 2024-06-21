@@ -81,16 +81,16 @@ EVAL_CONFIG = list(
   # list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
 
   # loo
-  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs")),
+  list("bayle_loo",          "infer_bayle",          list(x = "loo"),                                           list(variance = "all-pairs"))
 
   # austern_zhou
   # list("austern_zhou",       "infer_austern_zhou",   list(x = "austern_zhou", y = "cv_5"),                      list()),
 
   # list("austern_zhou_rep",   "infer_austern_zhou",   list(x = "austern_zhou_rep", y = "rep_cv_5_5"),            list()),
 
-  # bccv
-  list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
-  list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
+  # bv
+  #list("bccv",               "infer_bootstrap_ccv",  list(x = "bootstrap_ccv"),                                 list()),
+  #list("bccv_bias",          "infer_bootstrap_ccv",  list(x = "bootstrap_ccv", y = "loo"),                      list())
 
   # oob
   # list("oob_500",            "infer_oob",            list(x = "bootstrap_500"),                                 list()),

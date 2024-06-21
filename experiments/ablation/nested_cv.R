@@ -8,9 +8,9 @@ library(here)
 
 source(here("experiments", "ablation", "helper.R"))
 
-reg = makeExperimentRegistry(
+reg = makeRegistry(
   file.dir = Sys.getenv("ABLATION_NCV"),
-  packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr")
+  packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "batchtools", "data.table")
 )
 
 TBL = make_tbl("nested_cv")
@@ -60,7 +60,5 @@ f = function(.row) {
   }), fill = TRUE)
 }
 
-f(1)
-# batchMap(.row = TBL$job.id)
-
-# ids = TBL[learner_id == "linear" & size == 500L]
+batchMap(.row = 1:nrow(TBL), fun = f)
+ids = which(TBL$size == 500)
