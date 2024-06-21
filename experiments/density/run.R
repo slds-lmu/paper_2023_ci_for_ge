@@ -34,25 +34,21 @@ tasks_list = map(id_list, function(ids) {
     odata = odt(id, parquet = TRUE)
 
     odata = odt(id, parquet = TRUE)
-    if (odata$nrow == 5100000) {
-      ids = 1:100000
-      target = odata$target_names
-      backend = as_data_backend(odata)
-
-      tmpdata = backend$data(ids, backend$colnames)
-      names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
-      backend = as_data_backend(tmpdata, primary_key = "..row_id")
-      task = if (is.factor(tmpdata[[target]])) {
-        as_task_classif(backend, target = target)
-      } else {
-        as_task_regr(backend, target = target)
-      }
+    ids = if (odata$nrow = 5100000) {
+      1:100000
     } else {
-      task = as_task(odata)
-      if (nm == "adult") {
-        complete = complete.cases(task$data())
-        task$filter(task$row_ids[complete])
-      }
+      1:odata$nrow
+    }
+    target = odata$target_names
+    backend = as_data_backend(odata)
+
+    tmpdata = backend$data(ids, backend$colnames)
+    names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
+    backend = as_data_backend(tmpdata, primary_key = "..row_id")
+    task = if (is.factor(tmpdata[[target]])) {
+      as_task_classif(backend, target = target)
+    } else {
+      as_task_regr(backend, target = target)
     }
 
     task
