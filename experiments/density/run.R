@@ -6,11 +6,12 @@ library(inferGE)
 library(mlr3misc)
 library(data.table)
 library(mlr3pipelines)
+library(batchtools)
 
 set.seed(1)
 
 size = 500
-reps = 50
+reps = 20
 
 id_list = list(
   real = list(
@@ -29,13 +30,15 @@ id_list = list(
   )
 )
 
-tasks_list = map(id_list, function(ids) {
+tasks_list = imap(id_list, function(ids, type) {
   imap(ids, function(id, nm) {
     odata = odt(id, parquet = TRUE)
 
     odata = odt(id, parquet = TRUE)
-    ids = if (odata$nrow = 5100000) {
+    ids = if (odata$nrow == 5100000) {
       1:100000
+    } else if (nm == "adult") {
+      (1:odata$nrow)[complete.cases(odata$data)]
     } else {
       1:odata$nrow
     }
@@ -50,6 +53,7 @@ tasks_list = map(id_list, function(ids) {
     } else {
       as_task_regr(backend, target = target)
     }
+    task$id = paste0(type, "_", nm)
 
     task
   })
@@ -63,14 +67,14 @@ ho_tasks_list = map(tasks_list, function(tasks) {
   })
 })
 
-tbl = rbindlist(pmap(list(tasks = tasks_lists, ho_tasks = ho_tasks_list), function(tasks, ho_tasks) {
+tbl = rbindlist(pmap(list(tasks = tasks_list, ho_tasks = ho_tasks_list), function(tasks, ho_tasks) {
   tbl = rbindlist(pmap(list(task = tasks, ho_task = ho_tasks), function(task, ho_task) {
     learner = switch(task$task_type,
-      regr = lrn("regr.lm"),
-      classif = lrn("classif.log_reg")
+      regr = lrn("regr.rpart"),
+      classif = lrn("classif.rpart")
     )
     learner = as_learner(ppl("robustify", learner = learner, task = task) %>>% learner)
-    learner$id = "linear"
+    learner$id = "rpart"
     rbindlist(map(seq_len(reps), function(repl) {
       task = task$clone(deep = TRUE)
       task$filter(sample(task$row_ids, size = 1000L))
