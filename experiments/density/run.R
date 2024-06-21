@@ -58,9 +58,8 @@ tasks_list = map(id_list, function(ids) {
     task
   })
 })
-browser()
 
-ho_tasks_list = map(id_list, function(ids) {
+ho_tasks_list = map(tasks_list, function(tasks) {
   map(tasks, function(task) {
     ho_task = task$clone(deep = TRUE)$filter(sample(task$row_ids, 10000L))
     task$filter(setdiff(task$row_ids, ho_task$row_ids))
