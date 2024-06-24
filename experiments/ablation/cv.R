@@ -4,6 +4,7 @@ library(data.table)
 library(mlr3)
 library(mlr3misc)
 library(inferGE)
+library(here)
 
 source(here("experiments", "ablation", "helper.R"))
 
@@ -33,12 +34,12 @@ f = function(.row) {
   learner = lrn(tbl$learner[[1L]])
 
   folds = switch(tbl$resampling_name[[1L]],
-    "cv_5", = 5,
-    "cv_10", = 10,
-    "cv_25", = 25,
-    "cv_50", = 50,
-    "cv_75", = 75,
-    "cv_100", = 100,
+    "cv_5" = 5,
+    "cv_10" = 10,
+    "cv_25" = 25,
+    "cv_50" = 50,
+    "cv_75" = 75,
+    "cv_100" = 100,
     stop()
   )
   

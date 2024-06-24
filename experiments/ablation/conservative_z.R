@@ -4,15 +4,16 @@ library(data.table)
 library(mlr3)
 library(mlr3misc)
 library(inferGE)
+library(here)
 
 source(here("experiments", "ablation", "helper.R"))
 
-reg = makeExperimentRegistry(
+reg = makeRegistry(
   file.dir = Sys.getenv("ABLATION_CONZ"),
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "data.table", "batchtools")    
 )
 
-TBL = make_tbl("conservative_z")
+TBL = make_tbl("conservative_z_50")
 GROUPS = unique(TBL$group)
 
 batchExport(list(TBL = TBL))
@@ -32,16 +33,22 @@ f = function(.row) {
 
   learner = lrn(tbl$learner[[1L]])
 
-  reps = c(5, 50, by = 5)
+  reps = seq(5, 50, by = 5)
 
   rbindlist(map(reps, function(outer_reps) {
     rbindlist(map(reps, function(inner_reps) {
-      res = loadResult(tbl$job.id[[1L]], reg, = reg) 
+      res = loadResult(tbl$job.id[[1L]], reg = reg) 
       predictions = res$test_predictions
 
-      preds = map(predictions[1:r], function(pred) list(test = pred))
+      # the first and then the second inner subsampling from a pair
+      one_pair = c(1:inner_reps, 50 + 1:inner_reps)
+      # the first 50 are the unpaired subsampling and then we add 100 (2 x 50) for each paired subsampling
+      inner = unlist(map(1:outer_reps, function(r) 50 + one_pair + 100 * (r - 1)))
+      ids = c(1:inner_reps, inner)
 
-      resampling = rsmp("conservative_z", M = outer_reps, J = inner_reps)
+      preds = map(predictions[ids], function(pred) list(test = pred))
+
+      resampling = rsmp("conservative_z", M = outer_reps, J = inner_reps, ratio = 0.9)
       resampling$instantiate(task)
 
       data = as_result_data(
@@ -61,8 +68,7 @@ f = function(.row) {
   }), fill = TRUE)
 }
 
-
-
 batchMap(.row = 1:nrow(TBL), fun = f)
 ids = which(TBL$size == 500)
+
 

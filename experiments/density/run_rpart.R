@@ -13,18 +13,20 @@ info = list(
   list(name = "video_transcoding", id = 44974),
   list(name = "sgemm_gpu", id = 44961),
   list(name = "physiochemical_protein", id = 44963),
-  list(name = "diamonds", id = 44974)
-  # list(name = "simul_adult", id = 45689),
-  # list(name = "simul_video_transcoding", id = 45696),
-  # list(name = "simul_sgemm_gpu", id = 45695),
-  # list(name = "simul_physiochemical_protein", id = 45694),
-  # list(name = "simul_diamonds", id = 45692)
+  list(name = "diamonds", id = 44979),
+  list(name = "simul_adult", id = 45689),
+  list(name = "simul_video_transcoding", id = 45696),
+  list(name = "simul_sgemm_gpu", id = 45695),
+  list(name = "simul_physiochemical_protein", id = 45694),
+  list(name = "simul_diamonds", id = 45692)
 )
 
 
-f = function(info, size, reps) {
+f = function(info) {
   nm = info$name
   id = info$id
+  size = info$size
+  reps = info$reps
   odata = odt(id, parquet = TRUE)
 
   ids = if (odata$nrow == 5100000) {
@@ -51,11 +53,11 @@ f = function(info, size, reps) {
   task$filter(setdiff(task$row_ids, ho_task$row_ids))
 
   learner = switch(task$task_type,
-    regr = lrn("regr.lm"),
-    classif = lrn("classif.log_reg")
+    regr = lrn("regr.rpart"),
+    classif = lrn("classif.rpart")
   )
   learner = as_learner(ppl("robustify") %>>% learner)
-  learner$id = "linear"
+  learner$id = "rpart"
 
   tbl = rbindlist(map(seq_len(reps), function(repl) {
     task = task$clone(deep = TRUE)
@@ -76,11 +78,10 @@ f = function(info, size, reps) {
 }
 
 makeRegistry(
-  # "/gscratch/sfische6/benchmarks/ci_for_ge/real_vs_simul",
-  NA,
+  "/gscratch/sfische6/benchmarks/ci_for_ge/simul_rpart",
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "data.table"),
 )
 
-batchMap(fun = f, info = info, more.args = list(reps = 100, size = 1000))
-
-testJob(1)
+info_rep = rep(info, times = 50)
+info_rep = lapply(info_rep, function(i) c(i, reps = 10, size = 1000))
+batchMap(fun = f, info = info_rep)

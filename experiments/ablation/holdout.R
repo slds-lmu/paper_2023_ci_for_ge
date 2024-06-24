@@ -4,6 +4,7 @@ library(data.table)
 library(mlr3)
 library(mlr3misc)
 library(inferGE)
+library(here)
 
 source(here("experiments", "ablation", "helper.R"))
 
@@ -33,12 +34,12 @@ f = function(.row) {
   learner = lrn(tbl$learner[[1L]])
 
   ratio = switch(tbl$resampling_name[[1L]],
-    "holdout_50", = 0.5,
-    "holdout_60", = 0.6,
-    "holdout_66", = 2/3,
-    "holdout_70", = 0.7,
-    "holdout_80", = 0.8,
-    "holdout_90", = 0.9,
+    "holdout_50" = 0.5,
+    "holdout_60" = 0.6,
+    "holdout_66" = 2/3,
+    "holdout_70" = 0.7,
+    "holdout_80" = 0.8,
+    "holdout_90" = 0.9,
     stop()
   )
   
