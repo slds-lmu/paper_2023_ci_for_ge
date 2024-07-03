@@ -1,0 +1,135 @@
+---
+title: "What's up with rpart"
+format: html
+editor: visual
+---
+
+Resources:
+
+-   in-depth coverage of rpart: <https://cran.r-project.org/web/packages/rpart/vignettes/longintro.pdf>
+
+-   xval parameter has no effect on model fitting and is only used to prune the learner afterwards
+
+-   the default method to obtain the split-rules is the gini impurity, which measures the probability for a random instance being misclassified when chosen randomly.
+
+-   We have not used altered priors, which allow to handle misclassification cost matrices
+
+We noticed, that especially the for the bayle_10_all_pairs method, the coverage of the confidence of rpart was considerably worse than for the other inducers. Here, want want to know why
+
+```{r}
+library(here)
+library(data.table)
+library(ggplot2)
+
+theme_set(theme_bw(
+  base_size = 8
+))
+
+orig = readRDS(here("results", "ci_aggr_small.rds"))
+data = orig[measure %in% c("se", "zero_one") & learner %in% c("ranger", "rpart") & task != "chen_10_null", ]
+
+ggplot(data[size == 10000 & method %in% c("bayle_10_all_pairs", "holdout_90", "corrected_t_10")],
+  aes(x = cov_R, y = width_median, color = method, shape = learner)) + 
+  geom_point() + 
+  coord_cartesian(xlim = c(0.5, 1)) +
+  facet_wrap(vars(task), scales = "free_y") + 
+  labs(
+    x = "Risk Coverage", 
+    y = "Median Width",
+    size = 10000
+  )
+```
+
+We notice that:
+
+-   The problem is less present for the corrected t test and the holdout method
+
+<!-- -->
+
+-   For adult, covertype, diamonds, electricity, friedman, physiochemical_protein, sgemm_gpu, video_transcoding, chen_10_null and bates_regr_100, friedman1\
+    These are mostly nonlinear datasets, except for bates_regr_20
+
+-   The effect does exist for: bates_classif_20, bates_classif_100, bates_regr_20 (small), breast, colon, higgs, prostate
+
+    Except for the higgs dataset, these are all linear, so this seems to be an explanatory factor. But why?
+
+    I don't think it can be the point estimate, because corrected t has a very similar one, so it must be the variance estimate.
+
+How is it for different sizes?
+
+```{r}
+ggplot(data[size == 5000 & method %in% c("bayle_10_all_pairs", "holdout_90", "corrected_t_10")],
+  aes(x = cov_R, y = width_median, color = method, shape = learner)) + 
+  geom_point() + 
+  coord_cartesian(xlim = c(0.5, 1)) +
+  facet_wrap(vars(task), scales = "free_y") + 
+  labs(
+    x = "Risk Coverage", 
+    y = "Median Width",
+    title = "5000"
+  )
+```
+
+```{r}
+ggplot(data[size == 1000 & method %in% c("bayle_10_all_pairs", "holdout_90", "corrected_t_10")],
+  aes(x = cov_R, y = width_median, color = method, shape = learner)) + 
+  geom_point() + 
+  coord_cartesian(xlim = c(0.5, 1)) +
+  facet_wrap(vars(task), scales = "free_y") + 
+  labs(
+    x = "Risk Coverage", 
+    y = "Median Width",
+    title = "1000"
+  )
+```
+
+```{r}
+ggplot(data[size == 500 & method %in% c("bayle_10_all_pairs", "holdout_90", "corrected_t_10")],
+  aes(x = cov_R, y = width_median, color = method, shape = learner)) + 
+  geom_point() + 
+  coord_cartesian(xlim = c(0.5, 1)) +
+  facet_wrap(vars(task), scales = "free_y") + 
+  labs(
+    x = "Risk Coverage", 
+    y = "Median Width",
+    title = "Size = 500"
+  )
+```
+
+We notice that for smaller dataset sizes, the effect gets smaller
+
+```{r}
+ggplot(data[ method %in% c("bayle_10_all_pairs", "holdout_90")],
+  aes(x = size, y = cov_R, color = method, linetype = learner)) + 
+  geom_line() + 
+  facet_wrap(vars(task), scales = "free_y") + 
+  labs(
+    x = "Size", 
+    y = "Risk Coverage",
+    title = "Different sizes"
+  )
+```
+
+What about the point predictions?
+
+```{r}
+ci = readRDS(here("results", "ci_small.rds"))
+ci1 = ci[size == 10000 & learner %in% c("ranger", "rpart") & 
+  measure %in% c("se", "zero_one") & method == "bayle_10_all_pairs" &
+  task != "chen_10_null"]
+ggplot(ci1, aes(y = estimate - R, color = learner)) + 
+  facet_wrap(vars(task), scales = "free_y") + 
+  geom_boxplot()
+    
+```
+
+```{r}
+tbl2 = data[size == 10000 & learner %in% c("rpart", "ranger") & 
+  method %in% c("bayle_10_all_pairs")]
+tbl2 = dcast(tbl2, task ~ learner, value.var = c("estimate_sd", "R_sd", "rmse_ER", "rmse_R"))
+tbl2$estimate_sd_ratio = tbl2$estimate_sd_rpart / tbl2$estimate_sd_ranger
+tbl2$R_sd_ratio = tbl2$R_sd_rpart / tbl2$R_sd_ranger
+ggplot(data = tbl2, aes(x = task, y = R_sd_ratio)) + 
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
