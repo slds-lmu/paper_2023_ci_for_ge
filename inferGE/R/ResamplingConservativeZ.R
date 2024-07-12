@@ -34,7 +34,7 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       n2 = n_task - n1
 
       # each subsampling of the paired subsampling is applied to datasets of size n_sub
-      n_sub = (n1 - n1 %% 2) / 2
+      n_sub = (n_task - n_task %% 2) / 2
 
       task1 = task$clone(deep = TRUE)
       task2 = task$clone(deep = TRUE)
