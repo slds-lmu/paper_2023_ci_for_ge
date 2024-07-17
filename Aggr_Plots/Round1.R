@@ -101,7 +101,7 @@ P2 <- p2 + scale_y_reverse() +
         legend.text = element_text(size=12))
 
 plot_grid(
-  P1/P2,  # Remove auto-generated legend
+  P1/P2,  
   legend,
   nrow = 1, rel_widths = c(1, 0.2)  # Adjust relative widths as needed
 )

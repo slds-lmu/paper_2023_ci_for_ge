@@ -1,5 +1,23 @@
 source("Aggr_Plots/setup.R")
 
+Widths <- merge(ci_aggr,sds_tbls,by="dgp")
+
+Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
+                   as.character(dgp) %in% setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null")),
+                 list(
+                   mean_classif = mean(width[which(task_type=="classif")],na.rm=TRUE),
+                   median_classif = median(width[which(task_type=="classif")],na.rm = TRUE),
+                   mean_regr = mean(width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                                    na.rm=TRUE),
+                   median_regr = median(width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                                        na.rm = TRUE)
+                 ),
+                 by = c("method")]
+
+Widths <- Widths %>%
+  mutate(method = factor(method, levels=levels(UC$method)))
+
+
 MoI <- setdiff(Widths$method[which(Widths$median_classif<0.2 & Widths$median_regr<0.2)],
                c("ls_bootstrap_100", "ls_bootstrap_50", "ts_bootstrap","bayle_loo"))
 
