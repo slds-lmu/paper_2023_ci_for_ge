@@ -18,9 +18,10 @@ aggr_plot <- function(data, methods, inducers, DGPs, loss_regr, loss_classif, yl
                           names_to = "coverage_of", values_to = "value")
   
   output <- ggplot(plotdat,aes(x=size,y=value,color=inducer))+
-    geom_hline(yintercept = 0.95,color="red") + 
-    geom_line(aes(linetype=coverage_of)) +
-    facet_wrap(method ~.,scales="free_x") + ylim(min_size,max_size) +
+    geom_hline(yintercept = 0.95,color="black") + 
+    geom_line(aes(linetype=coverage_of),size=0.33) +
+    facet_wrap(method ~.,scales="free_x", ncol=2) + 
+    ylim(min_size,max_size) +
     theme_bw()
     
   return(output)
