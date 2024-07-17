@@ -22,7 +22,7 @@ percentual_ae = function(truth, response, ...) {
 #' @export
 standardized_se = function(truth, response, task, train_set = NULL, ...) {
   assert_regr(truth, response = response)
-  mlr3measures::se(truth, response) / (sd(task$truth(train_set)) + EPS)
+  mlr3measures::se(truth, response) / (var(task$truth(train_set)) + EPS)
 }
 
 #' @export

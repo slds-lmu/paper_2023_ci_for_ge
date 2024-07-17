@@ -50,25 +50,6 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
           inner = inner
         )
       }
-    },
-    # @description Obtain the iteration for the specified `(outer, inner)` tuple.
-    # If `inner` is missing, the outer iteration is returned.
-    # @param rep (`iterger(1)`)\cr
-    #   The repetion.
-    # @param outer (`integer(1)`)\cr
-    #   The index of the outer iteration.
-    # @param inner (`integer(1)`)\cr
-    #   The index of the inner iteration.
-    flatten = function(rep, outer, inner = NULL) {
-      pv = self$param_set$get_values()$folds
-      folds = assert_int(pv$folds)
-      repeats = assert_int(pv$repeats)
-
-      if (is.na(inner)) {
-        repeats * folds + outer
-      } else {
-        repeats * folds + folds + (outer - 1) * (folds - 1) + inner
-      }
     }
   ),
   active = list(
@@ -100,7 +81,7 @@ ResamplingNestedCV = R6::R6Class("ResamplingNestedCV",
 
       if (is.na(info$inner)) { # an outer iteration
         # we first subset subset to the specific iteration and then we remove the outer fold to get the
-        # test set from the outer CV
+        # train set from the outer CV
         self$instance[list(info$rep), ,  on = "rep"][!list(info$outer), "row_id", on = "fold"][[1L]]
       } else {
         # if we are in the inner CV that removed the `outer` test set from the outer CV, we first remove

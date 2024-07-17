@@ -61,5 +61,3 @@ infer_conservative_z.loss_table = function(x, alpha = 0.05, loss, resampling) {
     upper = estimate + c * sqrt(sigma2)
   )
 }
-
-

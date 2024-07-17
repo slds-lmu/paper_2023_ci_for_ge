@@ -17,7 +17,8 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   # useable ids are those that are in the test set at least once
   useable_ids = unique(unlist(map(seq_len(x$resampling$iters), function(iter) x$resampling$test_set(iter))))
 
-  # first over repetition, then over ids
+  # first over repetition, then over ids.
+  # note that Es is in the order of useable_ids
   Es = loss_table[, list(loss = mean(get(loss))), by = "row_id"]$loss
 
   # this disregards those that are not useable
@@ -32,7 +33,7 @@ infer_oob.ResampleResult = function(x, alpha = 0.05, loss_fn = NULL) {
   I = N == 0 # (15)
 
   qs = map_dbl(seq_along(preds), function(b) {
-    (1 / n) * loss_table[list(b), sum(get(loss)), on = "iter"] # (36)
+    (1 / n) * loss_table[list(b), sum(get(loss))] # (36)
   })
 
 

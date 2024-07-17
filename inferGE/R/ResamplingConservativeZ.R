@@ -75,7 +75,6 @@ ResamplingConservativeZ = R6Class("ResamplingConservativeZ",
       } else {
         M = self$param_set$values$M
         J = self$param_set$values$J
-        total = self$iters - J
 
         pair_idx = (i - J - 1) %/% (2 * J) + 1
 
