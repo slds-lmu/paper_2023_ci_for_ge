@@ -142,7 +142,7 @@ aggr_plot_ncv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
   
   output2 <- ggplot(plotdat2,aes(x=reps_outer,y=value,fill=aggr))+
     geom_bar(stat = "identity", position = position_dodge()) +
-    scale_y_continuous(breaks=seq(0.1,0.5,by=0.1),expand = c(0,0)) +
+    scale_y_continuous(breaks=seq(0.1,0.5,by=0.1), limits=c(0,0.5), expand = c(0,0)) +
     geom_hline(yintercept = 0.2,color="grey33") + 
     geom_hline(yintercept = 0.4,color="grey33",linetype="dotted")+
     facet_grid(method~.,scales="free_x") + 
@@ -157,6 +157,182 @@ aggr_plot_ncv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
   return(list(output,output2))
 }
 
+
+aggr_plot_ho <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
+  data <- merge(data,SDs,by="dgp")
+  data = data[as.character(dgp) %in% DGPs &
+              size!=100,
+              list(
+                y_R = mean(cov_R),
+                y_ER = mean(cov_ER),
+                median_classif = median(median_width[which(task_type=="classif")],na.rm = TRUE),
+                median_regr = median(median_width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                                     na.rm = TRUE)
+              ), by = c("learner", "ratio")]
+  min_size = min(ylims)
+  max_size = max(ylims)
+  
+  columns <- c("y_R","y_ER")
+  
+  data$method <- "holdout"
+  
+  plotdat <- pivot_longer(data, cols = all_of(columns),
+                          names_to = "coverage_of", values_to = "value")
+  
+  output <- ggplot(plotdat,aes(x=ratio,y=value,color=learner))+
+    geom_hline(yintercept = 0.95,color="black") + 
+    geom_line(aes(linetype=coverage_of),size=0.33) +
+    facet_grid(method~.,scales="free_x") + 
+    ylim(min_size,max_size) +
+    theme_bw() + 
+    labs(color = "Inducer", linetype = "Coverage of",
+         x="Ratio", y="Average coverage") +
+    scale_color_brewer(palette = "Set1",
+                       labels=c("rpart"="Decision Tree",
+                                "ranger"="Random Forest",
+                                "linear"="Linear or Logistic regression",
+                                "ridge"="Ridge-penalized Linear or Logistic regression"))+
+    scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
+                                       "y_R"="Risk"))
+  
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+                           names_to = "aggr", values_to = "value")
+  
+  output2 <- ggplot(plotdat2,aes(x=ratio,y=value,fill=aggr))+
+    geom_bar(stat = "identity", position = position_dodge()) +
+    scale_y_continuous(breaks=seq(0.025,0.1,by=0.025), limits=c(0,0.1) ,
+                       expand = c(0,0)) +
+    #geom_hline(yintercept = 0.2,color="grey33") +  
+
+    facet_grid(method~.,scales="free_x") + 
+    theme_classic() + 
+    labs(fill = "Median width for",y="") +
+    scale_fill_manual(values=c("steelblue","slateblue"),
+                      labels=c(
+                        "median_classif" = "Classification",
+                        "median_regr" = "Regression (relative to target's sample variance)"
+                      ))
+  
+  return(list(output,output2))
+}
+
+
+aggr_plot_cv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
+  data <- merge(data,SDs,by="dgp")
+  data = data[as.character(dgp) %in% DGPs &
+              size!=100,
+              list(
+                y_R = mean(cov_R),
+                y_ER = mean(cov_ER),
+                median_classif = median(median_width[which(task_type=="classif")],na.rm = TRUE),
+                median_regr = median(median_width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                                     na.rm = TRUE)
+              ), by = c("learner", "folds")]
+  min_size = min(ylims)
+  max_size = max(ylims)
+  
+  columns <- c("y_R","y_ER")
+  
+  data$method <- "bayle"
+  
+  plotdat <- pivot_longer(data, cols = all_of(columns),
+                          names_to = "coverage_of", values_to = "value")
+  
+  output <- ggplot(plotdat,aes(x=folds,y=value,color=learner))+
+    geom_hline(yintercept = 0.95,color="black") + 
+    geom_line(aes(linetype=coverage_of),size=0.33) +
+    facet_grid(method~.,scales="free_x") + 
+    ylim(min_size,max_size) +
+    theme_bw() + 
+    labs(color = "Inducer", linetype = "Coverage of",
+         x="Folds", y="Average coverage") +
+    scale_color_brewer(palette = "Set1",
+                       labels=c("rpart"="Decision Tree",
+                                "ranger"="Random Forest",
+                                "linear"="Linear or Logistic regression",
+                                "ridge"="Ridge-penalized Linear or Logistic regression"))+
+    scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
+                                       "y_R"="Risk"))
+  
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+                           names_to = "aggr", values_to = "value")
+  
+  output2 <- ggplot(plotdat2,aes(x=folds,y=value,fill=aggr))+
+    geom_bar(stat = "identity", position = position_dodge()) +
+    scale_y_continuous(breaks=seq(0.025,0.1,by=0.025), limits=c(0,0.1) ,
+      ,expand = c(0,0)) +
+    #geom_hline(yintercept = 0.2,color="grey33") + 
+
+    facet_grid(method~.,scales="free_x") + 
+    theme_classic() + 
+    labs(fill = "Median width for",y="") +
+    scale_fill_manual(values=c("steelblue","slateblue"),
+                      labels=c(
+                        "median_classif" = "Classification",
+                        "median_regr" = "Regression (relative to target's sample variance)"
+                      ))
+  
+  return(list(output,output2))
+}
+
+
+aggr_plot_cort <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
+  data <- merge(data,SDs,by="dgp")
+  data = data[as.character(dgp) %in% DGPs &
+              size!=100,
+              list(
+                y_R = mean(cov_R),
+                y_ER = mean(cov_ER),
+                median_classif = median(median_width[which(task_type=="classif")],na.rm = TRUE),
+                median_regr = median(median_width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                                     na.rm = TRUE)
+              ), by = c("learner", "reps","ratio")]
+  min_size = min(ylims)
+  max_size = max(ylims)
+  
+  columns <- c("y_R","y_ER")
+  
+  data$method <- "corrected_t"
+  
+  plotdat <- pivot_longer(data, cols = all_of(columns),
+                          names_to = "coverage_of", values_to = "value")
+  
+  output <- ggplot(plotdat,aes(x=reps,y=value,color=learner))+
+    geom_hline(yintercept = 0.95,color="black") + 
+    geom_line(aes(linetype=coverage_of),size=0.33) +
+    facet_grid(method~ratio,scales="free_x", switch="x") + 
+    ylim(min_size,max_size) +
+    theme_bw() + 
+    labs(color = "Inducer", linetype = "Coverage of",
+         x="Ratio\nRepetitions", y="Average coverage") +
+    scale_color_brewer(palette = "Set1",
+                       labels=c("rpart"="Decision Tree",
+                                "ranger"="Random Forest",
+                                "linear"="Linear or Logistic regression",
+                                "ridge"="Ridge-penalized Linear or Logistic regression"))+
+    scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
+                                       "y_R"="Risk"))
+  
+  
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+                           names_to = "aggr", values_to = "value")
+  
+  output2 <- ggplot(plotdat2,aes(x=reps,y=value,fill=aggr))+
+    geom_bar(stat = "identity", position = position_dodge()) +
+    facet_grid(method~ratio,scales="free_x", switch="x") + 
+    scale_y_continuous(breaks=seq(0.025,0.1,by=0.025), limits=c(0,0.1) ,
+                       ,expand = c(0,0)) +
+    #geom_hline(yintercept = 0.2,color="grey33") + 
+    theme_classic() + 
+    labs(fill = "Median width for",y="") +
+    scale_fill_manual(values=c("steelblue","slateblue"),
+                      labels=c(
+                        "median_classif" = "Classification",
+                        "median_regr" = "Regression (relative to target's sample variance)"
+                      ))
+  
+  return(list(output,output2))
+}
 
 
 

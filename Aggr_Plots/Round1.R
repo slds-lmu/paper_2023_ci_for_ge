@@ -1,6 +1,8 @@
 source("Aggr_Plots/setup.R")
 
-UC <- ci_aggr[measure %in% translate_losses("Squared", "Zero-One") & 
+ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
+
+UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") & 
                 as.character(dgp) %in% DGPs,
               list(
                 umean_R = mean(0.95-pmin(cov_R,0.95),na.rm=TRUE), 
@@ -32,11 +34,11 @@ p1 <- ggplot(UC_plot, aes(x = method, y = value, fill=of)) +
 
 ################################################################################
 
-#ci_aggr_rel <- ci_aggr %>%
+#ci_aggr_red_rel <- ci_aggr_red %>%
 #                  mutate(rel_width=width/R_sd/ER)
 
 
-Widths <- merge(ci_aggr,sds_tbls,by="dgp")
+Widths <- merge(ci_aggr_red,sds_tbls,by="dgp")
 
 Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
                    as.character(dgp) %in% setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null")),

@@ -1,6 +1,8 @@
 source("Aggr_Plots/setup.R")
 
-Widths <- merge(ci_aggr,sds_tbls,by="dgp")
+ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
+
+Widths <- merge(ci_aggr_red,sds_tbls,by="dgp")
 
 Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
                    as.character(dgp) %in% setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null")),
@@ -21,7 +23,7 @@ Widths <- Widths %>%
 MoI <- setdiff(Widths$method[which(Widths$median_classif<0.2 & Widths$median_regr<0.2)],
                c("ls_bootstrap_100", "ls_bootstrap_50", "ts_bootstrap","bayle_loo"))
 
-p1 <- aggr_plot(ci_aggr, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c(0.65,1)) +
+p1 <- aggr_plot(ci_aggr_red, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c(0.65,1)) +
   labs(y = "Average coverage")  +
   theme(legend.position = "none",
         axis.title.y=element_text(size=14)) +
@@ -39,10 +41,10 @@ p1 <- aggr_plot(ci_aggr, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c(0.6
 
 
 MoI_small <- setdiff(intersect(Widths$method[which(Widths$median_classif<0.2 & Widths$median_regr<0.4)],
-                               setdiff(unique(ci_aggr$method),unique(ci_aggr[size>500]$method))),
+                               setdiff(unique(ci_aggr_red$method),unique(ci_aggr_red[size>500]$method))),
                      c("ls_bootstrap_100", "ls_bootstrap_50", "ts_bootstrap"))
 
-Refac <- ci_aggr[which(ci_aggr$method %in% MoI_small),] %>%
+Refac <- ci_aggr_red[which(ci_aggr_red$method %in% MoI_small),] %>%
   mutate(method=factor(method,
                        levels = c("nested_cv","conservative_z","bayle_loo",
                                   "632plus_500","632plus_1000","oob_1000" )
