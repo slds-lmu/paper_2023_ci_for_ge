@@ -76,7 +76,9 @@ p2 <- aggr_plot(Refac, MoI_small, inducers, DGPs, "Squared", "Zero-One", ylims=c
 P2 <- p2+theme(legend.position = "none")
 legend <- ggpubr::get_legend(p2)
 
-plot_grid(p1,plot_grid(P2, legend, ncol = 1, rel_heights = c(1.66,1)))
+plot_grid(p1 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
+           plot_grid(P2 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
+                     legend, ncol = 1, rel_heights = c(1.66,1)))
 
 ggsave("Aggr_Plots/PNGs/SecondRound.png",width=10,height=8)
 

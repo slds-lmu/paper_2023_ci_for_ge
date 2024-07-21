@@ -38,13 +38,20 @@ plot_grid(legend,merge_plots(NCV,heights=c(3,10)),
 
 #ggsave("Aggr_Plots/PNGs/NCV.png",width=10,height=7)
 
+bottom_legend <- ggpubr::get_legend(CONZ[[1]] +   theme(legend.position = "right",
+                                                        legend.box = "vertical",
+                                                        legend.title.position = "left",
+                                                        legend.box.just = "left",
+                                                        legend.title = element_text(size=12),
+                                                        legend.text = element_text(size=10)) 
+)
 
-P_conz_ncv <- ggarrange(ggplot()+theme_minimal(),
-              NCV[[2]] + easy_remove_x_axis() +
+                                    
+P_conz_ncv <- ggarrange(NCV[[2]] + easy_remove_x_axis() +
                           theme(legend.position = "none",
                                 strip.background = element_blank(),
                                 strip.text = element_blank(),
-                                plot.margin = margin(t=5,l=5,r=5,b=-2)
+                                plot.margin = margin(t=20,l=5,r=5,b=-2)
                                 ),
                         NCV[[1]] + theme(legend.position = "none",
                                          legend.box = "vertical",
@@ -58,11 +65,11 @@ P_conz_ncv <- ggarrange(ggplot()+theme_minimal(),
                                 ),
                         CONZ[[1]] + theme(legend.position = "none",
                                 legend.box = "vertical",
-                                plot.margin = margin(t=-2,l=5,r=5,b=5)
-                                ),
-                        ggplot()+theme_minimal()
+                                plot.margin = margin(t=-2,l=5,r=5,b=5),
+                                strip.text.x = element_text(margin = margin(1,1,1,1))),
+                        bottom_legend  
                         
-                          ,nrow=6, heights=c(4.5,2,7,2,7,4.5))
+                          ,nrow=5, heights=c(3,7,2,7,7))
 
 P_conz_ncv
 
@@ -106,27 +113,24 @@ P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() +
                                 ),
                         CORT[[1]] + theme(legend.position = "none",
                                           legend.box = "vertical",
-                                          plot.margin = margin(t=-2,l=5,r=5,b=5)
-                                          )
+                                          plot.margin = margin(t=-2,l=5,r=5,b=5),
+                                          strip.text.x = element_text(margin = margin(1,1,1,1)))
                         
-                        ,nrow=6, heights=c(2,7,2,7,2,7))
+                        ,nrow=6, heights=c(2.5,7,2,7,2,7))
 
 P_cv_ho_cort
 #ggsave("Aggr_Plots/PNGs/Ablation_large.png",width=10,height=12)
 
 
 top_legend <- ggpubr::get_legend(NCV[[2]]+theme(legend.position = "top"))
-bottom_legend <- ggpubr::get_legend(CONZ[[1]] + theme(legend.position = "bottom",
-                                   legend.box = "vertical"))
 
 
 
 plot_grid(legend,top_legend,
           plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (up to 500)", "(For large data (500 - 10.000)")),
-          bottom_legend,
-           nrow = 4, rel_heights = c(0.1,0.05,1,0.2)  # Adjust relative widths as needed
+           nrow = 3, rel_heights = c(0.02,0.05,1)  # Adjust relative widths as needed
           )
 
-ggsave("Aggr_Plots/PNGs/ThirdRound.png",width=8,height=10.5)
+ggsave("Aggr_Plots/PNGs/ThirdRound.png",width=8,height=9)
 
 
