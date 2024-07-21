@@ -131,6 +131,6 @@ plot_grid(legend,top_legend,
            nrow = 3, rel_heights = c(0.02,0.05,1)  # Adjust relative widths as needed
           )
 
-ggsave("Aggr_Plots/PNGs/ThirdRound.png",width=8,height=9)
+ggsave("Aggr_Plots/PNGs/ThirdRound.png",width=10,height=9)
 
 
