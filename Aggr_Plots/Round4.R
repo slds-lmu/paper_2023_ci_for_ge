@@ -4,6 +4,7 @@ library(data.table)
 library(mlr3misc)
 library(ggh4x)
 library(ggeasy)
+library(ggpubr)
 
 theme_set(theme_bw())
 sds <- readRDS("Aggr_Plots/sds.rds")
@@ -11,21 +12,32 @@ sds_tbls <- data.table(
   task = names(sds),
   sd = unlist(sds)
 )
-tbl = readRDS("Aggr_Plots/ablation/ci_aggr.rds")
-#tbl = merge(tbl,sds_tbls,by="task")
 
-tbl = tbl[method %in% c("corrected_t_100", "conservative_z_250", "nested_cv_250") &
-            measure %in% c("zero_one", "se") & 
-            task %nin% c("adult","video_transcoding","physiochemical_protein","chen_10_null"),
-          #list(median_classif = median(width_median[which(task_type=="classif")],na.rm = TRUE),
-           #    median_regr = median(width_median[which(task_type=="regr")]/sd[which(task_type=="regr")]^2, na.rm = TRUE))
-          ]
-tbl$method <- factor(tbl$method,levels=c("conservative_z_250","nested_cv_250","corrected_t_100"))
 
-# tbl = tbl[, list(
-#   err = mean(abs(cov_R - 0.95)),
-#   cov = mean(cov_R)
-# ), by = c("learner", "size", "method")]
+ncv_cheap = readRDS("Aggr_Plots/ablation/ncv_cheap_aggr.rds")
+conz_cheap = readRDS("Aggr_Plots/ablation/conz_cheap_aggr.rds")
+cort_aggr <- readRDS("Aggr_Plots/ablation/cort_aggr.rds")
+
+conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 12,]
+conz_cheap$method = "conz_125"
+ncv_cheap = ncv_cheap[reps_outer == 5, ]
+ncv_cheap$method = "ncv_125"
+ncv_cheap$reps_outer = NULL
+conz_cheap$inner_reps = NULL
+conz_cheap$outer_reps = NULL
+
+
+cort_50 <- cort_aggr[reps==50 & ratio == 0.9,]
+cort_50$method = "corrected_t_50"
+
+tbl = rbind(conz_cheap, ncv_cheap,cort_50,fill=TRUE)
+
+tbl = tbl[size!=100 &
+            dgp %nin% c("adult","video_transcoding","physiochemical_protein","chen_10_null"),
+            ]
+
+tbl$method <- factor(tbl$method, levels=c("conz_125","ncv_125","corrected_t_50"))
+
 
 annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = learner)) + 
             facet_nested(~size+method) + 
@@ -35,7 +47,13 @@ annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = learner)) +
               axis.text.x = element_text(angle = 45, hjust = 1),
               axis.title.x = element_blank()
             ) + easy_remove_x_axis() +
-              ylab("Coverage of Risk")
+              ylab("Coverage of Risk") +
+              scale_color_brewer(palette = "Set1",
+                                 labels=c("rpart"="Decision Tree",
+                                          "ranger"="Random Forest",
+                                          "linear"="Linear or Logistic regression",
+                                          "ridge"="Ridge-penalized Linear or Logistic regression")) +
+              labs(color = "Inducer")
           ,
           ggplot(tbl, aes(y = cov_ER, color = learner)) + 
             facet_nested(~size+method, switch = "x") + 
@@ -45,18 +63,16 @@ annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = learner)) +
               axis.text.x = element_text(angle = 45, hjust = 1),
               axis.title.x = element_blank()
             ) + easy_remove_x_axis() +
-            ylab("Coverage of Expected Risk"),
+            ylab("Coverage of Expected Risk") + 
+            scale_color_brewer(palette = "Set1",
+                               labels=c("rpart"="Decision Tree",
+                                        "ranger"="Random Forest",
+                                        "linear"="Linear or Logistic regression",
+                                        "ridge"="Ridge-penalized Linear or Logistic regression")) +
+            labs(color = "Inducer"),
           nrow=2,common.legend = TRUE
 ),
-bottom=text_grob("conservative z (250), nested CV (250), corrected t (100)\nSize")
+bottom=text_grob("conservative z (125 repetitions), nested CV (125 repetitions), corrected t (50 repetitions)\n Data Size")
 )
 
-
-ggplot(pivot_longer(tbl, cols = all_of(c("median_classif","median_regr")),
-                    names_to = "aggr", values_to = "value"), aes(x = method, y = width_median, color = aggr)) + 
-  facet_grid(vars(learner), vars(size)) + 
-  geom_boxplot() + 
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    axis.title.x = element_blank()
-  )
+ggsave("Aggr_Plots/PNGs/FourthRound.png",width=12,height=5)
