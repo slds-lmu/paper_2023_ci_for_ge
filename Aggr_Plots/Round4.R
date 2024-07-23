@@ -6,6 +6,8 @@ library(ggh4x)
 library(ggeasy)
 library(ggpubr)
 
+source("Aggr_Plots/setup.R")
+
 theme_set(theme_bw())
 sds <- readRDS("Aggr_Plots/sds.rds")
 sds_tbls <- data.table(
@@ -33,7 +35,7 @@ cort_50$method = "corrected_t_50"
 tbl = rbind(conz_cheap, ncv_cheap,cort_50,fill=TRUE)
 
 tbl = tbl[size!=100 &
-            dgp %nin% c("adult","video_transcoding","physiochemical_protein","chen_10_null"),
+            dgp %nin% susDGPs,
             ]
 
 tbl$method <- factor(tbl$method, levels=c("conz_125","ncv_125","corrected_t_50"))

@@ -3,7 +3,7 @@ source("Aggr_Plots/setup.R")
 ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
 
 UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") & 
-                as.character(dgp) %in% DGPs,
+                as.character(dgp) %nin% susDGPs,
               list(
                 umean_R = mean(0.95-pmin(cov_R,0.95),na.rm=TRUE), 
                 umean_ER = mean(0.95-pmin(cov_ER,0.95),na.rm=TRUE), 
@@ -41,7 +41,7 @@ p1 <- ggplot(UC_plot, aes(x = method, y = value, fill=of)) +
 Widths <- merge(ci_aggr_red,sds_tbls,by="dgp")
 
 Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
-                   as.character(dgp) %in% setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null")),
+                   as.character(dgp) %nin% susDGPs,
                  list(
                    mean_classif = mean(width[which(task_type=="classif")],na.rm=TRUE),
                    median_classif = median(width[which(task_type=="classif")],na.rm = TRUE),

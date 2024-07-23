@@ -209,4 +209,5 @@ translate_losses <- function(...) {
 
 inducers = unique(ci_aggr$inducer)
 
-DGPs <- setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null"))
+susDGPs <- c("video_transcoding","physiochemical_protein","chen_10_null")
+DGPs <- setdiff(DGPS,susDGPs)

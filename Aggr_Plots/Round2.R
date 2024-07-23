@@ -5,7 +5,7 @@ ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
 Widths <- merge(ci_aggr_red,sds_tbls,by="dgp")
 
 Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
-                   as.character(dgp) %in% setdiff(DGPS,c("adult","video_transcoding","physiochemical_protein","chen_10_null")),
+                   as.character(dgp) %nin% susDGPs,
                  list(
                    mean_classif = mean(width[which(task_type=="classif")],na.rm=TRUE),
                    median_classif = median(width[which(task_type=="classif")],na.rm = TRUE),
