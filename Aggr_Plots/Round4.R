@@ -11,7 +11,7 @@ source("Aggr_Plots/setup.R")
 theme_set(theme_bw())
 sds <- readRDS("Aggr_Plots/sds.rds")
 sds_tbls <- data.table(
-  task = names(sds),
+  dgp = names(sds),
   sd = unlist(sds)
 )
 
@@ -78,3 +78,23 @@ bottom=text_grob("conservative z (125 repetitions), nested CV (125 repetitions),
 )
 
 ggsave("Aggr_Plots/PNGs/FourthRound.png",width=12,height=5)
+
+
+
+Widths3 <- merge(tbl,sds_tbls,by="dgp") 
+Widths3$width_of <- NA
+Widths3$value <- NA
+Widths3$value[which(Widths3$task_type=="classif")] <- Widths3$median_width[which(Widths3$task_type=="classif")]
+Widths3$value[which(Widths3$task_type=="regr")] <- Widths3$median_width[which(Widths3$task_type=="regr")]/Widths3$sd[which(Widths3$task_type=="regr")]^2
+Widths3$width_of[which(Widths3$task_type=="classif")] <- "median_classif"
+Widths3$width_of[which(Widths3$task_type=="regr")] <- "median_regr"
+
+ggplot(Widths3, aes(y = value, color = width_of)) + 
+  facet_nested(learner ~ size+method) + 
+  geom_hline(yintercept = 0.2) + 
+  geom_boxplot() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.title.x = element_blank()
+  ) + easy_remove_x_axis()
+
