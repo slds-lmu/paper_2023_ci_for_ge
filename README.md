@@ -23,3 +23,8 @@ The instructions to reproduce the experiments are separated into:
 1. the dataset generation, see `./datamodels/README.md`. Note that the resulting datasets are also made available on
    [OpenML](https://openml.org), so the main experiments can be reproduced without this step.
 1. the main experiments, see `./experiments/README.md`.
+
+## Downloading the datasets
+
+Because of the large size of the [benchmark datasets](https://www.openml.org/search?type=study&study_type=task&id=441), it is important to download them in **parquet** format.
+However, the download might still fail. In this case, simply retry until it works.
