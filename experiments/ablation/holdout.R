@@ -66,6 +66,8 @@ f = function(.row) {
   cbind(infer_holdout(rr, alpha = 0.05), data.table(ratio = ratio))
 }
 
-batchMap(.row = 1:nrow(TBL), fun = f)
-ids = which(TBL$size == 500)
+splits = split(ids, ceiling(seq_along(ids) / 500))
+g = function(ii) rbindlist(map(ii, f))
+batchExport(list(TBL = TBL, f = f))
 
+batchMap(ii = splits, fun = g)

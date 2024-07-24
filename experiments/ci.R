@@ -72,9 +72,11 @@ EVAL_CONFIG = list(
 
   # nested cv
   list("nested_cv",          "infer_bates",          list(x = "nested_cv"),                                     list()),
+  list("nested_cv_250",      "infer_bates",          list(x = "nested_cv_250"),                                 list()),
 
   # conservative_z
   list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                                list()),
+  list("conservative_z_250", "infer_conservative_z", list(x = "conservative_z_250"),                            list()),
 
   # nested_bootstrap
   list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),

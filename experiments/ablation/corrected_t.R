@@ -13,10 +13,9 @@ reg = makeRegistry(
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "data.table", "batchtools")
 )
 
-TBL = make_tbl("subsampling_100")
+TBL = make_tbl(c("subsampling_100", "subsampling_100_80", "subsampling_100_70"))
 GROUPS = unique(TBL$group)
 
-batchExport(list(TBL = TBL))
 
 f = function(.row) {
   tbl = TBL[.row, ]
@@ -60,5 +59,9 @@ f = function(.row) {
 }
 
 
-batchMap(.row = 1:nrow(TBL), fun = f)
-ids = which(TBL$size == 500)
+ids = 1:nrow(TBL)
+splits = split(ids, ceiling(seq_along(ids) / 500)) 
+g = function(ii) rbindlist(map(ii, f))
+batchExport(list(TBL = TBL, f = f))
+
+batchMap(ii = splits, fun = g)

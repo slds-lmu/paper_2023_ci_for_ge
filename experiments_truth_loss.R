@@ -63,8 +63,6 @@ RESAMPLINGS <- list(other = list(
   bootstrap_50       = list(id = "bootstrap", params = list(ratio = 1, repeats = 50)),
   bootstrap_100      = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
   insample           = list(id = "insample", params = list())
-  nested_cv_250      = list(id = "nested_cv", params = list(folds = 5, repeats = 10)),
-  conservative_z_250 = list(id = "conservative_z", params = list(J = 10, M = 12, ratio = 0.9))
 ), small = list(
   nested_cv = list(id = "nested_cv", params = list(folds = 5, repeats = 200)),
   conservative_z = list(id = "conservative_z", params = list(J = 15, M = 10, ratio = 0.9)),

@@ -9,11 +9,18 @@ library(here)
 source(here("experiments", "ablation", "helper.R"))
 
 reg = makeRegistry(
-  file.dir = Sys.getenv("ABLATION_NCV"),
+  file.dir = Sys.getenv("ABLATION_NCV_CHEAP"),
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "batchtools", "data.table")
 )
 
-TBL = make_tbl("nested_cv")
+reg_path = "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_more"
+exp_reg = loadRegistry(reg_path, make.default = FALSE)
+tbl = unwrap(getJobTable(reg = exp_reg))
+tbl = tbl[resampling_name %in% "conzervative_z", c("job.id", "repl", "size", "task_name", "learner_id", "data_id", "resampling_name")]
+tbl$reg_path = reg_path
+tbl[, let(group = .GRP), by = c("size", "task_name", "learner_id")]
+setnames(tbl, c("task_name", "learner_id"), c("dgp", "learner"))
+
 GROUPS = unique(TBL$group)
 
 batchExport(list(TBL = TBL))
@@ -33,10 +40,10 @@ f = function(.row) {
 
   learner = lrn(tbl$learner[[1L]])
 
-  repeats = 200
+  repeats = 10
   folds = 5
 
-  rbindlist(map(seq(10, 200, by = 10), function(r) {
+  rbindlist(map(seq(10, repeats, by = 10), function(r) {
     res = loadResult(tbl$job.id[[1L]], reg) 
     predictions = res$test_predictions
 

@@ -27,6 +27,7 @@ info = list(
 
 
 f = function(info) {
+  runif(1)
   nm = info$name
   id = info$id
   size = info$size
@@ -86,23 +87,23 @@ f = function(info) {
   tbl = rbindlist(map(seq_len(reps), function(repl) {
     task = task$clone(deep = TRUE)
     task$filter(sample(task$row_ids, size = size))
-    rr = resample(task, learner, rsmp("cv"))
-    ci = infer_bayle(rr)
+    #rr = resample(task, learner, rsmp("cv"))
+    #ci = infer_bayle(rr)
     learner$train(task)
     risk = learner$predict(ho_task)$score()
-    cbind(ci, data.table(risk = risk, task = task$id, repl = repl, size = size, learner = learner_id))
+    data.table(risk = risk, task = task$id, repl = repl, size = size, learner = info$learner_id)
   }))
 
-  tbl[, let(
-    hit = lower <= risk & upper >= risk,
-    width = upper - lower
-  )]
+  #tbl[, let(
+  #  hit = lower <= risk & upper >= risk,
+  #  width = upper - lower
+  #)]
 
   tbl
 }
 
 makeRegistry(
-  "/gscratch/sfische6/benchmarks/ci_for_ge/simul_all",
+  "/gscratch/sfische6/benchmarks/ci_for_ge/simul_all2",
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "data.table"),
 )
 

@@ -151,11 +151,12 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # for the proxy quantities / risk
   if ("holdout" %in% learner$predict_sets) {
     if (task$task_type == "regr") {
-      measures = msrs(paste0("regr.", c("mse", "mae", "std_mse", "percentual_mse")))
+      measures = msrs(paste0("regr.", c("mse", "mae", "std_mae", "percentual_mae", "winsorized_mse")))
       measures[[1]]$id = "se"
       measures[[2]]$id = "ae"
-      measures[[3]]$id = "standardized_se"
-      measures[[4]]$id = "percentual_se"
+      measures[[3]]$id = "standardized_ae"
+      measures[[4]]$id = "percentual_ae"
+      measures[[5]]$id = "winsorized_se"
 
     } else if (task$task_type == "classif") {
       measures = msrs(paste0("classif.", c("ce", "bbrier", "logloss")))
@@ -231,8 +232,9 @@ calculate_ci = function(name, inference, x, y, z, args, learner_name, task_name,
   loss_fns_regr = list(
     ae              = mlr3measures::ae,
     se              = mlr3measures::se,
-    percentual_se   = inferGE::percentual_se,
-    standardized_se = inferGE::standardized_se
+    percentual_ae   = inferGE::percentual_ae,
+    standardized_ae = inferGE::standardized_ae,
+    winsorized_se   = inferGE::winsorized_se
   )
 ) {
   ids = list(x = x, y = y, z = z)

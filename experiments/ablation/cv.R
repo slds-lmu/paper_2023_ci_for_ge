@@ -66,5 +66,9 @@ f = function(.row) {
   cbind(infer_bayle(rr, alpha = 0.05), data.table(folds = folds))
 }
 
-batchMap(.row = 1:nrow(TBL), fun = f)
-ids = which(TBL$size == 500)
+ids = 1:nrow(TBL)
+splits = split(ids, ceiling(seq_along(ids) / 500))
+g = function(ii) rbindlist(map(ii, f))
+batchExport(list(TBL = TBL, f = f))
+
+batchMap(ii = splits, fun = g)

@@ -9,11 +9,11 @@ library(here)
 source(here("experiments", "ablation", "helper.R"))
 
 reg = makeRegistry(
-  file.dir = Sys.getenv("ABLATION_NCV"),
-  packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "batchtools", "data.table")
+  file.dir = Sys.getenv("ABLATION_CORT"),
+  packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "data.table", "batchtools")
 )
 
-TBL = make_tbl("nested_cv")
+TBL = make_tbl(c("subsampling_100", "subsampling_100_80", "subsampling_100_70"))
 GROUPS = unique(TBL$group)
 
 batchExport(list(TBL = TBL))
@@ -22,7 +22,7 @@ f = function(.row) {
   tbl = TBL[.row, ]
 
   reg_path = tbl$reg_path[[1L]]
-  reg = loadRegistry(reg_path)
+  reg = loadRegistry(reg_path, make.default = FALSE)
   task = make_task(
     data_id = tbl$data_id[[1L]],
     size = tbl$size[[1L]],
@@ -33,16 +33,15 @@ f = function(.row) {
 
   learner = lrn(tbl$learner[[1L]])
 
-  repeats = 200
-  folds = 5
+  ratio = 0.9
 
-  rbindlist(map(seq(10, 200, by = 10), function(r) {
-    res = loadResult(tbl$job.id[[1L]], reg) 
+  rbindlist(map(c(5, seq(10, 100, by = 10)), function(r) {
+    res = loadResult(tbl$job.id[[1L]], reg = reg) 
     predictions = res$test_predictions
 
-    preds = map(predictions[1:(folds^2 * r)], function(pred) list(test = pred))
+    preds = map(predictions[1:r], function(pred) list(test = pred))
 
-    resampling = rsmp("nested_cv", repeats = r, folds = folds)
+    resampling = rsmp("subsampling", repeats = r, ratio = ratio)
     resampling$instantiate(task)
 
     data = as_result_data(
@@ -56,13 +55,9 @@ f = function(.row) {
 
     rr = ResampleResult$new(data)
 
-    cbind(infer_bates(rr, alpha = 0.05), data.table(reps_outer = r))
+    cbind(infer_corrected_t(rr, alpha = 0.05), data.table(reps = r))
   }), fill = TRUE)
 }
 
-ids = 1:nrow(TBL)
-splits = split(ids, ceiling(seq_along(ids) / 20))
-g = function(ii) rbindlist(map(ii, f))
-batchExport(list(TBL = TBL, f = f))
 
-batchMap(ii = splits, fun = g)
+batchMap(.row = 1:nrow(TBL), fun = f)

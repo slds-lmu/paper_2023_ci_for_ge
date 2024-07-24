@@ -40,7 +40,7 @@ data_names <- list(
 SEED <- 42
 N_REP <- 500L
 
-REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH")
+REGISTRY_PATH <- Sys.getenv("TRUTH_PATH_LOSSES_RESAMPLE")
 
 reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
@@ -50,32 +50,9 @@ reg <- makeExperimentRegistry(
 )
 
 RESAMPLINGS <- list(other = list(
-  holdout_66         = list(id = "holdout", params = list(ratio = 2 / 3)),
-  holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
-  subsampling_10     = list(id = "subsampling", params = list(repeats = 10, ratio = 0.9)),
-  subsampling_50     = list(id = "subsampling", params = list(repeats = 50, ratio = 0.9)),
-  subsampling_100    = list(id = "subsampling", params = list(repeats = 100, ratio = 0.9)),
-  cv_5               = list(id = "cv", params = list(folds = 5)),
-  cv_10              = list(id = "cv", params = list(folds = 10)),
-  rep_cv_5_5         = list(id = "repeated_cv", params = list(folds = 5, repeats = 5)),
-  diettrich          = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
-  bootstrap_10       = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
-  bootstrap_50       = list(id = "bootstrap", params = list(ratio = 1, repeats = 50)),
-  bootstrap_100      = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
   insample           = list(id = "insample", params = list())
-  nested_cv_250      = list(id = "nested_cv", params = list(folds = 5, repeats = 10)),
-  conservative_z_250 = list(id = "conservative_z", params = list(J = 10, M = 12, ratio = 0.9))
 ), small = list(
-  nested_cv = list(id = "nested_cv", params = list(folds = 5, repeats = 200)),
-  conservative_z = list(id = "conservative_z", params = list(J = 15, M = 10, ratio = 0.9)),
-  two_stage = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
-  loo = list(id = "loo", params = list()),
-  austern_zhou = list(id = "austern_zhou", params = list(folds = 5, repeats = 1)),
-  austern_zhou_rep = list(id = "austern_zhou", params = list(folds = 5, repeats = 5)),
-  bootstrap_500 = list(id = "bootstrap", params = list(ratio = 1, repeats = 500)),
-  bootstrap_1000 = list(id = "bootstrap", params = list(ratio = 1, repeats = 1000))
 ), tiny = list(
-  bootstrap_ccv = list(id = "bootstrap_ccv", params = list(ratio = 1, repeats = 100))
 ))
 
 SIZES <- list(
@@ -167,25 +144,6 @@ algo_design_tiny <- make_algo_design("tiny")
 algo_design_small <- make_algo_design("small")
 algo_design_other <- make_algo_design("other")
 
-
-# Applying all tiny resampling methods to tiny problems
-addExperiments(
-  algo.designs = list(run_resampling = algo_design_tiny),
-  prob.designs = list(ci_estimation = prob_design_tiny),
-  repls = N_REP
-)
-
-# Applying all small algos to tiny and small problems
-addExperiments(
-  algo.designs = list(run_resampling = algo_design_small),
-  prob.designs = list(ci_estimation = prob_design_tiny),
-  repls = N_REP
-)
-addExperiments(
-  algo.designs = list(run_resampling = algo_design_small),
-  prob.designs = list(ci_estimation = prob_design_small),
-  repls = N_REP
-)
 
 # Applying all other resampling methods to tiny, small and other problems
 addExperiments(

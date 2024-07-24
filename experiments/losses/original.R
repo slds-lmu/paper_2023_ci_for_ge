@@ -177,7 +177,8 @@ chunked_args = map(unique(chunks$chunk), function(cid) {
       task_name = tbl2[i, "task_name"][[1]],
       size = tbl2[i, "size"][[1]],
       repl = tbl2[i, "repl"][[1]],
-      inference = tbl2[i, "inference"][[1]]
+      inference = tbl2[i, "inference"][[1]],
+      name = tbl2[i, "name"][[1]]
     )
   })
 })

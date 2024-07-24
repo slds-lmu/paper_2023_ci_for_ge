@@ -9,20 +9,24 @@ library(here)
 source(here("experiments", "ablation", "helper.R"))
 
 reg = makeRegistry(
-  file.dir = Sys.getenv("ABLATION_NCV"),
+  file.dir = Sys.getenv("ABLATION_NCV_CHEAP"),
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "batchtools", "data.table")
 )
 
-TBL = make_tbl("nested_cv")
+reg_path = "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_more"
+exp_reg = loadRegistry(reg_path, make.default = FALSE)
+tbl = unwrap(getJobTable(reg = exp_reg))
+tbl = tbl[resampling_name %in% "nested_cv", c("job.id", "repl", "size", "task_name", "learner_id", "data_id", "resampling_name")]
+tbl$reg_path = reg_path
+tbl[, let(group = .GRP), by = c("size", "task_name", "learner_id")]
+setnames(tbl, c("task_name", "learner_id"), c("dgp", "learner"))
+
+TBL = tbl
 GROUPS = unique(TBL$group)
 
-batchExport(list(TBL = TBL))
-
-f = function(.row) {
+f = function(.row, reg) {
   tbl = TBL[.row, ]
 
-  reg_path = tbl$reg_path[[1L]]
-  reg = loadRegistry(reg_path)
   task = make_task(
     data_id = tbl$data_id[[1L]],
     size = tbl$size[[1L]],
@@ -33,10 +37,10 @@ f = function(.row) {
 
   learner = lrn(tbl$learner[[1L]])
 
-  repeats = 200
+  repeats = 10
   folds = 5
 
-  rbindlist(map(seq(10, 200, by = 10), function(r) {
+  rbindlist(map(1:10, function(r) {
     res = loadResult(tbl$job.id[[1L]], reg) 
     predictions = res$test_predictions
 
@@ -61,8 +65,11 @@ f = function(.row) {
 }
 
 ids = 1:nrow(TBL)
-splits = split(ids, ceiling(seq_along(ids) / 20))
-g = function(ii) rbindlist(map(ii, f))
-batchExport(list(TBL = TBL, f = f))
+splits = split(ids, ceiling(seq_along(ids) / 100))
+g = function(ii) {
+  reg = loadRegistry(REG_PATH, make.default = FALSE)
+  rbindlist(map(ii, f, reg = reg))
+}
+batchExport(list(TBL = TBL, f = f, REG_PATH = reg_path))
 
 batchMap(ii = splits, fun = g)
