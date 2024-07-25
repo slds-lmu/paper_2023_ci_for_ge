@@ -2,6 +2,16 @@ source("Aggr_Plots/setup.R")
 
 ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
 
+UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") & 
+                    as.character(dgp) %nin% susDGPs,
+                  list(
+                    umean_R = mean(0.95-pmin(cov_R,0.95),na.rm=TRUE), 
+                    umean_ER = mean(0.95-pmin(cov_ER,0.95),na.rm=TRUE), 
+                    umean_PQ = mean(0.95-pmin(cov_PQ,0.95),na.rm=TRUE) 
+                  ),
+                  by = c("method")]
+UC <- UC %>%
+  mutate(method = fct_reorder(method, umean_R, .desc = TRUE))
 Widths <- merge(ci_aggr_red,sds_tbls,by="dgp")
 
 Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") & 
@@ -33,9 +43,10 @@ p1 <- aggr_plot(ci_aggr_red, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c
                                "random_forest"="Random Forest",
                                "lm_or_logreg"="Linear or Logistic regression",
                                "ridge_lm_or_logreg"="Ridge-penalized Linear or Logistic regression")) +
-  scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
+  scale_linetype_manual(labels = c("y_ER"="Expected Risk",
                                      "y_R"="Risk", 
-                                     "y_PQ"="Proxy Quantity (if applicable)"))+
+                                     "y_PQ"="Proxy Quantity (if applicable)"),
+                        values=c("solid","dashed","11"))+
   ggtitle("For large data (up to 10.000)")
 
 
@@ -65,9 +76,10 @@ p2 <- aggr_plot(Refac, MoI_small, inducers, DGPs, "Squared", "Zero-One", ylims=c
                                "random_forest"="Random Forest",
                                "lm_or_logreg"="Linear or Logistic regression",
                                "ridge_lm_or_logreg"="Ridge-penalized Linear or Logistic regression"))+
-  scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
-                                     "y_R"="Risk", 
-                                     "y_PQ"="Proxy Quantity (if applicable)"))+
+  scale_linetype_manual(labels = c("y_ER"="Expected Risk",
+                                   "y_R"="Risk", 
+                                   "y_PQ"="Proxy Quantity (if applicable)"),
+                        values=c("solid","dashed","11"))+
   ggtitle("For small data (up to 500)")
 
 
@@ -80,5 +92,5 @@ plot_grid(p1 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
            plot_grid(P2 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
                      legend, ncol = 1, rel_heights = c(1.66,1)))
 
-ggsave("Aggr_Plots/PNGs/SecondRound.png",width=10,height=8)
+ggsave("Aggr_Plots/PNGs/SecondRound.png",width=10,height=10)
 
