@@ -10,6 +10,7 @@ UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") &
                 umean_PQ = mean(0.95-pmin(cov_PQ,0.95),na.rm=TRUE) 
               ),
               by = c("method")]
+
 UC <- UC %>%
   mutate(method = fct_reorder(method, umean_R, .desc = TRUE))
 
@@ -44,10 +45,13 @@ Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") &
                    as.character(dgp) %nin% susDGPs,
                  list(
                    mean_classif = mean(width[which(task_type=="classif")],na.rm=TRUE),
-                   median_classif = median(width[which(task_type=="classif")],na.rm = TRUE),
-                   mean_regr = mean(width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                   median_classif = median(width[which(task_type=="classif")]/(R_sd[which(task_type=="classif")]/sqrt(size[which(task_type=="classif")]))
+                                           ,na.rm = TRUE),
+                   mean_regr = mean(width[which(task_type=="regr")]/R_sd[which(task_type=="regr")]#^2
+                                    ,
                                     na.rm=TRUE),
-                   median_regr = median(width[which(task_type=="regr")]/sd[which(task_type=="regr")]^2,
+                   median_regr = median(width[which(task_type=="regr")]/(R_sd[which(task_type=="regr")]/sqrt(size[which(task_type=="regr")]))#^2
+                                        ,
                                         na.rm = TRUE)
                  ),
                  by = c("method")]
@@ -70,10 +74,11 @@ p2 <- ggplot(Widths_plot, aes(x = method, y = value, fill=aggr)) +
   theme_minimal() + scale_fill_manual(values=c("steelblue","slateblue"),
                                       labels=c(
                                         "median_classif" = "Classification",
-                                        "median_regr" = "Regression (relative to target's sample variance)"
+                                        "median_regr" = "Regression" #target's sample variance)"
+                                        
                                       )) +
-  geom_hline(yintercept = 0.2,color="red") + 
-  geom_hline(yintercept = 0.4,color="red",linetype="dotted") + 
+  #geom_hline(yintercept = 0.2,color="red") + 
+  geom_hline(yintercept = 01.4,color="red") +#,linetype="dotted") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ################################################################################
@@ -108,4 +113,25 @@ plot_grid(
   nrow = 1, rel_widths = c(1, 0.2)  # Adjust relative widths as needed
 )
 
-ggsave("Aggr_Plots/PNGs/FirstRound.png",width=11.5,height=9)
+ggsave("Aggr_Plots/PNGs/FirstRound_different_stand.png",width=11.5,height=9)
+
+#ggsave("Aggr_Plots/PNGs/FirstRound.png",width=11.5,height=9)
+
+
+#ggplot(Widths_plot, aes(x = method, y = value, fill=aggr)) +
+#  geom_bar(stat = "identity", position = position_dodge()) +
+#  labs(title = "",
+#       x = "Method",
+#       y = "Median (relative) width",
+#       fill = "Median width for") +
+#  theme_minimal() + scale_fill_manual(values=c("steelblue","slateblue"),
+#                                      labels=c(
+#                                        "median_classif" = "Classification",
+#                                        "median_regr" = "Regression (relative to SD of risk)" #target's sample variance)"
+#                                        
+#                                      )) +
+#  geom_hline(yintercept = 1.96,color="red") + 
+#  #geom_hline(yintercept = 0.4,color="red",linetype="dotted") + 
+#  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
