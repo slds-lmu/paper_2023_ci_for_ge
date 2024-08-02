@@ -40,7 +40,7 @@ data_names <- list(
 SEED <- 42
 N_REP <- 1L
 
-REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH")
+REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH_RUNTIME")
 
 reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
@@ -51,31 +51,32 @@ reg <- makeExperimentRegistry(
 
 RESAMPLINGS <- list(other = list(
   # holdout
-  holdout_50         = list(id = "holdout", params = list(ratio = 0.5)),
-  holdout_60         = list(id = "holdout", params = list(ratio = 0.6)),
+  #holdout_50         = list(id = "holdout", params = list(ratio = 0.5)),
+  #holdout_60         = list(id = "holdout", params = list(ratio = 0.6)),
   holdout_66         = list(id = "holdout", params = list(ratio = 2 / 3)),
-  holdout_70         = list(id = "holdout", params = list(ratio = 0.7)),
-  holdout_80         = list(id = "holdout", params = list(ratio = 0.8)),
+  #holdout_70         = list(id = "holdout", params = list(ratio = 0.7)),
+  #holdout_80         = list(id = "holdout", params = list(ratio = 0.8)),
   holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
   # cross validation
   cv_5               = list(id = "cv", params = list(folds = 5)),
   cv_10              = list(id = "cv", params = list(folds = 10)),
-  cv_25              = list(id = "cv", params = list(folds = 25)),
-  cv_50              = list(id = "cv", params = list(folds = 50)),
-  cv_75              = list(id = "cv", params = list(folds = 75)),
-  cv_100             = list(id = "cv", params = list(folds = 100)),
+  #cv_25              = list(id = "cv", params = list(folds = 25)),
+  #cv_50              = list(id = "cv", params = list(folds = 50)),
+  #cv_75              = list(id = "cv", params = list(folds = 75)),
+  #cv_100             = list(id = "cv", params = list(folds = 100)),
   subsampling_10     = list(id = "subsampling", params = list(repeats = 10, ratio = 0.9)),
+  subsampling_25     = list(id = "subsampling", params = list(repeats = 25, ratio = 0.9)),
   subsampling_50     = list(id = "subsampling", params = list(repeats = 50, ratio = 0.9)),
   subsampling_100    = list(id = "subsampling", params = list(repeats = 100, ratio = 0.9)),
-  subsampling_100_80 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.8)),
-  subsampling_100_70 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.7)),
+  #subsampling_100_80 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.8)),
+  #subsampling_100_70 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.7)),
   # subsampling
   rep_cv_5_5         = list(id = "repeated_cv", params = list(folds = 5, repeats = 5)),
   diettrich          = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
   bootstrap_10       = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
   bootstrap_50       = list(id = "bootstrap", params = list(ratio = 1, repeats = 50)),
   bootstrap_100      = list(id = "bootstrap", params = list(ratio = 1, repeats = 100)),
-  insample           = list(id = "insample", params = list())
+  insample           = list(id = "insample", params = list()),
   nested_cv_250      = list(id = "nested_cv", params = list(folds = 5, repeats = 10)),
   conservative_z_250 = list(id = "conservative_z", params = list(J = 10, M = 12, ratio = 0.9)),
   nested_cv_75       = list(id = "nested_cv", params = list(folds = 5, repeats = 3)),
@@ -145,7 +146,7 @@ make_prob_designs <- function(type) {
   prob_designs_other <- map(c("regr", "classif"), function(task_type) {
     dt <- CJ(
       data_id = TASKS[[task_type]],
-      learner = LEARNERS[1sk_type]],
+      learner = LEARNERS[[task_type]],
       size = SIZES[[type]],
       sorted = FALSE
     )
