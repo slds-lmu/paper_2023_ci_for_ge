@@ -124,8 +124,8 @@ batchExport(list(
 ))
 
 addAlgorithm(
-  "run_resampling",
-  fun = run_resampling
+  "time_resampling",
+  fun = time_resampling
 )
 
 addProblem(
@@ -188,36 +188,36 @@ algo_design_other <- make_algo_design("other")
 
 # Applying all tiny resampling methods to tiny problems
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_tiny),
+  algo.designs = list(time_resampling = algo_design_tiny),
   prob.designs = list(ci_estimation = prob_design_tiny),
   repls = N_REP
 )
 
 # Applying all small algos to tiny and small problems
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_small),
+  algo.designs = list(time_resampling = algo_design_small),
   prob.designs = list(ci_estimation = prob_design_tiny),
   repls = N_REP
 )
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_small),
+  algo.designs = list(time_resampling = algo_design_small),
   prob.designs = list(ci_estimation = prob_design_small),
   repls = N_REP
 )
 
 # Applying all other resampling methods to tiny, small and other problems
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_other),
+  algo.designs = list(time_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_tiny),
   repls = N_REP
 )
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_other),
+  algo.designs = list(time_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_small),
   repls = N_REP
 )
 addExperiments(
-  algo.designs = list(run_resampling = algo_design_other),
+  algo.designs = list(time_resampling = algo_design_other),
   prob.designs = list(ci_estimation = prob_design_other),
   repls = N_REP
 )

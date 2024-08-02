@@ -60,6 +60,46 @@ make_resampling = function(resampling_id, resampling_params) {
   resampling = do.call(rsmp, c(list(.key = resampling_id), resampling_params[[1]]))
 }
 
+time_resampling = function(instance, resampling_id, resampling_params, job, ...) {
+  lgr::get_logger("mlr3")$set_threshold("warn")
+  resampling = make_resampling(resampling_id, resampling_params)
+  task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl,
+    resampling = resampling)
+
+  task$row_roles$holdout = integer(0)
+
+  # we pass the task to make_learner() so we can skip some robustify steps
+  # we pass the resampling to make_learner to know when we need the metarobustify-step (for bootstrap)
+  learner = make_learner(
+    learner_id = instance$learner_id,
+    learner_params = instance$learner_params[[1]],
+    learner_name = instance$learner_name,
+    task = task,
+    resampling = resampling
+  )
+
+  # for bootstrap, we also need the train predictions for the location-shifted bootstrap method
+  # so we can estimate the quantiles.
+  if (inherits(resampling, "ResamplingBootstrap")) {
+    learner$predict_sets = union(learner$predict_sets, "train")
+  }
+
+  # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
+  # which reduces variance in the comparison between learners
+  resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
+  # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
+  withr::with_seed(seed = resampling_seed,
+    resampling$instantiate(task)
+  )
+
+  # for good measure we specify the seed here as well
+  rr = withr::with_seed(seed = resampling_seed + 1,
+    resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
+  )
+
+  rr$aggregate(msr("time_both"))
+}
+
 make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
   # for untuned ridge regression we pre-computed some reasonable lambda	  
   if (grepl("(classif|regr)\\.glmnet", learner_id)) {
