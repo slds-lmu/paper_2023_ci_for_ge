@@ -45,12 +45,12 @@ Widths <- Widths[measure %in% translate_losses("Squared", "Zero-One") &
                    as.character(dgp) %nin% susDGPs,
                  list(
                    mean_classif = mean(width[which(task_type=="classif")],na.rm=TRUE),
-                   median_classif = median(width[which(task_type=="classif")]/(R_sd[which(task_type=="classif")]/sqrt(size[which(task_type=="classif")]))
+                   median_classif = median(width[which(task_type=="classif")]/(estimate_sd[which(task_type=="classif")])
                                            ,na.rm = TRUE),
                    mean_regr = mean(width[which(task_type=="regr")]/R_sd[which(task_type=="regr")]#^2
                                     ,
                                     na.rm=TRUE),
-                   median_regr = median(width[which(task_type=="regr")]/(R_sd[which(task_type=="regr")]/sqrt(size[which(task_type=="regr")]))#^2
+                   median_regr = median(width[which(task_type=="regr")]/(estimate_sd[which(task_type=="regr")])#^2
                                         ,
                                         na.rm = TRUE)
                  ),
@@ -78,15 +78,15 @@ p2 <- ggplot(Widths_plot, aes(x = method, y = value, fill=aggr)) +
                                         
                                       )) +
   #geom_hline(yintercept = 0.2,color="red") + 
-  geom_hline(yintercept = 01.4,color="red") +#,linetype="dotted") + 
+  geom_hline(yintercept = 8,color="red") +#,linetype="dotted") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ################################################################################
-dummy_p <- ggplot(data.frame(x=rep(c(1,2)),y=factor(rep(c(1,2),each=2))),
+dummy_p <- ggplot(data.frame(x=c(1,1),y=factor(c(1,1))),
                   aes(x=x,y=y,linetype=y)) + geom_line(color="red") + theme_minimal() +
                   scale_linetype_manual(
-                    values=c("solid","dotted"),
-                    labels= c("Cutoff for well-\nperforming methods","Adjusted cutoff for re-\ngression on small data")) +
+                    values=c("solid"),#,"dotted"),
+                    labels= c("Cutoff for well-\nperforming methods")) +#,"Adjusted cutoff for re-\ngression on small data")) +
                     labs(linetype="") + 
                     theme(legend.key.height = unit(3, "line"),
                           legend.key.width = unit(2, "line"),

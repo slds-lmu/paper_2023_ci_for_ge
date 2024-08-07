@@ -49,9 +49,11 @@ bottom_legend <- ggpubr::get_legend(CONZ[[1]] +   theme(legend.position = "right
                                     
 P_conz_ncv <- ggarrange(NCV[[2]] + easy_remove_x_axis() +
                           theme(legend.position = "none",
-                                strip.background = element_blank(),
-                                strip.text = element_blank(),
-                                plot.margin = margin(t=20,l=5,r=5,b=-2)
+                                strip.background.y = element_rect(fill = "white",color="white"),
+                                strip.text.y = element_text(color="white"),
+                                strip.background.x = element_blank(),
+                                strip.text.x = element_blank(),
+                                plot.margin = margin(t=20,l=15,r=5,b=-2)
                                 ),
                         NCV[[1]] + theme(legend.position = "none",
                                          legend.box = "vertical",
@@ -59,9 +61,11 @@ P_conz_ncv <- ggarrange(NCV[[2]] + easy_remove_x_axis() +
                                          ),
                         CONZ[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
-                                strip.background = element_blank(),
-                                strip.text = element_blank(),
-                                plot.margin = margin(l=5,r=5,t=5,b=-2)
+                                strip.background.y = element_rect(fill = "white",color="white"),
+                                strip.text.y = element_text(color="white"),
+                                strip.background.x = element_blank(),
+                                strip.text.x = element_blank(),
+                                plot.margin = margin(l=15,r=5,t=5,b=-2)
                                 ),
                         CONZ[[1]] + theme(legend.position = "none",
                                 legend.box = "vertical",
@@ -87,8 +91,10 @@ CORT <- aggr_plot_cort(cort_aggr, inducers, DGPs, ylims=c(0.6,1),sds_tbls)
 
 P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
-                                strip.background = element_blank(),
-                                strip.text = element_blank(),
+                                strip.background.y = element_rect(fill = "white",color="white"),
+                                strip.text.y = element_text(color="white"),
+                                strip.background.x = element_blank(),
+                                strip.text.x = element_blank(),
                                 plot.margin = margin(t=5,l=-5,r=5,b=-2)
                                 ),
                         CV[[1]] + theme(legend.position = "none",
@@ -97,8 +103,10 @@ P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() +
                                         ),
                         HO[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
-                                strip.background = element_blank(),
-                                strip.text = element_blank(),
+                                strip.background.y = element_rect(fill = "white",color="white"),
+                                strip.text.y = element_text(color="white"),
+                                strip.background.x = element_blank(),
+                                strip.text.x = element_blank(),
                                 plot.margin = margin(l=-5,r=5,t=5,b=-2)
                                 ),
                         HO[[1]] + theme(legend.position = "none",
@@ -107,8 +115,10 @@ P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() +
                                         ),
                         CORT[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
-                                strip.background = element_blank(),
-                                strip.text = element_blank(),
+                                strip.background.y = element_rect(fill = "white",color="white"),
+                                strip.text.y = element_text(color="white"),
+                                strip.background.x = element_blank(),
+                                strip.text.x = element_blank(),
                                 plot.margin = margin(l=-5,r=5,t=5,b=-2)
                                 ),
                         CORT[[1]] + theme(legend.position = "none",
@@ -130,6 +140,10 @@ plot_grid(legend,top_legend,
           plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (up to 500)", "(For large data (500 - 10.000)")),
            nrow = 3, rel_heights = c(0.02,0.05,1)  # Adjust relative widths as needed
           )
+
+
+
+
 
 ggsave("Aggr_Plots/PNGs/ThirdRound.png",width=10,height=9)
 

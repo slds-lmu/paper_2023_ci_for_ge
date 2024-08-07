@@ -1,4 +1,4 @@
-aggr_plot <- function(data, methods, inducers, DGPs, loss_regr, loss_classif, ylims=c(0,1)){
+aggr_plot <- function(data, methods, inducers, DGPs, loss_regr, loss_classif, ylims=c(0,1),ncols=2){
   data = data[as.character(method) %in% methods & as.character(dgp) %in% DGPs  & 
               measure %in% translate_losses(loss_regr, loss_classif),
               list(
@@ -20,7 +20,7 @@ aggr_plot <- function(data, methods, inducers, DGPs, loss_regr, loss_classif, yl
   output <- ggplot(plotdat,aes(x=size,y=value,color=inducer))+
     geom_hline(yintercept = 0.95,color="black") + 
     geom_line(aes(linetype=coverage_of),size=0.33) +
-    facet_wrap(method ~.,scales="free_x", ncol=2) + 
+    facet_wrap(method ~.,scales="free_x", ncol=ncols) + 
     ylim(min_size,max_size) +
     theme_bw()
     
@@ -81,15 +81,15 @@ aggr_plot_conz <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
                                        "y_R"="Risk"))
   
   
-  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif")),#,"median_regr")),
                            names_to = "aggr", values_to = "value")
   
   output2 <- ggplot(plotdat2,aes(x=outer_reps,y=value,fill=aggr))+
     geom_bar(stat = "identity", position = position_dodge()) +
     facet_grid(method~inner_reps,scales="free_x", switch="x") + 
-    scale_y_continuous(breaks=seq(0.1,0.5,by=0.1),expand = c(0,0)) +
-    geom_hline(yintercept = 0.2,color="grey33") + 
-    geom_hline(yintercept = 0.4,color="grey33",linetype="dotted")+
+    scale_y_continuous(breaks=seq(0.1,0.2,by=0.1),expand = c(0,0)) +
+   # geom_hline(yintercept = 0.2,color="grey33") + 
+    #geom_hline(yintercept = 0.4,color="grey33",linetype="dotted")+
     theme_classic() + 
     labs(fill = "Median width for",y="") +
     scale_fill_manual(values=c("steelblue","slateblue"),
@@ -137,14 +137,14 @@ aggr_plot_ncv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
     scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
                                        "y_R"="Risk"))
   
-  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif")),#,"median_regr")),
                            names_to = "aggr", values_to = "value")
   
   output2 <- ggplot(plotdat2,aes(x=reps_outer,y=value,fill=aggr))+
     geom_bar(stat = "identity", position = position_dodge()) +
-    scale_y_continuous(breaks=seq(0.1,0.5,by=0.1), limits=c(0,0.5), expand = c(0,0)) +
-    geom_hline(yintercept = 0.2,color="grey33") + 
-    geom_hline(yintercept = 0.4,color="grey33",linetype="dotted")+
+    scale_y_continuous(breaks=seq(0.1,0.2,by=0.1), limits=c(0,0.2), expand = c(0,0)) +
+    #geom_hline(yintercept = 0.2,color="grey33") + 
+    #geom_hline(yintercept = 0.4,color="grey33",linetype="dotted")+
     facet_grid(method~.,scales="free_x") + 
     theme_classic() + 
     labs(fill = "Median width for",y="") +
@@ -195,7 +195,7 @@ aggr_plot_ho <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
     scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
                                        "y_R"="Risk"))
   
-  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif")),#,"median_regr")),
                            names_to = "aggr", values_to = "value")
   
   output2 <- ggplot(plotdat2,aes(x=ratio,y=value,fill=aggr))+
@@ -254,7 +254,7 @@ aggr_plot_cv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
     scale_linetype_discrete(labels = c("y_ER"="Expected Risk",
                                        "y_R"="Risk"))
   
-  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif")),#,"median_regr")),
                            names_to = "aggr", values_to = "value")
   
   output2 <- ggplot(plotdat2,aes(x=folds,y=value,fill=aggr))+
@@ -314,7 +314,7 @@ aggr_plot_cort <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
                                        "y_R"="Risk"))
   
   
-  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif","median_regr")),
+  plotdat2 <- pivot_longer(data, cols = all_of(c("median_classif")),#,"median_regr")),
                            names_to = "aggr", values_to = "value")
   
   output2 <- ggplot(plotdat2,aes(x=reps,y=value,fill=aggr))+
