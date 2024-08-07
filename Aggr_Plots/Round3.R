@@ -8,17 +8,6 @@ library(ggeasy)
 
 source("Aggr_Plots/setup.R")
 
-dummy_p <- ggplot(data.frame(x=rep(c(1,2)),y=factor(rep(c(1,2),each=2))),
-                  aes(x=x,y=y,linetype=y)) + geom_line(color="grey33") + theme_minimal() +
-  scale_linetype_manual(
-    values=c("solid","dotted"),
-    labels= c("Cutoff for well-performing methods","Adjusted cutoff for regression on small data")) +
-  labs(linetype="") + 
-  theme(legend.position = "top",legend.text = element_text(size=10))
-
-legend <- ggpubr::get_legend(dummy_p)
-
-################################################################################
 
 
 
@@ -89,7 +78,7 @@ HO <- aggr_plot_ho(ho_aggr, inducers, DGPs, ylims=c(0.6,1),sds_tbls)
 CORT <- aggr_plot_cort(cort_aggr, inducers, DGPs, ylims=c(0.6,1),sds_tbls)
 
 
-P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() + 
+P_cv_ho_cort <- ggarrange(HO[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
                                 strip.background.y = element_rect(fill = "white",color="white"),
                                 strip.text.y = element_text(color="white"),
@@ -97,11 +86,11 @@ P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() +
                                 strip.text.x = element_blank(),
                                 plot.margin = margin(t=5,l=-5,r=5,b=-2)
                                 ),
-                        CV[[1]] + theme(legend.position = "none",
+                        HO[[1]] + theme(legend.position = "none",
                                          legend.box = "vertical",
                                         plot.margin = margin(t=-2,l=5,r=5,b=5)
                                         ),
-                        HO[[2]] + easy_remove_x_axis() + 
+                        CV[[2]] + easy_remove_x_axis() + 
                           theme(legend.position = "none",
                                 strip.background.y = element_rect(fill = "white",color="white"),
                                 strip.text.y = element_text(color="white"),
@@ -109,7 +98,7 @@ P_cv_ho_cort <- ggarrange(CV[[2]] + easy_remove_x_axis() +
                                 strip.text.x = element_blank(),
                                 plot.margin = margin(l=-5,r=5,t=5,b=-2)
                                 ),
-                        HO[[1]] + theme(legend.position = "none",
+                        CV[[1]] + theme(legend.position = "none",
                                         legend.box = "vertical",
                                         plot.margin = margin(t=-2,l=5,r=5,b=5)
                                         ),
@@ -136,9 +125,9 @@ top_legend <- ggpubr::get_legend(NCV[[2]]+theme(legend.position = "top"))
 
 
 
-plot_grid(legend,top_legend,
+plot_grid(top_legend,
           plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (up to 500)", "(For large data (500 - 10.000)")),
-           nrow = 3, rel_heights = c(0.02,0.05,1)  # Adjust relative widths as needed
+           nrow = 2, rel_heights = c(0.05,1)  # Adjust relative widths as needed
           )
 
 
