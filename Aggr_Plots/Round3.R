@@ -84,7 +84,7 @@ P_cv_ho_cort <- ggarrange(HO[[2]] + easy_remove_x_axis() +
                                 strip.text.y = element_text(color="white"),
                                 strip.background.x = element_blank(),
                                 strip.text.x = element_blank(),
-                                plot.margin = margin(t=5,l=-5,r=5,b=-2)
+                                plot.margin = margin(t=20,l=-5,r=5,b=-2)
                                 ),
                         HO[[1]] + theme(legend.position = "none",
                                          legend.box = "vertical",
@@ -125,9 +125,9 @@ top_legend <- ggpubr::get_legend(NCV[[2]]+theme(legend.position = "top"))
 
 
 
-plot_grid(top_legend,
-          plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (up to 500)", "(For large data (500 - 10.000)")),
-           nrow = 2, rel_heights = c(0.05,1)  # Adjust relative widths as needed
+plot_grid( plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (up to 500)", "(For large data (500 - 10.000)")),
+           top_legend,
+           nrow = 2, rel_heights = c(1,0.05)  # Adjust relative widths as needed
           )
 
 
