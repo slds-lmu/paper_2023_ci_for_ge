@@ -2,6 +2,9 @@ source("Aggr_Plots/setup.R")
 
 ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
 
+ci_aggr_red$inducer <- factor(ci_aggr_red$inducer, levels=c("lm_or_logreg","random_forest",
+                                                            "ridge_lm_or_logreg","decision_tree"))
+
 UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") & 
                     as.character(dgp) %nin% susDGPs,
                   list(
