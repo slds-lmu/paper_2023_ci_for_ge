@@ -1,6 +1,8 @@
 source("Aggr_Plots/setup.R")
+source("Aggr_Plots/NewNames.R")
 
 ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
+ci_aggr_red <- replace_names(ci_aggr_red,"method",MethodNames)
 
 UC <- ci_aggr_red[measure %in% translate_losses("Squared", "Zero-One") & 
                 as.character(dgp) %nin% susDGPs,
@@ -69,7 +71,7 @@ p2 <- ggplot(Widths_plot, aes(x = method, y = value, fill=aggr)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   labs(title = "",
        x = "Method",
-       y = "Median (relative) width",
+       y = "Median relative width",
        fill = "Median width for") +
   theme_minimal() + scale_fill_manual(values=c("steelblue","slateblue"),
                                       labels=c(

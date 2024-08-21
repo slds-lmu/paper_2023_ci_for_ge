@@ -16,9 +16,9 @@ sds_tbls <- data.table(
 )
 
 
-ncv_cheap = readRDS("Aggr_Plots/ablation/ncv_cheap_aggr.rds")
+ncv_cheap = readRDS("Aggr_Plots/ablation/ncv_cheap_best_aggr.rds")
 conz_cheap = readRDS("Aggr_Plots/ablation/conz_cheap_aggr.rds")
-cort_aggr <- readRDS("Aggr_Plots/ablation/cort_aggr.rds")
+cort_aggr <- readRDS("Aggr_Plots/ablation/cort_cheap_best_aggr.rds")
 
 conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 12,]
 conz_cheap$method = "conz_125"
@@ -92,5 +92,12 @@ ggplot(Widths3, aes(y = median_width, color = learner)) +
     axis.text.x = element_text(angle = 45, hjust = 1),
     axis.title.x = element_blank()
   ) + easy_remove_x_axis() +
-  ylab("Median width for classification")
+  ylab("Median width for classification")+
+  scale_color_brewer(palette = "Set1",
+                     labels=c("rpart"="Decision Tree",
+                              "ranger"="Random Forest",
+                              "linear"="Linear or Logistic regression",
+                              "ridge"="Ridge-penalized Linear or Logistic regression")) +
+  labs(color = "Inducer") + theme(legend.position = "bottom")
 
+ggsave("Aggr_Plots/PNGs/FourthRound_widths.png",width=12,height=2.5)

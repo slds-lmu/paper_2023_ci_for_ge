@@ -1,6 +1,8 @@
 source("Aggr_Plots/setup.R")
+source("Aggr_Plots/NewNames.R")
 
 ci_aggr_red <- ci_aggr[method %nin% c("nested_cv_250","conservative_z_250"),]
+ci_aggr_red <- replace_names(ci_aggr_red,"method",MethodNames)
 
 ci_aggr_red$inducer <- factor(ci_aggr_red$inducer, levels=c("lm_or_logreg","random_forest",
                                                             "ridge_lm_or_logreg","decision_tree"))
@@ -37,8 +39,8 @@ Widths <- Widths %>%
 
 
 MoI <- setdiff(Widths$method[which(Widths$median_classif<8 & Widths$median_regr<8)],
-               c("ls_bootstrap_100", "ls_bootstrap_50", "ts_bootstrap",
-                 "conservative_z", "nested_cv", "bayle_loo", "bccv", "bccv_bias")
+               c("lsb_100", "lsb_50", "tsb_200", "conz_10_15", "ncv_200_5",    
+                 "cv_n", "bccv_100", "bccv_100_bias")
                )
 
 p1 <- aggr_plot(ci_aggr_red, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c(0.65,1), ncols=5) +
@@ -61,11 +63,11 @@ p1 <- aggr_plot(ci_aggr_red, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c
 
 MoI_small <- setdiff(intersect(Widths$method[which(Widths$median_classif<8 & Widths$median_regr<8)],
                                setdiff(unique(ci_aggr_red$method),unique(ci_aggr_red[size>500]$method))),
-                     c("ls_bootstrap_100", "ls_bootstrap_50", "ts_bootstrap", "bccv", "bccv_bias"))
+                     c("lsb_100", "lsb_50", "tsb_200", "bccv_100", "bccv_100_bias"))
 
 Refac <- ci_aggr_red[which(ci_aggr_red$method %in% MoI_small),] %>%
   mutate(method=factor(method,
-                       levels = c("nested_cv","conservative_z","bayle_loo")
+                       levels = c("ncv_200_5", "conz_10_15", "cv_n")
   ))
 
 p2 <- aggr_plot(Refac, MoI_small, inducers, DGPs, "Squared", "Zero-One", ylims=c(0.65,1),ncol=3) +
@@ -92,12 +94,14 @@ p2 <- aggr_plot(Refac, MoI_small, inducers, DGPs, "Squared", "Zero-One", ylims=c
 
 
 
-P2 <- p2+theme(legend.position = "none")
-legend <- ggpubr::get_legend(p2)
+P2 <- p2+theme(legend.position = "none",
+               axis.title.y = element_text(size=14))
+legend <- ggpubr::get_legend(p2+theme(legend.text = element_text(size=9),
+                                      legend.key.height = unit(0.5, "lines")))
 
 plot_grid(p1 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
            plot_grid(P2 + theme(strip.text = element_text(margin = margin(1,1,1,1))),
                      legend, nrow = 1, rel_widths = c(1.6,1)),nrow=2,rel_heights = c(1.75,1))
 
-ggsave("Aggr_Plots/PNGs/SecondRound.png",width=12,height=7)
+ggsave("Aggr_Plots/PNGs/SecondRound.png",width=10,height=6)
 
