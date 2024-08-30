@@ -59,7 +59,7 @@ aggr_plot_conz <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
 
   columns <- c("y_R","y_ER")
   
-  data$method <- "conservative_z"
+  data$method <- "conz"
 
   plotdat <- pivot_longer(data, cols = all_of(columns),
                           names_to = "coverage_of", values_to = "value")
@@ -116,7 +116,7 @@ aggr_plot_ncv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
   
   columns <- c("y_R","y_ER")
   
-  data$method <- "nested_cv"
+  data$method <- "ncv"
   
   plotdat <- pivot_longer(data, cols = all_of(columns),
                           names_to = "coverage_of", values_to = "value")
@@ -233,7 +233,7 @@ aggr_plot_cv <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
   
   columns <- c("y_R","y_ER")
   
-  data$method <- "bayle"
+  data$method <- "cv_allpairs"
   
   plotdat <- pivot_longer(data, cols = all_of(columns),
                           names_to = "coverage_of", values_to = "value")
@@ -292,7 +292,7 @@ aggr_plot_cort <- function(data, inducers, DGPs, ylims=c(0,1), SDs){
   
   columns <- c("y_R","y_ER")
   
-  data$method <- "corrected_t"
+  data$method <- "cort"
   
   plotdat <- pivot_longer(data, cols = all_of(columns),
                           names_to = "coverage_of", values_to = "value")

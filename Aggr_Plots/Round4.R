@@ -16,21 +16,22 @@ sds_tbls <- data.table(
 )
 
 
-ncv_cheap = readRDS("Aggr_Plots/ablation/ncv_cheap_best_aggr.rds")
-conz_cheap = readRDS("Aggr_Plots/ablation/conz_cheap_aggr.rds")
-cort_aggr <- readRDS("Aggr_Plots/ablation/cort_cheap_best_aggr.rds")
+ncv_cheap = readRDS("Aggr_Plots/ablation/ncv_cheap_aggr.rds")
+conz_cheap = readRDS("Aggr_Plots/ablation/conz_cheap_best_aggr.rds")
+cort_cheap <- readRDS("Aggr_Plots/ablation/cort_cheap_best_aggr.rds")
 
-conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 12,]
-conz_cheap$method = "conz_125"
+#conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 12,]
+conz_cheap$method = "conz_105"
 ncv_cheap = ncv_cheap[reps_outer == 3, ]
-ncv_cheap$method = "ncv_125"
+ncv_cheap$method = "ncv_75"
 ncv_cheap$reps_outer = NULL
 conz_cheap$inner_reps = NULL
 conz_cheap$outer_reps = NULL
 
 
-cort_cheap <- cort_aggr[reps==20 & ratio == 0.9,]
-cort_cheap$method = "corrected_t_50"
+
+#cort_cheap <- cort_aggr[reps==20 & ratio == 0.9,]
+cort_cheap$method = "corrected_t_25"
 
 tbl = rbind(conz_cheap, ncv_cheap,cort_cheap,fill=TRUE)
 
@@ -38,8 +39,10 @@ tbl = tbl[size!=100 &
             dgp %nin% susDGPs,
             ]
 
-tbl$method <- factor(tbl$method, levels=c("conz_125","ncv_125","corrected_t_50"),
-                     labels=c("conz_105","ncv_75","corrected_t_25"))
+tbl$method <- factor(tbl$method, levels=c("conz_105","ncv_75","corrected_t_25"),
+                     labels=c("conz_10_5","ncv_3_5","cort_25"))
+
+#tbl$size <- paste0("n = ",tbl$size)
 
 
 annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = learner)) + 
@@ -75,7 +78,7 @@ annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = learner)) +
             labs(color = "Inducer"),
           nrow=2,common.legend = TRUE
 ),
-bottom=text_grob("conservative z (105 repetitions), nested CV (75 repetitions), corrected t (25 repetitions)\n Data Size")
+bottom=text_grob("conservative z (105 iterations), nested CV (75 iterations), corrected t (25 iterations)\n Data Size")
 )
 
 ggsave("Aggr_Plots/PNGs/FourthRound.png",width=12,height=5)
