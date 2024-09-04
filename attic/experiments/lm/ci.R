@@ -196,7 +196,7 @@ batchMap(chunked_args, function(args) {
       y = arg$y,
       z = arg$z,
       args = arg$args,
-      learner_name = arrg$learner_name,
+      learner_name = arg$learner_name,
       task_name = arg$task_name,
       resampling_name = arg$resampling_name,
       size = arg$size,

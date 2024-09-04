@@ -1,8 +1,0 @@
-name,task_type,Description
-Squared,regr,The standard L2 loss.
-Absolute,regr,The standard L1 loss.
-Perc. Sq.,regr,L2 loss divided by the absolute value of the true value.
-Std. Sq.,regr,L2 loss divided by the standard deviation of the target observations in the training data.
-Zero-One,classif,Zero-one loss
-Brier,classif,The binary brier loss
-Log-Loss,classif,The standard logloss.

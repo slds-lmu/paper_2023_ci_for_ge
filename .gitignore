@@ -62,6 +62,8 @@ results/raw/*.rds
 
 64plots/PNGs/classic_losses/**.png
 64plots/PNGs/other_losses/**.png
+attic/*.png
 
 *.pyc
-figures
+
+/figures/*

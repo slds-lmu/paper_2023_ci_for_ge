@@ -31,6 +31,11 @@
       "Source": "Repository",
       "Requirements": []
     },
+    "DescTools": {
+      "Package": "DescTools",
+      "Version": "0.99.56",
+      "Source": "Repository"
+    },
     "DiagrammeR": {
       "Package": "DiagrammeR",
       "Version": "1.0.10",
@@ -774,6 +779,11 @@
         "rlang"
       ]
     },
+    "forcats": {
+      "Package": "forcats",
+      "Version": "1.0.0",
+      "Source": "Repository"
+    },
     "foreach": {
       "Package": "foreach",
       "Version": "1.5.2",
@@ -866,6 +876,11 @@
         "zip"
       ]
     },
+    "ggeasy": {
+      "Package": "ggeasy",
+      "Version": "0.1.4",
+      "Source": "Repository"
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.4.2",
@@ -886,6 +901,12 @@
         "vctrs",
         "withr"
       ]
+    },
+    "ggpubr": {
+      "Package": "ggpubr",
+      "Version": "0.6.0",
+      "Source": "Repository",
+      "Requirements": []
     },
     "gh": {
       "Package": "gh",
@@ -947,11 +968,7 @@
       "Package": "gridExtra",
       "Version": "2.3",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "7d7f283939f563670a697165b2cf5560",
-      "Requirements": [
-        "gtable"
-      ]
+      "Requirements": []
     },
     "gtable": {
       "Package": "gtable",
@@ -1800,6 +1817,11 @@
       "Hash": "bca377e1c87ec89ebed77bba00635b2e",
       "Requirements": []
     },
+    "patchwork": {
+      "Package": "patchwork",
+      "Version": "1.2.0",
+      "Source": "Repository"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.9.0",
@@ -2093,23 +2115,9 @@
     },
     "readr": {
       "Package": "readr",
-      "Version": "2.1.4",
+      "Version": "2.1.5",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b5047343b3825f37ad9d3b5d89aa1078",
-      "Requirements": [
-        "R6",
-        "cli",
-        "clipr",
-        "cpp11",
-        "crayon",
-        "hms",
-        "lifecycle",
-        "rlang",
-        "tibble",
-        "tzdb",
-        "vroom"
-      ]
+      "Requirements": []
     },
     "rematch2": {
       "Package": "rematch2",

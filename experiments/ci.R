@@ -33,8 +33,9 @@ EVAL_CONFIG = list(
   list("holdout_66",   "infer_holdout",              list(x = "holdout_66"),                                    list()),
   list("holdout_90",   "infer_holdout",              list(x = "holdout_90"),                                    list()),
 
-  # subsampling_10, 50 and 100
+  # subsampling_10, 25, 50 and 100
   list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                                list()),
+  list("corrected_t_25",     "infer_corrected_t",    list(x = "subsampling_25"),                                list()),
   list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                                list()),
   list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                               list()),
 
@@ -71,12 +72,14 @@ EVAL_CONFIG = list(
   ## small
 
   # nested cv
-  list("nested_cv",          "infer_bates",          list(x = "nested_cv"),                                     list()),
+  list("nested_cv_5000",     "infer_bates",          list(x = "nested_cv_5000"),                                list()),
   list("nested_cv_250",      "infer_bates",          list(x = "nested_cv_250"),                                 list()),
+  list("nested_cv_125",      "infer_bates",          list(x = "nested_cv_125"),                                 list()),
 
   # conservative_z
-  list("conservative_z",     "infer_conservative_z", list(x = "conservative_z"),                                list()),
+  list("conservative_z_105", "infer_conservative_z", list(x = "conservative_z_105"),                                list()),
   list("conservative_z_250", "infer_conservative_z", list(x = "conservative_z_250"),                            list()),
+  list("conservative_z_5050", "infer_conservative_z", list(x = "conservative_z_5050"),                            list()),
 
   # nested_bootstrap
   list("ts_bootstrap",       "infer_ts_boot",        list(x = "two_stage", y = "bootstrap_10", z = "insample"), list()),
@@ -188,18 +191,20 @@ batchMap(args = chunked_args, fun = function(args) {
   map(args, function(arg) {
     inference = getFromNamespace(arg$name, ns = "inferGE")
 
-    calculate_ci(
+    ids = list(x = args$x, y = args$y, z = args$z)
+    if (is.na(y)) ids$y = NULL
+    if (is.na(z)) ids$z = NULL
+
+    time = sum(map_dbl(ids, function(job_id) {
+      loadResult(job_id, reg = EXPERIMENT_REG)
+    }))
+
+    data.table(
       name = arg$name,
-      inference = inference,
-      x = arg$x,
-      y = arg$y,
-      z = arg$z,
-      args = arg$args,
-      learner_name = arrg$learner_name,
-      task_name = arg$task_name,
-      resampling_name = arg$resampling_name,
       size = arg$size,
-      repl = arg$repl
+      dgp = arg$task_name,
+      inducer = arg$learner_name,
+      time = time
     )
   }) |> rbindlist(fill = TRUE)
 })
