@@ -97,8 +97,10 @@ time_resampling = function(instance, resampling_id, resampling_params, job, ...)
     resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
   )
 
-  rr$aggregate(msr("time_both"))
+  # there is a weird bug in $score()
+  rr$aggregate(msr("time_both")) * rr$resampling$iters
 }
+
 
 make_learner = function(learner_id, learner_params, learner_name, task, resampling) {
   # for untuned ridge regression we pre-computed some reasonable lambda	  

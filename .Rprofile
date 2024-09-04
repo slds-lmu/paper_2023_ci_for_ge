@@ -32,6 +32,7 @@ Sys.setenv(MERGE_PATH = paste0(SAVE_PATH, sep = "_", "merge"))
 Sys.setenv(FINAL_PATH = paste0(SAVE_PATH, sep = "_", "final"))
 
 Sys.setenv(RESAMPLE_PATH_RUNTIME = paste0(SAVE_PATH, sep = "_", "resample_runtime"))
+Sys.setenv(RUNTIME_PATH = paste0(SAVE_PATH, sep = "_", "runtime"))
 
 Sys.setenv(VAR_PATH_AZ = paste0(SAVE_PATH, sep = "_", "var_az"))
 Sys.setenv(RESAMPLE_PATH_ABLATION = paste0(SAVE_PATH, sep = "_", "resample_ablation"))
@@ -42,7 +43,10 @@ Sys.setenv(CI_PATH_CONZ = paste0(SAVE_PATH, sep = "_", "ci_conz"))
 
 Sys.setenv(ABLATION_NCV = paste0(SAVE_PATH, sep = "_", "ablation_ncv"))
 Sys.setenv(ABLATION_CORT = paste0(SAVE_PATH, sep = "_", "ablation_cort"))
+Sys.setenv(ABLATION_CORT2 = paste0(SAVE_PATH, sep = "_", "ablation_cort2"))
 Sys.setenv(ABLATION_CONZ = paste0(SAVE_PATH, sep = "_", "ablation_conz"))
+Sys.setenv(ABLATION_CONZ2 = paste0(SAVE_PATH, sep = "_", "ablation_conz2"))
+Sys.setenv(ABLATION_CONZ2 = paste0(SAVE_PATH, sep = "_", "ablation_conz3"))
 Sys.setenv(ABLATION_HO = paste0(SAVE_PATH, sep = "_", "ablation_ho"))
 Sys.setenv(ABLATION_CV = paste0(SAVE_PATH, sep = "_", "ablation_cv"))
 Sys.setenv(ABLATION_NCV_CHEAP = paste0(SAVE_PATH, sep = "_", "ablation_ncv_cheap"))
@@ -59,4 +63,5 @@ Sys.setenv(TRUTH_PATH_LOSSES_LM = paste0(SAVE_PATH, sep = "_", "truth_losses_lm"
 Sys.setenv(TRUTH_PATH_LOSSES_RIDGE = paste0(SAVE_PATH, sep = "_", "truth_losses_ridge"))
 Sys.setenv(TRUTH_PATH_LOSSES_ORIGINAL = paste0(SAVE_PATH, sep = "_", "truth_losses_original"))
 
+Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "errors"))
 rm(SAVE_PATH)

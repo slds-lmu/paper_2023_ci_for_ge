@@ -1,7 +1,7 @@
 make_tbl = function(.resampling_names) {
   reg_paths = if (identical(.resampling_names, "conservative_z_50")) { 
     "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_conz"
-  } else if (identical(.resampling_names, "nested_cv_cheap") || identical(.resampling_name, "conservative_z_cheap")) {
+  } else if (identical(.resampling_names, "nested_cv_cheap") || identical(.resampling_names, "conservative_z_cheap")) {
     "/gscratch/sfische6/benchmarks/ci_for_ge/final_resample_more"
   } else  {
     c(
