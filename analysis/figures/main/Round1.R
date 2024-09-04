@@ -2,6 +2,8 @@ library(here)
 source(here("analysis", "figures", "main", "setup.R"))
 source(here("analysis", "figures", "main", "NewNames.R"))
 
+ci_aggr_red = ci_aggr
+
 UC <- ci_aggr_red[loss %in% translate_losses("Squared", "Zero-One") &
                 as.character(dgp) %nin% susDGPs,
               list(
