@@ -455,10 +455,8 @@ p3 = plot_grid(
   label_size = 12
   )
 
-p3
+
 ggsave(here("figures", "appendix", "appendix_ablation_cort.png"), width = 7, height = 4, dpi = 300)
-
-
 
 # more reps smaller width
 

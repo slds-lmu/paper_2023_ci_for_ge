@@ -131,10 +131,6 @@ plot_grid( plot_grid(P_conz_ncv,P_cv_ho_cort,nrow=1,labels = c("For small data (
            nrow = 2, rel_heights = c(1,0.05)  # Adjust relative widths as needed
           )
 
-
-
-
-
-ggsave(here("figures", "main", "ThirdRoung.png"),width=10,height=9)
+ggsave(here("figures", "main", "ThirdRound.png"),width=10,height=9)
 
 
