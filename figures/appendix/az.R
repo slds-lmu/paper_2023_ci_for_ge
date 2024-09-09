@@ -26,5 +26,5 @@ p = ggplot(az, aes(x = n, y = ratio)) +
 
 print(p)
 
-ggsave(here("figures", "az.png"), height = 4, width = 6, dpi = 600)
+ggsave(here("figures", "appendix", "appendix_az.png"), height = 4, width = 6, dpi = 600)
 
