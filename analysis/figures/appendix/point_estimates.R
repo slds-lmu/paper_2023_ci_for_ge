@@ -3,6 +3,7 @@ library(ggplot2)
 library(data.table)
 library(mlr3oml)
 library(ggdist)
+library(mlr3misc)
 
 ci = readRDS(here("results", "main", "ci.rds"))
 

@@ -4,6 +4,7 @@ library(mlr3misc)
 library(ggplot2)
 library(cowplot)
 library(ggh4x)
+library(mlr3misc)
 
 theme_set(theme_bw())
 
@@ -255,7 +256,7 @@ ggplot(conz[task_type == "regr" & inner_reps == 15 & size == 500, ], aes(x = out
 
 # median_width is not really influenced by outer reps
 
-ggplot(conz[task_type == "regr" & inner_reps == 15 & size == 500, ], aes(x = outer_reps, y = sd_width_std_win)) +
+ggplot(conz[task_type == "regr" & inner_reps == 15 & size == 500, ], aes(x = outer_reps, y = sd_width)) +
   facet_grid(vars(dgp), vars(Learner), scales = "free") +
   geom_line()
 
@@ -267,7 +268,7 @@ ggplot(conz[task_type == "regr" & outer_reps == 15 & size == 500, ], aes(x = inn
 
 # median width decreases with inner reps
 
-ggplot(conz[task_type == "regr" & outer_reps == 15 & size == 500, ], aes(x = inner_reps, y = sd_width_std_win)) +
+ggplot(conz[task_type == "regr" & outer_reps == 15 & size == 500, ], aes(x = inner_reps, y = sd_width)) +
   facet_grid(vars(dgp), vars(Learner), scales = "free") +
   geom_line()
 
@@ -280,8 +281,8 @@ ggplot(tbls$conz_cheap[task_type == "regr" & inner_reps == 10 & size == 10000, ]
 
 # median_width is not really influenced by outer reps
 
-ggplot(tbls$conz_cheap[task_type == "regr" & inner_reps == 10 & size == 10000, ], aes(x = outer_reps, y = sd_width_std_win)) +
-  facet_grid(vars(dgp), vars(learner), scales = "free") +
+ggplot(tbls$conz_cheap[task_type == "regr" & inner_reps == 10 & size == 10000, ], aes(x = outer_reps, y = sd_width)) +
+  facet_grid(vars(dgp), vars(Learner), scales = "free") +
   geom_line()
 
 # sd decreases with outer reps
@@ -292,7 +293,7 @@ ggplot(tbls$conz_cheap[task_type == "regr" & outer_reps == 12 & size == 10000, ]
 
 # median width decreases with inner reps
 
-ggplot(tbls$conz_cheap[task_type == "regr" & outer_reps == 12 & size == 10000, ], aes(x = inner_reps, y = sd_width_std_win)) +
+ggplot(tbls$conz_cheap[task_type == "regr" & outer_reps == 12 & size == 10000, ], aes(x = inner_reps, y = sd_width)) +
   facet_grid(vars(dgp), vars(Learner), scales = "free") +
   geom_line()
 

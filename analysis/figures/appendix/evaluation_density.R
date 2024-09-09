@@ -2,6 +2,7 @@ library(here)
 library(ggplot2)
 library(data.table)
 library(mlr3oml)
+library(mlr3misc)
 
 theme_set(theme_bw())
 

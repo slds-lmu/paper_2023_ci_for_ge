@@ -66,6 +66,7 @@ attic/*.png
 
 *.pyc
 
-/figures/*
 /results/main
 /results/abalation
+/attic/*.pdf
+/attic/*.png

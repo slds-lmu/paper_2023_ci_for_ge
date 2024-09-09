@@ -1,6 +1,7 @@
 library(ggplot2)
 library(data.table)
 library(here)
+library(mlr3misc)
 
 tbl = readRDS(here("results", "runtime.rds"))
 tbl = tbl[, list(time = mean(time)), by = c("name", "size", "learner_name")]
