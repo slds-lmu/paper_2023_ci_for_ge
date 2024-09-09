@@ -2,29 +2,30 @@ library(data.table)
 library(here)
 library(ggplot2)
 library(ggh4x)
+library(mlr3misc)
 
 theme_set(theme_bw())
 
-ci = readRDS(here("results", "ci.rds"))
-ci = ci[method %in% c("conservative_z", "holdout_90", "corrected_t_10", "nested_cv")]
+ci = readRDS(here("results", "main", "ci.rds"))
+ci = ci[method %in% c("holdout_90"), ]
 ci[, let(
   width = upper - lower
 )]
 
 ci[, let(
   width_scaled = (width - min(width)) / (diff(range(width)))
-), by = c("learner", "task", "measure", "method", "size")]
+), by = c("inducer", "dgp", "loss", "method", "size")]
 
 
-ci$learner = map_chr(ci$learner, function(l) {
+ci$Inducer = map_chr(as.character(ci$inducer), function(l) {
   switch(l,
-    linear = "Linear\nRegression",
-    ranger = "Random\nForest",
-    rpart = "Decision\nTree",
-    ridge = "Ridge\nRegression"
+    lm_or_logreg = "Linear\nRegression",
+    random_forest = "Random\nForest",
+    decision_tree = "Decision\nTree",
+    ridge_lm_or_logreg = "Ridge\nRegression"
   )
 })
-ci$Loss = ci$measure
+ci$Loss = ci$loss
 ci$Loss = map_chr(as.character(ci$Loss), function(l) {
   switch(l,
     se = "Squared Error",
@@ -33,8 +34,10 @@ ci$Loss = map_chr(as.character(ci$Loss), function(l) {
   )
 })
 
-ggplot(ci[size == 10000 & method == "holdout_90" & measure %in% c("se", "winsorized_se"), ], aes(y = width_scaled, x = learner, color = Loss)) +
-  facet_wrap(vars(task), nrow = 3) +
+b = ci[size == 10000 & method == "holdout_90" & loss %in% c("se", "winsorized_se"), ]
+
+ggplot(b, aes(y = width_scaled, x = Inducer, color = Loss)) +
+  facet_wrap(vars(dgp), nrow = 3) +
   geom_boxplot(outlier.size = 1) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),

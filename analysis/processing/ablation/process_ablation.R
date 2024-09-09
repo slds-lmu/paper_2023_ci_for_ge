@@ -126,7 +126,7 @@ tbls_aggr = imap(tbls, function(tbl, nm) {
     median_width = median(upper - lower),
     mean_width = mean(upper - lower),
     sd_width = sd(upper - lower),
-    task_type = task_type
+    task_type = task_type[1]
   ), by = c("size", "dgp", "inducer", param_vars)]
   tbl_aggr
 })

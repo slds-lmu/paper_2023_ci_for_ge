@@ -41,6 +41,6 @@ final[startsWith(method, "austern_zhou"), let(
 stopifnot(
   uniqueN(ci_aggr[measure %in% c("winsorized_se", "percentual_ae", "standardized_ae"), .N, by = measure]$N) == 1)
 
-saveRDS(ci_aggr, here("results", "clean", "ci_aggr.rds"))
+saveRDS(ci_aggr, here("results", "main", "ci_aggr.rds"))
 
 saveRDS(final, here("results", "final.rds"))

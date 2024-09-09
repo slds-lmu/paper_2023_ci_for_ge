@@ -15,16 +15,15 @@ tbls = map(files, function(x) readRDS(here("results", "ablation", x)))
 names(tbls) = nms
 
 tbls = map(tbls, function(tbl) {
-  tbl$Learner = map_chr(tbl$inducer, function(l) {
+  tbl$Learner = map_chr(as.character(tbl$inducer), function(l) {
     switch(l,
-      linear = "Linear/Logistic\nRegression",
-      rpart = "Decision Tree",
-      ranger = "Random Forest",
-      ridge = "Ridge-penalized\nLinear/Logistic Regression"
+      lm_or_logreg = "Linear/Logistic\nRegression",
+      decision_tree = "Decision Tree",
+      random_forest = "Random Forest",
+      ridge_lm_or_logreg = "Ridge-penalized\nLinear/Logistic Regression"
     )
   })
   tbl
-
 })
 
 
@@ -163,8 +162,14 @@ f1 = function(conz, outer, inner, .size) {
   conz_classif2$inner_reps = NULL
   conz_classif = rbind(conz_classif1, conz_classif2)
 
-  conz_classif = melt(conz_classif, measure.vars = c("average_sd_width", "average_median_width", "average_cov_R", "average_cov_ER"),
+  conz_classif = melt(conz_classif, measure.vars = c("average_cov_R", "average_cov_ER", "average_median_width", "average_sd_width"),
                       value.name = "value", variable.name = "metric")
+  
+  conz_classif$metric = map_chr(conz_classif$metric, function(x) {
+    switch(as.character(x), average_sd_width = "SD Width",
+            average_median_width = "Median Width",
+            average_cov_R = "Cov. Risk", "Cov. Exp. Risk")
+  })
 
 
   p1 = ggplot(conz_classif[rep_type == "inner", ], aes(x = repetitions, y = value, color = Learner)) +
@@ -306,7 +311,7 @@ f2 = function(ncv, .size) {
     average_cov_ER = mean(cov_ER)
   ), by = c("reps_outer", "Learner")]
 
-  ncv = melt(ncv, measure.vars = c("average_sd_width", "average_median_width", "average_cov_R", "average_cov_ER"),
+  ncv = melt(ncv, measure.vars = c("average_cov_R", "average_cov_ER", "average_median_width", "average_sd_width"),
                       value.name = "value", variable.name = "metric")
 
   ncv$metric = map_chr(ncv$metric, function(x) {
@@ -400,7 +405,7 @@ f3 = function(tbl, .size) {
     average_cov_ER = mean(cov_ER)
   ), by = c("reps", "Learner")]
 
-  tbl = melt(tbl, measure.vars = c("average_sd_width", "average_median_width", "average_cov_R", "average_cov_ER"),
+  tbl = melt(tbl, measure.vars = c("average_cov_R", "average_cov_ER", "average_median_width", "average_sd_width"),
              value.name = "value", variable.name = "metric")
 
   tbl$metric = map_chr(tbl$metric, function(x) {

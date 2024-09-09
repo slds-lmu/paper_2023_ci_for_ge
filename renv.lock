@@ -34,7 +34,8 @@
     "DescTools": {
       "Package": "DescTools",
       "Version": "0.99.56",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "DiagrammeR": {
       "Package": "DiagrammeR",
@@ -782,7 +783,8 @@
     "forcats": {
       "Package": "forcats",
       "Version": "1.0.0",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "foreach": {
       "Package": "foreach",
@@ -879,7 +881,8 @@
     "ggeasy": {
       "Package": "ggeasy",
       "Version": "0.1.4",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -1820,7 +1823,8 @@
     "patchwork": {
       "Package": "patchwork",
       "Version": "1.2.0",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Requirements": []
     },
     "pillar": {
       "Package": "pillar",
@@ -2040,15 +2044,9 @@
     },
     "qs": {
       "Package": "qs",
-      "Version": "0.25.5",
+      "Version": "0.26.3",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f40adbb81e0f84f4292c1a1a3e9dfaa5",
-      "Requirements": [
-        "RApiSerialize",
-        "Rcpp",
-        "stringfish"
-      ]
+      "Requirements": []
     },
     "ragg": {
       "Package": "ragg",

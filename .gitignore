@@ -67,3 +67,5 @@ attic/*.png
 *.pyc
 
 /figures/*
+/results/main
+/results/abalation

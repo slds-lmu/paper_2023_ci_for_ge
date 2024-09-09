@@ -81,7 +81,7 @@ ci_aggr_clean = ci_clean[, .(
 ), by = c("dgp", "inducer", "size", "method",  "loss")]
 
 stopifnot(
-  uniqueN(ci_aggr_clean[loss %in% c("winsorized_se", "percentual_ae", "standardized_ae"), .N, by = measure]$N) == 1)
+  uniqueN(ci_aggr_clean[loss %in% c("winsorized_se", "percentual_ae", "standardized_ae"), .N, by = loss]$N) == 1)
 
-saveRDS(ci_clean, here("results", "clean", "ci.rds"))
-saveRDS(ci_aggr_clean, here("results", "clean", "ci_aggr.rds"))
+saveRDS(ci_clean, here("results", "main", "ci.rds"))
+saveRDS(ci_aggr_clean, here("results", "main", "ci_aggr.rds"))

@@ -16,7 +16,7 @@ library(cowplot)
 
 source(here("analysis", "figures", "main", "Plotfuns.R"))
 
-ci_aggr_orig <- readRDS(here("results", "clean", "ci_aggr.rds"))
+ci_aggr_orig <- readRDS(here("results", "main", "ci_aggr.rds"))
 
 ci_aggr <- ci_aggr_orig
 ci_aggr[, let(dgp = droplevels(dgp))]
@@ -187,7 +187,7 @@ translate_losses <- function(...) {
 
 
 methods = c(
-  "tsb_200",
+  "tsb_200_10",
   "lsb_50",
   "lsb_100",
   "cv_n",
