@@ -62,3 +62,8 @@ The columns are:
 
 This file just contains the standard deviations of the target values of the full datasets (only for regression).
 
+**density-estimate**
+
+This folder contains the results for the evaluation of the density estimation.
+The names of the files are the OpenML IDs of the datasets.
+The code that creates these files is located in `/Users/sebi/gh/paper_2023_ci_for_ge/datamodels/density-estimate/evaluation`
