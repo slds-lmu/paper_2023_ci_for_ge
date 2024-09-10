@@ -1,34 +1,34 @@
 orig_names,new_names
-holdout_66, holdout_66
-holdout_90, holdout_90 
-corrected_t_10, cort_10 
-corrected_t_50, cort_50 
-corrected_t_25, cort_25 
-corrected_t_100, cort_100
-bayle_5_all_pairs, cv_5_allpairs 
-bayle_10_all_pairs, cv_10_allpairs 
-dietterich, 52cv 
-oob_10, oob_10 
-632plus_10, 632plus_10 
-oob_50, oob_50 
-ls_bootstrap_50, lsb_50 
-632plus_50, 632plus_50 
-oob_100, oob_100 
-ls_bootstrap_100, lsb_100 
-632plus_100, 632plus_100  
-nested_cv_5000, ncv_200_5 
-nested_cv_250, ncv_10_5 
-nested_cv_75, ncv_3_5 
-conservative_z_315, ncv_10_15 
-conservative_z_250, conz_10_12 
-conservative_z_105, conz_10_5 
-ts_bootstrap, tsb_200_10 
-bayle_loo, cv_n 
-austern_zhou, rocv_5 
-austern_zhou_rep, rep_rocv_5_5 
-bccv, bccv 
-bccv_bias, bccv_bias 
-oob_500, oob_500
-oob_1000, oob_1000 
-632plus_500, 632plus_500 
-632plus_1000, 632plus_1000 
+holdout_66,holdout_66
+holdout_90,holdout_90
+corrected_t_10,cort_10
+corrected_t_50,cort_50
+corrected_t_25,cort_25
+corrected_t_100,cort_100
+bayle_5_all_pairs,cv_5_allpairs
+bayle_10_all_pairs,cv_10_allpairs
+dietterich,52cv
+oob_10,oob_10
+632plus_10,632plus_10
+oob_50,oob_50
+ls_bootstrap_50,lsb_50
+632plus_50,632plus_50
+oob_100,oob_100
+ls_bootstrap_100,lsb_100
+632plus_100,632plus_100
+nested_cv_5000,ncv_200_5
+nested_cv_250,ncv_10_5
+nested_cv_75,ncv_3_5
+conservative_z_315,ncv_10_15
+conservative_z_250,conz_10_12
+conservative_z_105,conz_10_5
+ts_bootstrap,tsb_200_10
+bayle_loo,cv_n
+austern_zhou,rocv_5
+austern_zhou_rep,rep_rocv_5_5
+bccv,bccv
+bccv_bias,bccv_bias
+oob_500,oob_500
+oob_1000,oob_1000
+632plus_500,632plus_500
+632plus_1000,632plus_1000
