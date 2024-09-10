@@ -49,8 +49,8 @@ Don't hesitate to contact us if you want to reuse this code!
 
 ## Converting the Files to another format
 
-If you don't want to work with R but instead with e.g. python you can achieve this by:
+If you don't want to work with R but still work with the results via e.g. python, you can achieve this by:
 
-1. Start the `R` interpreter
-2. Read the relevant `.rds` file using `readRDS(<path>)` 
+1. Starting the `R` interpreter
+2. Read in the relevant `.rds` file using `readRDS(<path>)` 
 3. Write the data e.g. to CSV using the `write.csv` function.
