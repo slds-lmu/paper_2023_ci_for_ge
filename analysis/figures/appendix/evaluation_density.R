@@ -7,13 +7,13 @@ library(mlr3misc)
 theme_set(theme_bw())
 
 
-files = list.files(here("results", "density-estimate"))
+files = list.files(here("results", "raw", "density-estimate"))
 ids = as.integer(gsub(".rds", "", files))
 names = map_chr(ids, function(id) odt(id)$name)
 names = gsub("simulated_", "", names)
 
 res = pmap(list(file = files, name = names), function(file, name) {
-  result = readRDS(here("results", "density-estimate", file))$ge_distr
+  result = readRDS(here("results", "raw", "density-estimate", file))$ge_distr
   result$dgp = name
   if ("classif.ce" %in% names(result)) {
     result$loss = result$classif.ce

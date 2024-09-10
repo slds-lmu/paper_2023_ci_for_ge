@@ -3,7 +3,7 @@ library(data.table)
 library(here)
 library(mlr3misc)
 
-tbl = readRDS(here("results", "runtime.rds"))
+tbl = readRDS(here("results", "raw", "runtime.rds"))
 tbl = tbl[, list(time = mean(time)), by = c("name", "size", "learner_name")]
 
 tbl <- dcast(tbl, name + learner_name ~ size, value.var = "time")

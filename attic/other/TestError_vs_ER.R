@@ -6,7 +6,7 @@ library(tidyr)
 
 ci <- readRDS(here("results", "ci.rds"))
 
-sds <- here("results", "sds.rds")
+sds <- here("results", "other", "sds.rds")
 sds_tbls <- data.table(
   task = names(sds),
   sd = unlist(sds)

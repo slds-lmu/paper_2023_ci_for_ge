@@ -1,18 +1,20 @@
-# Confidence Intervals for the Generalization Error
+# Constructing CIs for 'the'  Generalization Error
 
+This is the code to reproduce the experiments from the Paper: Constructing CIs for 'the' Generalization Error.
 
-## Overview
-
-This is the code accompanying the Paper <TODO></TODO>
+Link to Zotero raw data: TODO
 
 The content of this repository is:
 
-* `./shiny_app/` contains the code for the shiny-app, which allows for a convenient visual exploration of the experiment results.
-* `./data/` contains some input data and is the folder where datasets that are generated will be stored.
+* `./analysis/` contains the code to process the results and to reproduce all the figures.
+* `./data/` contains some input data and is the folder where generated datasets are stored.
 * `./datamodels/` contains the code related to the generation of the datasets.
-* `./experiments` contains the code for the main experiments comparing the different confidence interval methods.
-* `./inferGE/` is the R package that implements confidence interval methods that are being compared
-* `./misc/` contains some miscellaneous helper functions
+* `./experiments` contains the code for the main experiments to investigate the inference methods.
+* `./figures` is the folder where the figures are stored.
+  Only the figures from the main paper are stored here, some additional l
+* `./inferGE/` is the R package that implements confidence interval methods that are being compared.
+   This is research code.
+   If you want to use the well-performing inference methods in R use this repository: https://github.com/mlr-org/mlr3inferr.
 * `./renv/` and `renv.lock` are for the reproducible R environment
 * `./results/` contains the final results (such as figures, tables) included in the paper
 

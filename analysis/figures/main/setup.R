@@ -21,7 +21,7 @@ ci_aggr_orig <- readRDS(here("results", "main", "ci_aggr.rds"))
 ci_aggr <- ci_aggr_orig
 ci_aggr[, let(dgp = droplevels(dgp))]
 
-sds <- readRDS(here("results", "sds.rds"))
+sds <- readRDS(here("results", "raw", "sds.rds"))
 sds_tbls <- data.table(
   dgp = names(sds),
   sd = unlist(sds)

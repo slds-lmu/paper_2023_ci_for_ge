@@ -13,7 +13,11 @@ tbls = map(files, function(file) {
 
 names(tbls) = nms
 
-truth = readRDS(here("results", "truth.rds"))
+if (!file.exists(here("results", "main", "truth.rds"))) {
+  stopf("Run analysis/processing/truth_losses.rds first.")
+}
+
+truth = readRDS(here("results", "main", "truth.rds"))
 truth = truth[loss %in% c("se", "zero_one"), ]
 
 tbls = imap(tbls, function(tbl, nm) {
@@ -61,13 +65,13 @@ walk(tbls, function(tbl) {
 })
 
 
-tbls$cort_cheap_best$ratio = 0.9
+tbls$cort_best$ratio = 0.9
 tbls$conz_cheap = rbindlist(list(tbls$conz_cheap, tbls$conz_cheap_best))
-tbls$cort_cheap = rbindlist(list(tbls$cort_cheap, tbls$cort_cheap_best))
+tbls$cort = rbindlist(list(tbls$cort, tbls$cort_best))
 
 
 tbls$conz_cheap_best = NULL
-tbls$cort_cheap_best = NULL
+tbls$cort_best = NULL
 
 tbls = imap(tbls, function(tbl, nm) {
 

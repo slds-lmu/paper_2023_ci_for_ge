@@ -3,7 +3,7 @@ library(here)
 library(mlr3misc)
 library(ggplot2)
 
-truth = readRDS(here("results", "truth_losses.rds"))
+truth = readRDS(here("results", "raw", "truth_losses.rds"))
 is_regr = map_lgl(truth$dt, function(x) length(x) == 5)
 truth_regr = truth[is_regr, ]
 truth_regr = cbind(truth_regr, rbindlist(truth_regr$dt))
@@ -32,4 +32,4 @@ truth[, let(
 ), by = c("dgp", "learner", "size", "loss")]
 
 
-saveRDS(truth, here("results", "truth.rds"))
+saveRDS(truth, here("results", "main", "truth.rds"))

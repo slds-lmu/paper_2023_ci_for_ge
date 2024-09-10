@@ -6,7 +6,7 @@ theme_set(theme_bw())
 
 theme_update(text = element_text(size = 16))
 
-az = readRDS(here("results", "az.rds"))
+az = readRDS(here("results", "raw", "az.rds"))
 az$ratio = az$est / az$truth
 
 y_breaks = c(0, 0.5, 1, sqrt(2), 2)

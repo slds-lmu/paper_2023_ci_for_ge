@@ -19,7 +19,7 @@ data_ids = c(
 
 task_types = c(rep("classif", 4), rep("regr", 3))
 
-pth = file.path(here("results", "density-estimate"))
+pth = file.path(here("results", "raw", "density-estimate"))
 
 if (!file.exists(pth)) {
   dir.create(pth, recursive = TRUE)

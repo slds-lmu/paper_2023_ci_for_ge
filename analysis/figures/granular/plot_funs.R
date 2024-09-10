@@ -7,18 +7,6 @@ translate_scales = function(free_scales) {
   )
 }
 
-translate_loss <- function(loss) {
-  switch(as.character(loss),
-         "Squared" = "se",
-         "Absolute" = "ae",
-         "Perc. Sq." = "percentual_se",
-         "Std. Sq." = "standardized_se",
-         "Zero-One" = "zero_one",
-         "Brier" = "bbrier",
-         "Log-Loss" = "logloss"
-  )
-}
-
 translate_losses <- function(...) {
   sapply(list(...), translate_loss)
 }
@@ -57,26 +45,26 @@ make_64plots = function(data,
   vec = c("inducer", "dgp", "method", "size")
 
   newdat = data[size == input_size & loss %in% c(input_loss_regr, input_loss_classif),
-         list(
-           y_R = mean(cov_R),
-           y_ER = mean(cov_ER),
-           y_PQ = mean(cov_PQ),
-           width = width,
-           iters = iters
-         ), by = vec]
+    list(
+      y_R = cov_R,
+      y_ER = cov_ER,
+      stand_width = width / estimate_sd,
+      dgp = dgp,
+      inducer = inducer,
+      method = method,
+      size = size,
+      iters = iters
+    )]
 
   plotdata = newdat
+  newdat$stand_width = min(newdat$stand_width, 16)
 
-  plotdata[, let(
-    stand_width = width / .SD[method == "cv_10_allpairs", "width"][[1L]]
-  ), by = "dgp"]
-
-  breaks = c(0, 0.5, 1, 2, 3, round(max(plotdata$stand_width),1))
-  colors = c("darkgreen", "darkblue", "orange", "purple", "red")
+  breaks = c(0, 3.5, 4.5, 6, 8, 16)
+  colors = c("darkblue", "darkgreen", "orange", "purple", "red")
 
   plotdata$numwidth = as.character(round(plotdata$stand_width,2))
 
-  p = make_baseplot(plotdata, y, input_range, inducers, scales, colors, breaks)
+  p = make_baseplot(plotdata, y, inducers, scales, colors, breaks)
 
 
   if (length(inducers) == 1) {
@@ -93,7 +81,7 @@ make_64plots = function(data,
     ) +
     theme_bw() +
     theme(legend.position = "bottom", legend.box = "vertical") +
-    guides(color = guide_colorbar(title = "CI width/average per DGP (quantiles)",
+    guides(color = guide_colorbar(title = "CI width standardized by SD(estimate)\nColorization is clipped at 16.",
                                   barwidth = 30,
                                   barheight = 0.5
     ))

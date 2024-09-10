@@ -71,3 +71,4 @@ attic/*.png
 /attic/*.pdf
 /attic/*.png
 Rplots.pdf
+/figures/granular/**/*.png

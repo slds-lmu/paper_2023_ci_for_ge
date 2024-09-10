@@ -9,7 +9,7 @@ library(ggpubr)
 source(here("analysis", "figures", "main", "setup.R"))
 
 theme_set(theme_bw())
-sds <- readRDS(here("results", "sds.rds"))
+sds <- readRDS(here("results", "raw", "sds.rds"))
 sds_tbls <- data.table(
   dgp = names(sds),
   sd = unlist(sds)
