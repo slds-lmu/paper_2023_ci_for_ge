@@ -72,5 +72,5 @@ attic/*.png
 /attic/*.png
 Rplots.pdf
 /figures/granular/**/*.png
-results/raw/*.rds
-results/ablation/*.rds
+/results/raw/**/*.rds
+/results/ablation/*.rds

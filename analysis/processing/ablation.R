@@ -66,8 +66,8 @@ walk(tbls, function(tbl) {
 
 
 tbls$cort_best$ratio = 0.9
-tbls$conz_cheap = rbindlist(list(tbls$conz_cheap, tbls$conz_cheap_best))
-tbls$cort = rbindlist(list(tbls$cort, tbls$cort_best))
+tbls$conz_cheap = rbindlist(list(tbls$conz_cheap, tbls$conz_cheap_best), use.names = TRUE)
+tbls$cort = rbindlist(list(tbls$cort, tbls$cort_best), use.names = TRUE)
 
 
 tbls$conz_cheap_best = NULL
