@@ -33,9 +33,8 @@ EVAL_CONFIG = list(
   list("holdout_66",   "infer_holdout",              list(x = "holdout_66"),                                    list()),
   list("holdout_90",   "infer_holdout",              list(x = "holdout_90"),                                    list()),
 
-  # subsampling_10, 25, 50 and 100
-  list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                                list()),
-  list("corrected_t_25",     "infer_corrected_t",    list(x = "subsampling_25"),                                list()),
+  # subsampling_10, 50 and 100
+  list("corrected_t_10",     "infer_corrected_t",    list(x = "subsampling_10"),                                list()),                              list()),
   list("corrected_t_50",     "infer_corrected_t",    list(x = "subsampling_50"),                                list()),
   list("corrected_t_100",    "infer_corrected_t",    list(x = "subsampling_100"),                               list()),
 
@@ -72,9 +71,7 @@ EVAL_CONFIG = list(
   ## small
 
   # nested cv
-  list("nested_cv_5000",     "infer_bates",          list(x = "nested_cv_5000"),                                list()),
-  list("nested_cv_250",      "infer_bates",          list(x = "nested_cv_250"),                                 list()),
-  list("nested_cv_125",      "infer_bates",          list(x = "nested_cv_125"),                                 list()),
+  list("nested_cv_200_5",     "infer_bates",          list(x = "nested_cv"),                                list()),
 
   # conservative_z
   list("conservative_z_105", "infer_conservative_z", list(x = "conservative_z_105"),                                list()),

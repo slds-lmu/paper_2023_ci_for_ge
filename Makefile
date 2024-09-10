@@ -21,5 +21,11 @@ process_main:
 process_ablation:
 	Rscript analysis/processing/ablation.R
 
+simulate_simple:
+	Rscript bates.R
+	Rscript chen.R
+	Rscript friedman1.R
+	Rscript janitza.R
+
 # Phony targets
 #.PHONY: shiny

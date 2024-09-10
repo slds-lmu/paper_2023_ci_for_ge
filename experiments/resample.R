@@ -50,13 +50,21 @@ reg <- makeExperimentRegistry(
 )
 
 RESAMPLINGS <- list(other = list(
+  holdout_50         = list(id = "holdout", params = list(ratio = 0.5)),
+  holdout_60         = list(id = "holdout", params = list(ratio = 0.6)),
   holdout_66         = list(id = "holdout", params = list(ratio = 2 / 3)),
+  holdout_70         = list(id = "holdout", params = list(ratio = 0.7)),
+  holdout_80         = list(id = "holdout", params = list(ratio = 0.8)),
   holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
-  subsampling_10     = list(id = "subsampling", params = list(repeats = 10, ratio = 0.9)),
-  subsampling_50     = list(id = "subsampling", params = list(repeats = 50, ratio = 0.9)),
   subsampling_100    = list(id = "subsampling", params = list(repeats = 100, ratio = 0.9)),
+  subsampling_100_80 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.8)),
+  subsampling_100_70 = list(id = "subsampling", params = list(repeats = 100, ratio = 0.7)),
   cv_5               = list(id = "cv", params = list(folds = 5)),
   cv_10              = list(id = "cv", params = list(folds = 10)),
+  cv_25              = list(id = "cv", params = list(folds = 25)),
+  cv_50              = list(id = "cv", params = list(folds = 50)),
+  cv_75              = list(id = "cv", params = list(folds = 75)),
+  cv_100             = list(id = "cv", params = list(folds = 100)),
   rep_cv_5_5         = list(id = "repeated_cv", params = list(folds = 5, repeats = 5)),
   diettrich          = list(id = "repeated_cv", params = list(repeats = 5, folds = 2)),
   bootstrap_10       = list(id = "bootstrap", params = list(ratio = 1, repeats = 10)),
@@ -68,6 +76,7 @@ RESAMPLINGS <- list(other = list(
 ), small = list(
   nested_cv = list(id = "nested_cv", params = list(folds = 5, repeats = 200)),
   conservative_z = list(id = "conservative_z", params = list(J = 15, M = 10, ratio = 0.9)),
+  conservative_z_50 = list(id = "conservative_z", params = list(J = 50, M = 50, ratio = 0.9)),
   two_stage = list(id = "nested_bootstrap", params = list(reps_outer = 200, reps_inner = 10)),
   loo = list(id = "loo", params = list()),
   austern_zhou = list(id = "austern_zhou", params = list(folds = 5, repeats = 1)),

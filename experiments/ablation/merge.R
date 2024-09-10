@@ -11,6 +11,8 @@ source(here("experiments", "ablation", "helper.R"))
 
 methods = c("ncv", "cort", "conz", "ho", "cv")
 
+# TODO: integrate merge_cheap.R here
+
 
 reg = makeRegistry("/gscratch/sfische6/benchmarks/ci_for_ge/final_ablation_merge", packages = c("data.table", "batchtools", "mlr3misc"))
 batchExport(list(make_tbl = make_tbl))

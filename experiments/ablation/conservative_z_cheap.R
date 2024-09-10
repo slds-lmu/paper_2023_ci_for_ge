@@ -42,7 +42,7 @@ f = function(.row, reg) {
   learner = lrn(tbl$learner[[1L]])
   res = loadResult(tbl$job.id[[1L]], reg = reg) 
 
-  rbindlist(map(c(2, 5, 12), function(outer_reps) {
+  rbindlist(map(c(2, 5, 10, 12), function(outer_reps) {
     rbindlist(map(c(1, 5, 10), function(inner_reps) {
       predictions = res$test_predictions
 

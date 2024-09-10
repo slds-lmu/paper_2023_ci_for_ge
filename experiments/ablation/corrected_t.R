@@ -34,7 +34,7 @@ f = function(.row) {
 
   ratio = 0.9
 
-  rbindlist(map(c(5, seq(10, 100, by = 10)), function(r) {
+  rbindlist(map(c(5, seq(10, 100, by = 5)), function(r) {
     res = loadResult(tbl$job.id[[1L]], reg = reg) 
     predictions = res$test_predictions
 
