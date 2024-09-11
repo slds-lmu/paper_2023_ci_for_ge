@@ -2,8 +2,6 @@
 
 This is the code to reproduce the experiments from the Paper: Constructing CIs for 'the' Generalization Error.
 
-Link to Zotero raw data: TODO
-
 The content of this repository is:
 
 * `./analysis/` contains the code to process the results and to reproduce all the figures.
@@ -21,11 +19,16 @@ The content of this repository is:
 ## Reproducibility
 
 The instructions to reproduce the experiments are separated into:
+
 1. the dataset generation, see `./datamodels/README.md`. Note that the resulting datasets are also made available on
    [OpenML](https://openml.org), so the main experiments can be reproduced without this step.
    Note: The code and instructions to reproduce the results are still being cleaned up.
 1. the main experiments, see `./experiments/README.md`.
    Note: The code and instructions to reproduce the results are still being cleaned up.
+1. To recreate the preprocessing and the figures from the paper you need to first download 
+   the additional material from zenodo: https://zenodo.org/records/13744382.
+   Specifically, move the content of the results data into the `./results` subdirectory of this repository.
+   
 
 ## Downloading the datasets
 
