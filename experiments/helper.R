@@ -48,9 +48,10 @@ make_task = function(data_id, size, repl, resampling) {
   task$id = odata$name
 
   task$row_roles$use = use_ids
-  if (need_holdout) {
-    task$row_roles$holdout = holdout_ids
-  }
+  # TODO: Fix this again later
+  #if (need_holdout) {
+  #  task$row_roles$holdout = holdout_ids
+  #}
 
   return(task)
 }
@@ -115,12 +116,117 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
    args = c(list(.key = learner_id), learner_params)
   )
 
-  graph = ppl("robustify", learner = learner, task = task) %>>%
-    learner
+  graph = if (grepl("xgboost", learner_id) | grepl("mlp", learner_id)) {
+    res = if (task$nrow <= 1000) {
+      rsmp("cv", folds = 3)
+    } else {
+      rsmp("holdout", ratio = 2/3)
+    }
 
+    if (grepl("xgboost", learner_id)) {
+      internal_search_space = NULL
+      if (task$task_type == "classif") {
+        learner$param_set$values$eval_metric = "logloss"
+        search_space = ps(
+          classif.xgboost.nrounds     = p_int(upper = 500, tags = "internal_tuning", aggr = function(x) as.integer(round(mean(unlist(x))))),
+          classif.xgboost.max_depth   = p_int(lower = 2, upper = 12),
+          classif.xgboost.alpha       = p_dbl(lower = 1e-8, upper = 1.0, logscale = TRUE),
+          classif.xgboost.lambda      = p_dbl(lower = 1e-8, upper = 1.0, logscale = TRUE),
+          classif.xgboost.eta         = p_dbl(lower = 0.01, upper = 0.3, logscale = TRUE)
+        )
+      } else {
+        learner$param_set$values$eval_metric = "rmse"
+        search_space = ps(
+          regr.xgboost.nrounds     = p_int(upper = 500, tags = "internal_tuning", aggr = function(x) as.integer(round(mean(unlist(x))))),
+          regr.xgboost.max_depth   = p_int(lower = 2, upper = 12),
+          regr.xgboost.alpha       = p_dbl(lower = 1e-8, upper = 1.0, logscale = TRUE),
+          regr.xgboost.lambda      = p_dbl(lower = 1e-8, upper = 1.0, logscale = TRUE),
+          regr.xgboost.eta         = p_dbl(lower = 0.01, upper = 0.3, logscale = TRUE)
+        )
+      }
+      
+    } else if (grepl("mlp", learner_id)) {
+      if (task$task_type == "classif") {
+        learner$param_set$set_values(
+          measures_valid = msr("classif.logloss")
+        )
+        internal_search_space = ps(  
+          classif.mlp.epochs              = p_int(upper = 500, tags = "internal_tuning", aggr = function(x) as.integer(round(mean(unlist(x)))))
+        )
+        search_space = ps(
+          classif.mlp.p                 = p_dbl(lower = 0.0, upper = 0.5),
+          classif.mlp.opt.lr            = p_dbl(lower = 1e-5, upper = 1e-2, logscale = TRUE),
+          classif.mlp.opt.weight_decay  = p_dbl(lower = 1e-6, upper = 1e-3, logscale = TRUE, depends = (weight_decay == TRUE)),
+          weight_decay                  = p_lgl(),
+          n_layers                      = p_int(1, 8),
+          latent                        = p_int(1, 512),
+          .extra_trafo = function(x, param_set) {
+            x$classif.mlp.neurons = rep(x$latent, x$n_layers)
+            x$latent = NULL
+            x$n_layers = NULL
+            x$weight_decay = NULL
+            return(x)
+          }
+        )
+      } else {
+        learner$param_set$values$measures_valid = msr("regr.rmse")
+        internal_search_space = ps(
+          regr.mlp.epochs              = p_int(upper = 500, tags = "internal_tuning", aggr = function(x) as.integer(round(mean(unlist(x)))))
+        )
+        search_space = ps(
+          regr.mlp.p                 = p_dbl(lower = 0.0, upper = 0.5),
+          regr.mlp.opt.lr            = p_dbl(lower = 1e-5, upper = 1e-2, logscale = TRUE),
+          regr.mlp.opt.weight_decay  = p_dbl(lower = 1e-6, upper = 1e-3, logscale = TRUE, depends = (weight_decay == TRUE)),
+          weight_decay                  = p_lgl(),
+          n_layers                      = p_int(1, 8),
+          latent                        = p_int(1, 512),
+          .extra_trafo = function(x, param_set) {
+            x$regr.mlp.neurons = rep(x$latent, x$n_layers)
+            x$latent = NULL
+            x$n_layers = NULL
+            x$weight_decay = NULL
+            return(x)
+          }
+        )
+      }
+
+    }
+
+    graph = ppl("robustify", learner = learner, task = task) %>>% learner
+
+    inner_learner = as_learner(graph)
+
+    if (startsWith(learner_id, "classif")) {
+      inner_learner$predict_type = "prob"
+    }
+
+    set_validate(inner_learner, validate = "test")
+
+    # we use the validation score for the tuning
+    inner_learner$predict_sets = NULL
+
+    auto_tuner(
+      learner = inner_learner,
+      resampling = res,
+      measure = msr("internal_valid_score", minimize = TRUE),
+      internal_search_space = internal_search_space,
+      search_space = search_space,
+      terminator = trm("evals", n_evals = 50L),
+      store_tuning_instance = TRUE,
+      tuner = tnr("mbo")
+    )
+  } else {
+    ppl("robustify", learner = learner, task = task) %>>%
+      learner
+  } 
+
+  
   # we need this because bootstrapping is broken with mlr3pipelines
   if (inherits(resampling, "ResamplingBootstrap") || inherits(resampling, "ResamplingNestedBootstrap")
     || inherits(resampling, "ResamplingBootstrapCCV")) {
+
+    # xgboost and neural networks are not applied to bootstrap as no bootstrap method
+    # perfortmed well enough to justify the expensive experiment
     graph = inferGE::PipeOpMetaRobustify$new() %>>% graph
   }
 
@@ -133,8 +239,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
     fallback = lrn("regr.featureless")
   }
   learner$predict_sets = "test"
-  learner$encapsulate = c(train = "try", predict = "try")
-  learner$fallback = fallback
+  learner$encapsulate("try", fallback)
   learner$id = learner_name
   return(learner)
 }

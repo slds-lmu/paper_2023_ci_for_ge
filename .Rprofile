@@ -64,4 +64,8 @@ Sys.setenv(TRUTH_PATH_LOSSES_RIDGE = paste0(SAVE_PATH, sep = "_", "truth_losses_
 Sys.setenv(TRUTH_PATH_LOSSES_ORIGINAL = paste0(SAVE_PATH, sep = "_", "truth_losses_original"))
 
 Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "errors"))
+
+Sys.setenv(RESAMPLE_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "resample_complex"))
+Sys.setenv(RESAMPLE_PATH_SPEED = paste0(SAVE_PATH, sep = "_", "resample_speed"))
+
 rm(SAVE_PATH)
