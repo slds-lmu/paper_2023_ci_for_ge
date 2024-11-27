@@ -1,4 +1,27 @@
+make_task_highdim = function(data_id, repl) {
+  con = dbConnect(duckdb::duckdb(), ":memory:")
+  dbExecute(con, paste0("CREATE OR REPLACE VIEW data_table AS SELECT * FROM read_parquet('", paste0("/gscratch/sfische6/highdim-data/", data_id, ".parquet"), "')"))
+  # first read the rows 500001 to 600000
+  dt = dbGetQuery(con, sprintf("SELECT * FROM (SELECT *, ROW_NUMBER() OVER () as rn FROM data_table) as subquery WHERE rn >= %d AND rn <= %d", 1000 * (repl - 1) + 1, 1000 * repl))
+  dtho = dbGetQuery(con, paste0("SELECT * FROM (SELECT *, ROW_NUMBER() OVER () as rn FROM data_table) as subquery WHERE rn > 500000"))
+  DBI::dbDisconnect(con, shutdown = TRUE)
+
+  dtho$rn = NULL
+  dt$rn = NULL 
+  dt = rbind(dt, dtho)
+  dt$outcome = as.factor(dt$outcome)
+
+  task = as_task_classif(id = data_id, x = as_data_backend(dt), target = "outcome")
+  task$filter(1:1000)
+
+  return(task)
+}
+
 make_task = function(data_id, size, repl, resampling) {
+  if (startsWith(data_id, "highdim")) {
+    return(make_task_highdim(data_id, repl))
+  }
+
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
 
   # the ids for the data subset
@@ -63,6 +86,8 @@ make_resampling = function(resampling_id, resampling_params) {
 
 time_resampling = function(instance, resampling_id, resampling_params, job, ...) {
   lgr::get_logger("mlr3")$set_threshold("warn")
+  lgr::get_logger("mlr3tuning")$set_threshold("warn")
+  lgr::get_logger("bbotk")$set_threshold("warn")
   resampling = make_resampling(resampling_id, resampling_params)
   task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl,
     resampling = resampling)
@@ -158,8 +183,8 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
           classif.mlp.opt.lr            = p_dbl(lower = 1e-5, upper = 1e-2, logscale = TRUE),
           classif.mlp.opt.weight_decay  = p_dbl(lower = 1e-6, upper = 1e-3, logscale = TRUE, depends = (weight_decay == TRUE)),
           weight_decay                  = p_lgl(),
-          n_layers                      = p_int(1, 8),
-          latent                        = p_int(1, 512),
+          n_layers                      = p_int(0, 3),
+          latent                        = p_int(1, 256),
           .extra_trafo = function(x, param_set) {
             x$classif.mlp.neurons = rep(x$latent, x$n_layers)
             x$latent = NULL
@@ -178,10 +203,12 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
           regr.mlp.opt.lr            = p_dbl(lower = 1e-5, upper = 1e-2, logscale = TRUE),
           regr.mlp.opt.weight_decay  = p_dbl(lower = 1e-6, upper = 1e-3, logscale = TRUE, depends = (weight_decay == TRUE)),
           weight_decay                  = p_lgl(),
-          n_layers                      = p_int(1, 8),
-          latent                        = p_int(1, 512),
+          n_layers                      = p_int(0, 3),
+          latent                        = p_int(1, 256, depends = (n_layers > 0)),
           .extra_trafo = function(x, param_set) {
-            x$regr.mlp.neurons = rep(x$latent, x$n_layers)
+            if (x$n_layers > 0) {
+              x$regr.mlp.neurons = rep(x$latent, x$n_layers)
+            }
             x$latent = NULL
             x$n_layers = NULL
             x$weight_decay = NULL
@@ -246,6 +273,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
   lgr::get_logger("mlr3")$set_threshold("warn")
+  lgr::get_logger("mlr3tuning")$set_threshold("warn")
   resampling = make_resampling(resampling_id, resampling_params)
   task = make_task(data_id = instance$data_id, size = instance$size, repl = job$repl,
     resampling = resampling)

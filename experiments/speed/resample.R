@@ -44,7 +44,7 @@ data_names <- list(
 SEED <- 42
 N_REP <- 500L
 
-REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH_SPEED")
+REGISTRY_PATH <- tmpfile()
 
 reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
@@ -55,9 +55,9 @@ reg <- makeExperimentRegistry(
 
 RESAMPLINGS <- list(other = list(
   holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
-  subsampling_100_90 = list(id = "subsampling", params = list(repeats = 10, ratio = 0.9)),
+  subsampling_25_90  = list(id = "subsampling", params = list(repeats = 25, ratio = 0.9)),
   cv_10              = list(id = "cv", params = list(folds = 10)),
-  nested_cv_75      = list(id = "nested_cv", params = list(folds = 5, repeats = 3)),
+  nested_cv_75       = list(id = "nested_cv", params = list(folds = 5, repeats = 3)),
   # J is inner reps, M is outer reps
   conservative_z_105 = list(id = "conservative_z", params = list(J = 5, M = 10, ratio = 0.9))
 ))

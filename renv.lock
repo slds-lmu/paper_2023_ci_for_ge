@@ -161,10 +161,8 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.11",
+      "Version": "1.0.13-1",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "ae6cbbe1492f4de79c45fce06f967ce8",
       "Requirements": []
     },
     "RcppEigen": {
@@ -1571,7 +1569,7 @@
       "RemoteUsername": "mlr-org",
       "RemoteRepo": "mlr3torch",
       "RemoteRef": "main",
-      "RemoteSha": "de256df2e3d6d1349117968a5c5d662faab6b75b",
+      "RemoteSha": "eb989a89f6c058079b4d34c05249bbc8ac81e9e8",
       "Requirements": []
     },
     "mlr3tuning": {
@@ -1723,6 +1721,12 @@
     "patchwork": {
       "Package": "patchwork",
       "Version": "1.2.0",
+      "Source": "Repository",
+      "Requirements": []
+    },
+    "pensim": {
+      "Package": "pensim",
+      "Version": "1.3.6",
       "Source": "Repository",
       "Requirements": []
     },

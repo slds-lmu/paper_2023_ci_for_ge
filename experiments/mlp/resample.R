@@ -16,24 +16,25 @@ TASKS <- list(
   regr = c(45692, 45694, 45655, 45666, 45667, 45670, 45671, 45695, 45696)
 )
 
-# chen_10_null is skipped
-TASKS$regr = TASKS$regr[TASKS$regr != 45670]
+# only run the network on non-linear DPGs
+TASKS$regr = TASKS$regr[TASKS$regr %nin% c(45670, 45664, 45667)]
+TASKS$classif = TASKS$classif[TASKS$classif %nin% c(45654, 45665, 45668, 45669, 45672)]
 
 data_names <- list(
   "45570" = "higgs",
   "45689" = "adult",
   "45704" = "covertype",
-  "45654" = "bates_classif_20",
-  "45665" = "colon",
-  "45668" = "bates_classif_100",
-  "45669" = "breast",
-  "45672" = "prostate",
+  #"45654" = "bates_classif_20",
+  #"45665" = "colon",
+  #"45668" = "bates_classif_100",
+  #"45669" = "breast",
+  #"45672" = "prostate",
   "45693" = "electricity",
   "45692" = "diamonds",
   "45694" = "physiochemical_protein",
-  "45655" = "bates_regr_20",
+  #"45655" = "bates_regr_20",
   "45666" = "friedman1",
-  "45667" = "bates_regr_100",
+  #"45667" = "bates_regr_100",
   # No method performs well here
   #"45670" = "chen_10_null",
   "45671" = "chen_10",
@@ -42,9 +43,10 @@ data_names <- list(
 )
 
 SEED <- 42
+# Leave it at 500 for now but we will probably not run all repetitions as it is so expensive
 N_REP <- 500L
 
-REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH_COMPLEX")
+REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH_MLP")
 
 reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
@@ -55,7 +57,6 @@ reg <- makeExperimentRegistry(
 
 RESAMPLINGS <- list(other = list(
   holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
-  #subsampling_100_90 = list(id = "subsampling", params = list(repeats = 10, ratio = 0.9)),
   subsampling_25_90  = list(id = "subsampling", params = list(repeats = 25, ratio = 0.9)),
   cv_10              = list(id = "cv", params = list(folds = 10)),
   nested_cv_75       = list(id = "nested_cv", params = list(folds = 5, repeats = 3)),
@@ -64,17 +65,15 @@ RESAMPLINGS <- list(other = list(
   insample           = list(id = "insample", params = list())
 ))
 
-SIZES <- list(other = c(500L, 1000L, 5000L, 10000L))
+# Run the network only on 'relatively' large problems
+SIZES <- list(other = c(5000L, 10000L))
 
 LEARNERS <- list(
   regr = list(
-    # for xgboost and tab_resnet, the search space etc. etc. are defined in make_learner()
-    list(name = "xgboost", id = "regr.xgboost", params = list(early_stopping_rounds = 20L))
-    #list(name = "tab_resnet", id = "regr.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
+    list(name = "tab_resnet", id = "regr.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   ),
   classif = list(
-    list(name = "xgboost", id = "classif.xgboost", params = list(early_stopping_rounds = 20L))
-    #list(name = "tab_resnet", id = "classif.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
+    list(name = "tab_resnet", id = "classif.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   )
 )
 
