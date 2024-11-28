@@ -11,11 +11,7 @@ if (is.null(getOption("mlr3oml.cache")) || isFALSE(getOption("mlr3oml.cache"))) 
   stop("Please configure the option mlr3oml.cache to TRUE or a specific path.")
 }
 
-TASKS = c(
-  paste0("highdim_all_", 100 * 2^c(0, 1, 2, 3, 4, 5, 6)),
-  paste0("highdim_firstonly_", 100 * 2^c(0, 1, 2, 3, 4, 5, 6))
-)
-
+TASKS = paste0("highdim_", 100 * 2^c(0, 1, 2, 3, 4, 5, 6))
 
 SEED <- 42
 N_REP <- 500L
@@ -44,7 +40,8 @@ LEARNERS <- list(
 batchExport(list(
   make_task = make_task,
   make_learner = make_learner,
-  make_resampling = make_resampling
+  make_resampling = make_resampling,
+  make_task_highdim = make_task_highdim
 ))
 
 addAlgorithm(

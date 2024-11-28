@@ -1,6 +1,5 @@
 # Makefile
 
-
 figures_paper:
 	Rscript analysis/figures/paper_figures.R
 

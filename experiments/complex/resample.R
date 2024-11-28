@@ -70,11 +70,9 @@ LEARNERS <- list(
   regr = list(
     # for xgboost and tab_resnet, the search space etc. etc. are defined in make_learner()
     list(name = "xgboost", id = "regr.xgboost", params = list(early_stopping_rounds = 20L))
-    #list(name = "tab_resnet", id = "regr.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   ),
   classif = list(
     list(name = "xgboost", id = "classif.xgboost", params = list(early_stopping_rounds = 20L))
-    #list(name = "tab_resnet", id = "classif.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   )
 )
 

@@ -1,25 +1,32 @@
-make_task_highdim = function(data_id, repl) {
-  con = dbConnect(duckdb::duckdb(), ":memory:")
-  dbExecute(con, paste0("CREATE OR REPLACE VIEW data_table AS SELECT * FROM read_parquet('", paste0("/gscratch/sfische6/highdim-data/", data_id, ".parquet"), "')"))
-  # first read the rows 500001 to 600000
-  dt = dbGetQuery(con, sprintf("SELECT * FROM (SELECT *, ROW_NUMBER() OVER () as rn FROM data_table) as subquery WHERE rn >= %d AND rn <= %d", 1000 * (repl - 1) + 1, 1000 * repl))
-  dtho = dbGetQuery(con, paste0("SELECT * FROM (SELECT *, ROW_NUMBER() OVER () as rn FROM data_table) as subquery WHERE rn > 500000"))
-  DBI::dbDisconnect(con, shutdown = TRUE)
-
-  dtho$rn = NULL
-  dt$rn = NULL 
-  dt = rbind(dt, dtho)
-  dt$outcome = as.factor(dt$outcome)
+make_task_highdim = function(data_id, repl, resampling) {
+  needs_holdout = inherits(resampling, "ResamplingInsample")
+  dt = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_%d.parquet", data_id, repl))
+  if (needs_holdout) {
+    dtho = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_holdout.parquet", data_id))
+    dt = rbind(dt, dtho)
+  }
+  data.table::setDT(dt)
 
   task = as_task_classif(id = data_id, x = as_data_backend(dt), target = "outcome")
-  task$filter(1:1000)
+  if (needs_holdout) {
+    task$filter(1:1000)
+    task$internal_valid_task = 1001L:nrow(dt)
+  }
 
   return(task)
 }
 
 make_task = function(data_id, size, repl, resampling) {
   if (startsWith(data_id, "highdim")) {
-    return(make_task_highdim(data_id, repl))
+    # try this three times if it fails
+    for (i in 1:30) {
+      # database issues
+      task = try(make_task_highdim(data_id, repl), silent = TRUE)
+      Sys.sleep(runif(n = 1, min = 1, max = 3))
+      if (!inherits(task, "try-error")) break
+    }
+    if (inherits(task, "try-error")) stop("Failed to create highdim task")
+    return(task)
   }
 
   con = dbConnect(duckdb::duckdb(), ":memory:", path = tempfile())
@@ -71,10 +78,9 @@ make_task = function(data_id, size, repl, resampling) {
   task$id = odata$name
 
   task$row_roles$use = use_ids
-  # TODO: Fix this again later
-  #if (need_holdout) {
-  #  task$row_roles$holdout = holdout_ids
-  #}
+  if (need_holdout) {
+    task$internal_valid_task = holdout_ids
+  }
 
   return(task)
 }
@@ -232,7 +238,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
     # we use the validation score for the tuning
     inner_learner$predict_sets = NULL
 
-    auto_tuner(
+    at = auto_tuner(
       learner = inner_learner,
       resampling = res,
       measure = msr("internal_valid_score", minimize = TRUE),
@@ -242,6 +248,9 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
       store_tuning_instance = TRUE,
       tuner = tnr("mbo")
     )
+    if (startsWith(learner_id, "classif")) {
+      at$predict_type = "prob"
+    }
   } else {
     ppl("robustify", learner = learner, task = task) %>>%
       learner
@@ -294,9 +303,9 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     learner$predict_sets = union(learner$predict_sets, "train")
   }
 
-  if (length(task$row_roles$holdout)) {
+  if (!is.null(task$internal_valid_task)) {
     # use to approximate the risk / proxy quantities
-    learner$predict_sets = union(learner$predict_sets, "holdout")
+    learner$predict_sets = union(learner$predict_sets, "internal_valid")
   }
 
   # This ensures that the resampling instances are the same when a resampling method is applied to learner A and B,
@@ -307,6 +316,8 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
     resampling$instantiate(task)
   )
 
+  # TODO: Activate future parallelization when we are running the mlp.
+
   # for good measure we specify the seed here as well
   rr = withr::with_seed(seed = resampling_seed + 1,
     resample(task, learner, resampling, store_models = FALSE, store_backends = FALSE)
@@ -316,7 +327,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # saving them would require too much disk space
   result = list(
     resampling_seed = resampling_seed,
-    test_predictions = map(rr$predictions("test"), function(x) x$data)
+    test_predictions = map(rr$predictions("internal_valid"), function(x) x$data)
   )
 
   if ("train" %in% learner$predict_sets) {

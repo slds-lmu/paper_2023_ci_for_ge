@@ -66,6 +66,9 @@ Sys.setenv(TRUTH_PATH_LOSSES_ORIGINAL = paste0(SAVE_PATH, sep = "_", "truth_loss
 Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "errors"))
 
 Sys.setenv(RESAMPLE_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "resample_complex"))
+Sys.setenv(CI_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "ci_complex"))
+Sys.setenv(TRUTH_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "truth_complex"))
+
 Sys.setenv(RESAMPLE_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "resample_highdim"))
 Sys.setenv(RESAMPLE_PATH_SPEED = paste0(SAVE_PATH, sep = "_", "resample_speed"))
 Sys.setenv(RESAMPLE_PATH_MLP = paste0(SAVE_PATH, sep = "_", "resample_mlp"))

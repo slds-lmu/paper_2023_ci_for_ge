@@ -6,16 +6,15 @@ library(inferGE)
 
 source(here::here("experiments", "helper.R"))
 
-EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH")
+EXPERIMENT_PATH = Sys.getenv("RESAMPLE_PATH_COMPLEX")
 EXPERIMENT_REG = loadRegistry(EXPERIMENT_PATH, make.default = FALSE)
-EXPERIMENT_TBL = unwrap(getJobTable(reg = EXPERIMENT_REG))
 
-TRUTH_PATH = Sys.getenv("TRUTH_PATH")
+TRUTH_PATH = Sys.getenv("TRUTH_PATH_COMPLEX")
 TRUTH_REG = makeRegistry(TRUTH_PATH,
   packages = c("data.table", "batchtools")
 )
 
-jt = getJobTable(reg = EXPERIMENT_REG) |>
+jt = getJobTable(findDone(reg = EXPERIMENT_REG), reg = EXPERIMENT_REG) |>
   unwrap()
 
 jt = jt[list("insample"), on = "resampling_name"]
@@ -40,7 +39,8 @@ batchMap(i = seq_len(nrow(jt)), fun = function(i) {
   ))
 
   measure_vars = if (task_type == "classif") {
-    c("zero_one", "logloss", "bbrier")
+    # forgot to set predict type of autotuner
+    "zero_one"
   } else {
     c("se", "ae", "standardized_se", "percentual_se")
   }
