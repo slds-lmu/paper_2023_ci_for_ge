@@ -16,11 +16,14 @@ for (p in ps) {
     firstonly = rep(TRUE, nblocks)
   )$data 
 
-  # round all numeric columns except for the target so we need less space
-
-  for (name in names(d)[-length(names(d))]) {
-    d[[name]] = round(d[[name]], 3)
+  for (i in 1:500) {
+    sub = d[((i - 1) * 1000 + 1):(i * 1000), ]
+    write_parquet(sub, sprintf("/gscratch/sfische6/highdim-data/highdim_%s_%d.parquet", p, i))
   }
-
-  write_parquet(d, sprintf("/gscratch/sfische6/highdim-data/highdim_%s.parquet", p))
+  if (p == 6400) {
+    write_parquet(d[500001:600000, 1:3200], sprintf("/gscratch/sfische6/highdim-data/highdim_%s_holdout_1.parquet", p))
+    write_parquet(d[500001:600000, 3201:ncol(d)], sprintf("/gscratch/sfische6/highdim-data/highdim_%s_holdout_2.parquet", p))
+  } else {
+    write_parquet(d[500001:600000, ], sprintf("/gscratch/sfische6/highdim-data/highdim_%s_holdout.parquet", p))
+  }
 }

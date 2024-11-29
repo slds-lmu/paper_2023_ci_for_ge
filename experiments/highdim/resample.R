@@ -34,7 +34,8 @@ RESAMPLINGS <- list(
 )
 
 LEARNERS <- list(
-  list(name = "lasso", id = "classif.cv_glmnet", params = list(alpha = 1))
+  list(name = "lasso", id = "classif.cv_glmnet", params = list(alpha = 1)),
+  list(name = "random_forest", id = "classif.ranger", params = list(num.trees = 50))
 )
 
 batchExport(list(

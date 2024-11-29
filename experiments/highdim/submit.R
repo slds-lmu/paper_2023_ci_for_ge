@@ -4,7 +4,7 @@ reg = loadRegistry(Sys.getenv("RESAMPLE_PATH_HIGHDIM"), writeable = TRUE)
 
 while (TRUE) { 
     print(getStatus())
-    jt = unwrap(getJobTable())
+    jt = unwrap(getJobTable(findNotDone()))
 
     jt_big = jt[task_name == "highdim_1600",]
     jt_very_big = jt[task_name == "highdim_3200" | task_name == "highdim_6400", ]
@@ -23,9 +23,9 @@ while (TRUE) {
     }
 
 
-    f(jt_big, list(walltime = 3600 * 2, memory = 512 * 64L, partition = "mb"))
-    f(jt_very_big, list(walltime = 3600 * 2, memory = 512 * 128L, partition = "mb"))
-    f(jt_small, list(walltime = 3600 * 2, memory = 512 * 16L, partition = "mb"))
+    f(jt_big, list(walltime = 3600 * 12, memory = 512 * 64L, partition = "mb"))
+    f(jt_very_big, list(walltime = 3600 * 12, memory = 512 * 128L, partition = "mb"))
+    f(jt_small, list(walltime = 3600 * 12, memory = 512 * 16L, partition = "mb"))
 
     Sys.sleep(60 * 10)
 }

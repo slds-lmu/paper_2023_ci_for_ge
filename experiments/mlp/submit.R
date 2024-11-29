@@ -1,19 +1,16 @@
 library(batchtools)
 
-reg = loadRegistry(Sys.getenv("RESAMPLE_PATH_COMPLEX"), writeable = TRUE)
+reg = loadRegistry(Sys.getenv("RESAMPLE_PATH_MLP"), writeable = TRUE)
 
 jt = unwrap(getJobTable())
 
-jt = jt[repl <= 100 & !startsWith(resampling_name, "subsampling_100"), ]
+jtsub = jt[size == 5000 & repl <= 50 & resampling_id != "insample" & task_name == "higgs" ,]
 
-# TODO: Remove subsampling_100 from registry
+# submit 50 reps of higgs dataset with holdout 
 
-jt = jt[job.id %nin% findRunning()[[1]]]
-jt = jt[job.id %nin% findDone()[[1]]]
-jt = jt[job.id %nin% findQueued()[[1]]]
+submitJobs(jtsub$job.id, resources = list(walltime = 3600 * 24, ncpus = 48, memory = 1024 * 8, partition = "mb"))
 
-chunks = batchtools::chunk(jt$job.id, chunk.size = 20)
+jtsub = jt[size == 5000 & repl <= 50 & resampling_id == "insample" & task_name == "higgs" ,]
+submitJobs(1, resources = list(walltime = 3600 * 4, ncpus = 25, memory = 1024 * 4, partition = "mb-a30", gres = "gpu:1"))
+#submitJobs(2, resources = list(walltime = 3600 * 2, ncpus = 1, memory = 1024 * 8, partition = "mb-h100", gres = "gpu:1"))
 
-tbl = data.table(job.id = jt$job.id, chunk = chunks) 
-
-submitJobs(tbl, resources = list(walltime = 3600 * 24, memory = 512 * 8L, partition = "mb"))

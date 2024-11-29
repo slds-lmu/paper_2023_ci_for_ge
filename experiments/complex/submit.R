@@ -16,4 +16,4 @@ chunks = batchtools::chunk(jt$job.id, chunk.size = 20)
 
 tbl = data.table(job.id = jt$job.id, chunk = chunks) 
 
-submitJobs(tbl, resources = list(walltime = 3600 * 24, memory = 512 * 16L, partition = "mb"))
+submitJobs(tbl, resources = list(walltime = 3600 * 24, memory = 1024 * 8L, partition = "mb"))

@@ -2,30 +2,30 @@ make_task_highdim = function(data_id, repl, resampling) {
   needs_holdout = inherits(resampling, "ResamplingInsample")
   dt = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_%d.parquet", data_id, repl))
   if (needs_holdout) {
-    dtho = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_holdout.parquet", data_id))
+    if (data_id == "highdim_6400") {
+      # for some reason we cannot read the holdout data for 6.4k cols in a single go
+      dtho1 = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_holdout_1.parquet", data_id))
+      dtho2 = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_holdout_2.parquet", data_id))
+      dtho = cbind(dtho1, dtho2)
+    } else {
+      dtho = nanoparquet::read_parquet(sprintf("/gscratch/sfische6/highdim-data/%s_holdout.parquet", data_id))
+    }
     dt = rbind(dt, dtho)
   }
   data.table::setDT(dt)
 
   task = as_task_classif(id = data_id, x = as_data_backend(dt), target = "outcome")
   if (needs_holdout) {
-    task$filter(1:1000)
     task$internal_valid_task = 1001L:nrow(dt)
+    task$filter(1:1000)
   }
 
   return(task)
 }
 
 make_task = function(data_id, size, repl, resampling) {
-  if (startsWith(data_id, "highdim")) {
-    # try this three times if it fails
-    for (i in 1:30) {
-      # database issues
-      task = try(make_task_highdim(data_id, repl), silent = TRUE)
-      Sys.sleep(runif(n = 1, min = 1, max = 3))
-      if (!inherits(task, "try-error")) break
-    }
-    if (inherits(task, "try-error")) stop("Failed to create highdim task")
+  if (is.character(data_id) && startsWith(data_id, "highdim")) {
+    task = make_task_highdim(data_id, repl, resampling)
     return(task)
   }
 
@@ -55,15 +55,18 @@ make_task = function(data_id, size, repl, resampling) {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 
+  print(list.files("/gscratch/sfische6/mlr3oml_cache/public/data_parquet"))
   odata = odt(data_id, parquet = TRUE)
+  odata$.__enclos_env__$private$.parquet_path = sprintf("/gscratch/sfische6/mlr3oml_cache/public/data_parquet/%s.parquet", data_id)
   target = odata$target_names
 
   backend = as_data_backend(odata)
 
-  # we convert to a data.table for the experiments, because
-  # there is a bug in mlr3 https://github.com/mlr-org/mlr3/issues/961
 
+  # avoid using arff fallback if call to duckdb fails
+  setTimeLimit(elapsed = 30)
   tmpdata = backend$data(ids, backend$colnames)
+  setTimeLimit(elapsed = Inf)
   rm(backend)
   names(tmpdata)[names(tmpdata) == "mlr3_row_id"] = "..row_id"
   backend = as_data_backend(tmpdata, primary_key = "..row_id")
@@ -77,10 +80,10 @@ make_task = function(data_id, size, repl, resampling) {
 
   task$id = odata$name
 
-  task$row_roles$use = use_ids
   if (need_holdout) {
     task$internal_valid_task = holdout_ids
   }
+  task$row_roles$use = use_ids
 
   return(task)
 }
@@ -177,6 +180,10 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
       }
       
     } else if (grepl("mlp", learner_id)) {
+      # we use 25 cores with 4 threads each
+      learner$param_set$set_values(
+        num_threads = 5L
+      )
       if (task$task_type == "classif") {
         learner$param_set$set_values(
           measures_valid = msr("classif.logloss")
@@ -210,7 +217,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
           regr.mlp.opt.weight_decay  = p_dbl(lower = 1e-6, upper = 1e-3, logscale = TRUE, depends = (weight_decay == TRUE)),
           weight_decay                  = p_lgl(),
           n_layers                      = p_int(0, 3),
-          latent                        = p_int(1, 256, depends = (n_layers > 0)),
+          latent                        = p_int(1, 256, depends = quote(n_layers %in% c(1, 2, 3))),
           .extra_trafo = function(x, param_set) {
             if (x$n_layers > 0) {
               x$regr.mlp.neurons = rep(x$latent, x$n_layers)
@@ -222,7 +229,6 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
           }
         )
       }
-
     }
 
     graph = ppl("robustify", learner = learner, task = task) %>>% learner
@@ -244,13 +250,14 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
       measure = msr("internal_valid_score", minimize = TRUE),
       internal_search_space = internal_search_space,
       search_space = search_space,
-      terminator = trm("evals", n_evals = 50L),
+      terminator = trm("evals", n_evals = 50l),
       store_tuning_instance = TRUE,
-      tuner = tnr("mbo")
+      tuner = tnr("internal")
     )
     if (startsWith(learner_id, "classif")) {
       at$predict_type = "prob"
     }
+    at
   } else {
     ppl("robustify", learner = learner, task = task) %>>%
       learner
@@ -276,11 +283,14 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
   }
   learner$predict_sets = "test"
   learner$encapsulate("try", fallback)
-  learner$id = learner_name
+  learner$id = learner_id
   return(learner)
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
+  print(torch::cuda_is_available())
+  print(torch::cuda_device_count())
+
   lgr::get_logger("mlr3")$set_threshold("warn")
   lgr::get_logger("mlr3tuning")$set_threshold("warn")
   resampling = make_resampling(resampling_id, resampling_params)
@@ -312,11 +322,17 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # which reduces variance in the comparison between learners
   resampling_seed = abs(digest::digest2int(digest::sha1(list(job$algo.pars, job$prob.pars[c("data_id", "size")], job$repl))))
   # this allows us to reconstruct the resampling instance later (in case any of the above calls touch the RNG)
+
+
   withr::with_seed(seed = resampling_seed,
     resampling$instantiate(task)
   )
 
   # TODO: Activate future parallelization when we are running the mlp.
+
+  if (grepl("mlp", learner$id)) {
+    future::plan(future::multisession, workers = 25)
+  }
 
   # for good measure we specify the seed here as well
   rr = withr::with_seed(seed = resampling_seed + 1,
@@ -327,7 +343,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # saving them would require too much disk space
   result = list(
     resampling_seed = resampling_seed,
-    test_predictions = map(rr$predictions("internal_valid"), function(x) x$data)
+    test_predictions = map(rr$predictions("test"), function(x) x$data)
   )
 
   if ("train" %in% learner$predict_sets) {
@@ -335,7 +351,7 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   }
 
   # for the proxy quantities / risk
-  if ("holdout" %in% learner$predict_sets) {
+  if ("internal_valid" %in% learner$predict_sets) {
     if (task$task_type == "regr") {
       measures = msrs(paste0("regr.", c("mse", "mae", "std_mae", "percentual_mae", "winsorized_mse")))
       measures[[1]]$id = "se"
@@ -349,9 +365,12 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
       measures[[1]]$id = "zero_one"
       measures[[2]]$id = "bbrier"
       measures[[3]]$id = "logloss"
+      if ("prob" %nin% learner$predict_type) {
+        measures = measures[1:2]
+      }
     }
 
-    holdout_predictions = rr$predictions("holdout")
+    holdout_predictions = rr$predictions("internal_valid")
     result$holdout_scores = map_dtr(seq_along(holdout_predictions), function(i) {
       as.data.table(as.list(holdout_predictions[[i]]$score(measures, task = task, train_set = resampling$train_set(i))))
     })

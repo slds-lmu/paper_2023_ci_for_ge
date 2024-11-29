@@ -17,7 +17,7 @@ TASKS <- list(
 )
 
 # only run the network on non-linear DPGs
-TASKS$regr = TASKS$regr[TASKS$regr %nin% c(45670, 45664, 45667)]
+TASKS$regr = TASKS$regr[TASKS$regr %nin% c(45667, 45655, 45670)]
 TASKS$classif = TASKS$classif[TASKS$classif %nin% c(45654, 45665, 45668, 45669, 45672)]
 
 data_names <- list(
@@ -52,13 +52,13 @@ reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
   seed = SEED,
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "mlr3mbo", "mlr3tuning", "mlr3torch"),
-  work.dir = here::here()
+  conf.file = here::here("experiments", "mlp", "pbs_ncar.tmpl"),
+  work.dir = here::here(),
+
 )
 
 RESAMPLINGS <- list(other = list(
-  holdout_90         = list(id = "holdout", params = list(ratio = 0.9)),
   subsampling_25_90  = list(id = "subsampling", params = list(repeats = 25, ratio = 0.9)),
-  cv_10              = list(id = "cv", params = list(folds = 10)),
   nested_cv_75       = list(id = "nested_cv", params = list(folds = 5, repeats = 3)),
   # J is inner reps, M is outer reps
   conservative_z_105 = list(id = "conservative_z", params = list(J = 5, M = 10, ratio = 0.9)),
@@ -66,14 +66,16 @@ RESAMPLINGS <- list(other = list(
 ))
 
 # Run the network only on 'relatively' large problems
-SIZES <- list(other = c(5000L, 10000L))
+SIZES <- list(
+  other = c(1000L, 5000L, 10000L)
+)
 
 LEARNERS <- list(
   regr = list(
-    list(name = "tab_resnet", id = "regr.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
+    list(name = "mlp", id = "regr.mlp", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   ),
   classif = list(
-    list(name = "tab_resnet", id = "classif.tab_resnet", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
+    list(name = "mlp", id = "classif.mlp", params = list(patience = 20L, batch_size = 512, drop_last = FALSE))
   )
 )
 

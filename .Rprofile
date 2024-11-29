@@ -70,7 +70,11 @@ Sys.setenv(CI_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "ci_complex"))
 Sys.setenv(TRUTH_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "truth_complex"))
 
 Sys.setenv(RESAMPLE_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "resample_highdim"))
+Sys.setenv(CI_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "ci_highdim"))
+Sys.setenv(TRUTH_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "truth_highdim"))
+
+
 Sys.setenv(RESAMPLE_PATH_SPEED = paste0(SAVE_PATH, sep = "_", "resample_speed"))
-Sys.setenv(RESAMPLE_PATH_MLP = paste0(SAVE_PATH, sep = "_", "resample_mlp"))
+Sys.setenv(RESAMPLE_PATH_MLP = "/glade/derecho/scratch/sfischer/benchmarks/ci_for_ge/final_resample_mlp")
 
 rm(SAVE_PATH)
