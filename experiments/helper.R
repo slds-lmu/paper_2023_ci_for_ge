@@ -250,7 +250,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
       measure = msr("internal_valid_score", minimize = TRUE),
       internal_search_space = internal_search_space,
       search_space = search_space,
-      terminator = trm("evals", n_evals = 50l),
+      terminator = trm("evals", n_evals = 50L),
       store_tuning_instance = TRUE,
       tuner = tnr("internal")
     )
