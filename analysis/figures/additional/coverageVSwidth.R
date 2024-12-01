@@ -35,7 +35,7 @@ ggplot(CW_lim,aes(x=mean_ER,y=rel_width,label=method,color=suggested)) +
   labs(color="") +
   theme_bw() + xlim(0.85,1)
 
-ggsave("coverageVSwidth.png",width=9,height=5)
+ggsave("figures/additional/coverageVSwidth.png",width=9,height=5)
 
 
 ggplot(CW0[method%in%MoI,],aes(x=cov_ER,y=rel_width,color=method)) +
