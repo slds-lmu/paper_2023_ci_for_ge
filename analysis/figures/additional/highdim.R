@@ -13,8 +13,10 @@ highdim_aggr <- highdim[, list(
 
 
 phighdim <- pivot_longer(highdim_aggr,cols=c("cov_ER","cov_R"),values_to = "Coverage",
-                         names_to="Cof")
+                         names_to="Cof") %>%
+  mutate(learner=recode(learner,"lasso"="Tuned Lasso (10-fold CV)","random_forest"="Random Forest"))
 phighdim$Cof <- ifelse(phighdim$Cof=="cov_ER","Expected Risk","Risk")
+
 
 p2 <- ggplot(phighdim[which(phighdim$loss=="zero_one"),],aes(x=p,y=Coverage,linetype=Cof,color=method))+
   geom_hline(yintercept=0.95,color="black") +
