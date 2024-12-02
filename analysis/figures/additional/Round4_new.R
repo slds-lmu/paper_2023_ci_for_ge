@@ -117,7 +117,7 @@ annotate_figure(ggarrange(ggplot(tbl, aes(y = cov_R, color = inducer)) +
 bottom=text_grob("conservative z (105 iterations), nested CV (75 iterations), corrected t (25 iterations)\n Data Size")
 )
 
-ggsave(here("figures", "additional", "FourthRound_new.png"), width=12,height=5)
+ggsave(here("figures", "additional", "FourthRound_new.png"), width=12,height=5.5)
 
 
 
