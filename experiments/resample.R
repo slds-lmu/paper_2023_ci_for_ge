@@ -40,7 +40,7 @@ data_names <- list(
 SEED <- 42
 N_REP <- 500L
 
-REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH")
+REGISTRY_PATH <- Sys.getenv("RESAMPLE_PATH_COMPLEX")
 
 reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
