@@ -31,11 +31,11 @@ ggplot(CW_lim,aes(x=mean_ER,y=rel_width,label=method,color=suggested)) +
   geom_point() + ggrepel::geom_text_repel(hjust=-0.2, vjust=0,size=3) +
   xlab("Average coverage for expected risk") +
   ylab("Median CI width relative to cort_10") +
-  scale_color_manual(values=c("darkslategray","blue"))+
+  scale_color_manual(values=c("darkslategray","blue")) +
   labs(color="") +
-  theme_bw() + xlim(0.85,1)
+  theme_bw() + xlim(0.85,1) + theme(legend.position = "top")
 
-ggsave("figures/additional/coverageVSwidth.png",width=9,height=5)
+ggsave("figures/additional/coverageVSwidth.png",width=8,height=6)
 
 
 ggplot(CW0[method%in%MoI,],aes(x=cov_ER,y=rel_width,color=method)) +
