@@ -1,7 +1,14 @@
 source("renv/activate.R")
 
 # This is where the datasets will be cached
+# 
 
+if (Sys.getenv("USER") == "sfischer") {
+  Sys.setenv(RESAMPLE_PATH_MLP = "/glade/derecho/scratch/sfischer/benchmarks/ci_for_ge/final_resample_mlp")
+  Sys.setenv(CI_PATH_MLP = "/glade/derecho/scratch/sfischer/benchmarks/ci_for_ge/final_ci_mlp")
+  Sys.setenv(TRUTH_PATH_MLP = "/glade/derecho/scratch/sfischer/benchmarks/ci_for_ge/final_truth_mlp")
+  options(mlr3oml.cache = "/glade/derecho/scratch/sfischer/mlr3oml_cache")
+} else {
 if (dir.exists("/gscratch/sfische6/mlr3oml_cache")) {
   options(mlr3oml.cache = "/gscratch/sfische6/mlr3oml_cache")
 } else {
@@ -64,4 +71,17 @@ Sys.setenv(TRUTH_PATH_LOSSES_RIDGE = paste0(SAVE_PATH, sep = "_", "truth_losses_
 Sys.setenv(TRUTH_PATH_LOSSES_ORIGINAL = paste0(SAVE_PATH, sep = "_", "truth_losses_original"))
 
 Sys.setenv(ERROR_PATH = paste0(SAVE_PATH, sep = "_", "errors"))
+
+Sys.setenv(RESAMPLE_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "resample_complex"))
+Sys.setenv(CI_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "ci_complex"))
+Sys.setenv(TRUTH_PATH_COMPLEX = paste0(SAVE_PATH, sep = "_", "truth_complex"))
+
+Sys.setenv(RESAMPLE_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "resample_highdim"))
+Sys.setenv(CI_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "ci_highdim"))
+Sys.setenv(TRUTH_PATH_HIGHDIM = paste0(SAVE_PATH, sep = "_", "truth_highdim"))
+
+
+Sys.setenv(RESAMPLE_PATH_SPEED = paste0(SAVE_PATH, sep = "_", "resample_speed"))
 rm(SAVE_PATH)
+}
+

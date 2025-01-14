@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#PBS -N <%= job.name %>
+#PBS -A WYOM0202
+#PBS -j oe
+#PBS -k eod
+#PBS -q main
+#PBS -l job_priority=economy
+#PBS -l select=1:ncpus=128
+#PBS -l walltime=12:00:00
+#PBS -o <%= log.file %>
+
+### Set temp to scratch
+export TMPDIR=/glade/derecho/scratch/${USER}/tmp && mkdir -p ${TMPDIR}
+
+### specify desired module environment
+ml conda
+conda activate inference
+
+### Run
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
+
+wait

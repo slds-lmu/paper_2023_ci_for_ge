@@ -73,7 +73,8 @@ LEARNERS = list(
 batchExport(list(
   make_task = make_task,
   make_learner = make_learner,
-  make_resampling = make_resampling
+  make_resampling = make_resampling,
+  make_task_highdim = make_task_highdim
 ))
 
 addAlgorithm(
