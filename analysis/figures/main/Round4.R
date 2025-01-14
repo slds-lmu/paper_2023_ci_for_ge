@@ -19,7 +19,7 @@ sds_tbls <- data.table(
 ncv_cheap = readRDS(here("results", "ablation", "ncv_cheap_aggr.rds"))
 conz_cheap = readRDS(here("results", "ablation", "conz_cheap_aggr.rds"))
 conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 10,]
-cort_cheap = readRDS(here("results", "ablation", "cort_cheap_aggr.rds"))
+cort_cheap = readRDS(here("results", "ablation", "cort_aggr.rds"))
 cort_cheap = cort_cheap[reps == 25,]
 
 #conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 12,]

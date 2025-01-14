@@ -20,7 +20,10 @@ paths = c(
 	"analysis/figures/main/Round1.R",
 	"analysis/figures/main/Round2.R",
 	"analysis/figures/main/Round3.R",
-	"analysis/figures/main/Round4.R"
+	"analysis/figures/main/Round4.R",
+	"analysis/figures/additional/highdim.R",
+	"analysis/figures/additional/Round4_new.R",
+	"analysis/figures/additional/coverageVSwidth.R"
 )
 
 print(getwd())

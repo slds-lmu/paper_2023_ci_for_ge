@@ -19,9 +19,9 @@ sds_tbls <- data.table(
 ncv_cheap = readRDS(here("results", "ablation", "ncv_cheap_aggr.rds"))
 conz_cheap = readRDS(here("results", "ablation", "conz_cheap_aggr.rds"))
 conz_cheap = conz_cheap[inner_reps == 5 & outer_reps == 10,]
-cort_cheap = readRDS(here("results", "ablation", "cort_cheap_aggr.rds"))
+cort_cheap = readRDS(here("results", "ablation", "cort_aggr.rds"))
 cort_cheap = cort_cheap[reps == 25,]
-complex = readRDS(here("results", "ablation", "complex.rds"))
+complex = readRDS(here("results", "additional", "xgboost.rds"))
 xgboost = complex[, list(
   ER = ER[[1L]],
   cov_R = mean(lower <= R & upper >= R),
@@ -32,7 +32,7 @@ xgboost = complex[, list(
   task_type=task_type
 ), by = .(task, loss, method, size)]
 
-mlp_nonaggr = readRDS(here("results", "ablation", "mlp.rds"))
+mlp_nonaggr = readRDS(here("results", "additional", "mlp.rds"))
 mlp = mlp_nonaggr[, list(
   ER = ER[[1L]],
   cov_R = mean(lower <= R & upper >= R),

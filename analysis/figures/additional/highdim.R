@@ -1,7 +1,7 @@
 library(here)
 source(here("analysis", "figures", "main", "setup.R"))
 
-highdim <- readRDS("~/Repositories/paper_2023_ci_for_ge/analysis/figures/additional/highdim.rds")
+highdim <- readRDS(here::here("results", "additional", "highdim.rds"))
 highdim_aggr <- highdim[, list(
   ER = ER[[1L]],
   cov_R = mean(lower <= R & upper >= R),
@@ -22,9 +22,9 @@ p2 <- ggplot(phighdim[which(phighdim$loss=="zero_one"),],aes(x=p,y=Coverage,line
   geom_hline(yintercept=0.95,color="black") +
   geom_line() + facet_wrap(learner~., strip.position="bottom") +
   theme_bw() +
-  labs(x="Number of features", linetype="",y="Average Coverage") + 
+  labs(x="Number of features", linetype="",y="Average Coverage") +
   theme(legend.position = "bottom",plot.margin = margin(t=0,l=15,r=5,b=10)) +
-  ylim(0.8,1) 
+  ylim(0.8,1)
 
 
 p1 <- ggplot(phighdim[which(phighdim$loss=="zero_one"),],aes(x=p,y=width,fill=method))+
@@ -47,14 +47,14 @@ ggsave("figures/additional/highdim.png",width=8,height=5)
 
 ################################################################################
 
-highdim_rf <- phighdim[which(phighdim$learner=="random_forest"),]
-highdim_lasso <- phighdim[which(phighdim$learner=="lasso"),]
+highdim_rf <- phighdim[which(phighdim$learner=="Random Forest"),]
+highdim_lasso <- phighdim[which(phighdim$learner=="Tuned Lasso (10-fold CV)"),]
 
 p2_lasso <- ggplot(highdim_lasso,aes(x=p,y=Coverage,linetype=Cof,color=method))+
   geom_hline(yintercept=0.95,color="black") +
   geom_line() + facet_wrap(loss~., strip.position="bottom") +
   theme_bw() +
-  labs(x="Number of features", linetype="") + 
+  labs(x="Number of features", linetype="") +
   theme(legend.position = "bottom",plot.margin = margin(t=0,l=15,r=5,b=10)) +
   ylim(0.8,1)
 
@@ -76,9 +76,9 @@ p2_rf <- ggplot(highdim_rf,aes(x=p,y=Coverage,linetype=Cof,color=method))+
   geom_hline(yintercept=0.95,color="black") +
   geom_line() + facet_wrap(loss~., strip.position="bottom") +
   theme_bw() +
-  labs(x="Number of features", linetype="") + 
+  labs(x="Number of features", linetype="") +
   theme(legend.position = "bottom",plot.margin = margin(t=0,l=15,r=5,b=10)) +
-  ylim(0.8,1) 
+  ylim(0.8,1)
 
 
 p1_rf <- ggplot(highdim_rf,aes(x=p,y=width,fill=method))+
