@@ -52,7 +52,7 @@ reg <- makeExperimentRegistry(
   file.dir = REGISTRY_PATH,
   seed = SEED,
   packages = c("mlr3", "mlr3learners", "mlr3pipelines", "mlr3db", "inferGE", "mlr3oml", "mlr3misc", "here", "duckdb", "DBI", "lgr", "mlr3mbo", "mlr3tuning", "mlr3torch"),
-  conf.file = here::here("experiments", "mlp", "batchtools.conf"),
+  conf.file = here::here("experiments", "mlp", "batchtools.conf.R"),
   work.dir = here::here(),
 
 )

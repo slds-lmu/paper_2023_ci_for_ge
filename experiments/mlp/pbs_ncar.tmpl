@@ -7,7 +7,7 @@
 #PBS -q main
 #PBS -l job_priority=economy
 #PBS -l select=1:ncpus=128
-#PBS -l walltime=24:00:00
+#PBS -l walltime=12:00:00
 #PBS -o <%= log.file %>
 
 ### Set temp to scratch
@@ -18,30 +18,6 @@ ml conda
 conda activate inference
 
 ### Run
-Rscript -e 'batchtools::doJobCollection("<%= uri_1 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_2 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_3 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_4 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_5 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_6 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_7 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_8 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_9 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_10 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_11 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_12 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_13 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_14 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_15 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_16 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_17 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_18 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_19 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_20 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_21 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_22 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_23 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_24 %>")' &
-Rscript -e 'batchtools::doJobCollection("<%= uri_25 %>")' &
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
 
 wait

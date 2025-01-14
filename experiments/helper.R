@@ -55,9 +55,9 @@ make_task = function(data_id, size, repl, resampling) {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 
-  print(list.files("/gscratch/sfische6/mlr3oml_cache/public/data_parquet"))
+  #print(list.files("/gscratch/sfische6/mlr3oml_cache/public/data_parquet"))
   odata = odt(data_id, parquet = TRUE)
-  odata$.__enclos_env__$private$.parquet_path = sprintf("/gscratch/sfische6/mlr3oml_cache/public/data_parquet/%s.parquet", data_id)
+  #odata$.__enclos_env__$private$.parquet_path = sprintf("/gscratch/sfische6/mlr3oml_cache/public/data_parquet/%s.parquet", data_id)
   target = odata$target_names
 
   backend = as_data_backend(odata)
@@ -252,7 +252,7 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
       search_space = search_space,
       terminator = trm("evals", n_evals = 50L),
       store_tuning_instance = TRUE,
-      tuner = tnr("internal")
+      tuner = tnr("mbo")
     )
     if (startsWith(learner_id, "classif")) {
       at$predict_type = "prob"
@@ -288,9 +288,6 @@ make_learner = function(learner_id, learner_params, learner_name, task, resampli
 }
 
 run_resampling = function(instance, resampling_id, resampling_params, job, ...) {
-  print(torch::cuda_is_available())
-  print(torch::cuda_device_count())
-
   lgr::get_logger("mlr3")$set_threshold("warn")
   lgr::get_logger("mlr3tuning")$set_threshold("warn")
   resampling = make_resampling(resampling_id, resampling_params)
@@ -331,6 +328,8 @@ run_resampling = function(instance, resampling_id, resampling_params, job, ...) 
   # TODO: Activate future parallelization when we are running the mlp.
 
   if (grepl("mlp", learner$id)) {
+    options(parallelly.availableCores.system = 128)
+    options(parallelly.maxWorkers.localhost = Inf)
     future::plan(future::multisession, workers = 25)
   }
 
