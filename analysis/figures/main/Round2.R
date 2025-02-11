@@ -2,6 +2,8 @@ library(here)
 source(here("analysis", "figures", "main", "setup.R"))
 source(here("analysis", "figures", "main", "NewNames.R"))
 
+ci_aggr_red = ci_aggr
+
 UC <- ci_aggr_red[loss %in% translate_losses("Squared", "Zero-One") &
                     as.character(dgp) %nin% susDGPs,
                   list(
@@ -34,7 +36,7 @@ Widths <- Widths %>%
 
 
 MoI <- setdiff(Widths$method[which(Widths$median_classif<8 & Widths$median_regr<8)],
-               c("lsb_100", "lsb_50", "tsb_200", "conz_10_15", "ncv_200_5",
+               c("lsb_100", "lsb_50", "tsb_200_10", "conz_10_15", "ncv_200_5",
                  "cv_n", "bccv_100", "bccv_100_bias")
                )
 
@@ -58,7 +60,7 @@ p1 <- aggr_plot(ci_aggr_red, MoI, inducers, DGPs, "Squared", "Zero-One", ylims=c
 
 MoI_small <- setdiff(intersect(Widths$method[which(Widths$median_classif<8 & Widths$median_regr<8)],
                                setdiff(unique(ci_aggr_red$method),unique(ci_aggr_red[size>500]$method))),
-                     c("lsb_100", "lsb_50", "tsb_200", "bccv_100", "bccv_100_bias"))
+                     c("lsb_100", "lsb_50", "tsb_200_10", "bccv_100", "bccv_100_bias"))
 
 Refac <- ci_aggr_red[which(ci_aggr_red$method %in% MoI_small),] %>%
   mutate(method=factor(method,
